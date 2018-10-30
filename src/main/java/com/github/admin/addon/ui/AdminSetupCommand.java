@@ -104,12 +104,9 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 
 	@Override
 	public Result execute(UIExecutionContext context) throws Exception {
-		Project project = getSelectedProject(context);
-
-		if (project == null) {
-			project = getSelectedProject(context.getUIContext());
-		}
-
+	  
+		final Project project = getSelectedProject(context) != null ? getSelectedProject(context) : getSelectedProject(context.getUIContext());
+		 
 		boolean execute = true;
 		if (project.hasFacet(AdminFacet.class) && project.getFacet(AdminFacet.class).isInstalled()) {
 			execute = context.getPrompt().promptBoolean("AdminFaces is already installed, override it?");
@@ -135,7 +132,7 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 		String logoMini = resolveLogoMini(this.logoMini.getValue(), projectName);
 
 		adminConfig.setLogoMini(logoMini);
-		addAdminFacesResources(project).forEach(r -> results.add(Results.success("Added " + r.getFullyQualifiedName())));
+		addAdminFacesResources(project).forEach(r -> results.add(Results.success("Added " + r.getFullyQualifiedName().replace(project.getRoot().getFullyQualifiedName(), ""))));
 		setupWebXML(project);
 
 		return Results.aggregate(results);
@@ -220,7 +217,7 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 			logonMB.setPackage(metadataFacet.getProjectGroupName() + ".infra");
 			javaSource.saveJavaSource(logonMB);
 			FileUtils.copyInputStreamToFile(logonStream,
-					new File(javaSource.getBasePackageDirectory().getFullyQualifiedName()
+					new File(project.getRoot().getFullyQualifiedName()
 							+ logonMB.getPackage().replaceAll("\\.", "/")));
 		} catch (Exception e) {
 			LOG.log(Level.SEVERE, "Could not add 'LogonMB'.", e);
