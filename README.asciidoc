@@ -1,0 +1,34 @@
+== AdminFaces Addon
+
+image:https://travis-ci.org/adminfaces/admin-addon.svg[Build Status (Travis CI), link=https://travis-ci.org/adminfaces/admin-addon]
+image:https://coveralls.io/repos/adminfaces/admin-addon/badge.svg?branch=master&service=github[Coverage, link=https://coveralls.io/r/adminfaces/admin-addon] 
+
+This forge addon enables AdminFaces `setup` and `scaffold from JPA entities`.
+
+        
+=== Dependencies: None 
+ 
+
+=== Installation
+
+Use install addon from git command:
+
+----
+addon-install-from-git --url https://github.com/adminfaces/admin-addon.git
+----
+
+
+=== Usage 
+
+* *AdminFaces: Setup* command: 
+====
+It will install AdminFaces dependencies, resources and initial configuration.
+====
+
+* *AdminFaces: Scaffold* command: 
+====
+It will generate a crud on top of selected entity.
+====
+
+ 
+
