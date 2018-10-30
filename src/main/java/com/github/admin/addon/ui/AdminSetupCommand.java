@@ -19,9 +19,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.jboss.forge.addon.facets.FacetFactory;
 import org.jboss.forge.addon.facets.constraints.FacetConstraint;
-import org.jboss.forge.addon.javaee.JavaEEFacet;
-import org.jboss.forge.addon.javaee.servlet.ServletFacet;
-import org.jboss.forge.addon.javaee.servlet.ServletFacet_3_0;
 import org.jboss.forge.addon.javaee.servlet.ServletFacet_3_1;
 import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.projects.Project;
@@ -44,20 +41,16 @@ import org.jboss.forge.addon.ui.util.Metadata;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaSource;
 import org.jboss.shrinkwrap.descriptor.api.javaee.ParamValueCommonType;
-import org.jboss.shrinkwrap.descriptor.api.javaee6.ParamValueType;
-import org.jboss.shrinkwrap.descriptor.api.webapp.WebAppCommonDescriptor;
-import org.jboss.shrinkwrap.descriptor.api.webapp30.WebAppDescriptor;
 import org.metawidget.util.simple.StringUtils;
 
 import com.github.admin.addon.config.AdminConfiguration;
 import com.github.admin.addon.facet.AdminFacet;
 import com.github.admin.addon.freemarker.FreemarkerTemplateProcessor;
 import com.github.admin.addon.freemarker.TemplateFactory;
-import java.time.LocalDate;
 import java.time.Year;
-import java.time.ZoneId;
-import java.util.Calendar;
 import org.jboss.forge.addon.javaee.facets.JavaEE7Facet;
+import org.jboss.shrinkwrap.descriptor.api.javaee7.ParamValueType;
+import org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor;
 
 /**
  * AdminFaces: Setup command
@@ -72,7 +65,7 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 	private static final String INCLUDES = "/includes";
 	private static final String TEMPLATES = "/WEB-INF/templates";
 	private static final String TEMPLATE_DEFAULT = TEMPLATES + "/template.xhtml";
-	private static final String TEMPLATE_HORIZONTAL = TEMPLATES + "/template-horizontal.xhtml";
+	private static final String TEMPLATE_TOP = TEMPLATES + "/template-horizontal.xhtml";
 	private static final String INDEX_HTML = "/index.html";
 	private static final String SCAFFOLD_RESOURCES = "/scaffold";
 	private static final Logger LOG = Logger.getLogger(AdminSetupCommand.class.getName());
@@ -129,6 +122,11 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 		AdminFacet facet = facetFactory.create(project, AdminFacet.class);
 		facetFactory.install(project, facet);
 		results.add(Results.success("AdminFaces setup completed successfully!"));
+        
+        if(!project.hasFacet(ServletFacet_3_1.class)) {
+            ServletFacet_3_1 servletFacet_3_1 = facetFactory.create(project, ServletFacet_3_1.class);
+            facetFactory.install(project, servletFacet_3_1);
+        }
 
 		MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
 		String projectName = metadataFacet.getProjectName();
@@ -147,7 +145,7 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 	private String resolveLogoMini(String logoMini, String projectName) {
 		if (logoMini == null || "".equals(logoMini.trim())) {
 			if (projectName.length() > 3) {
-				logoMini = projectName.substring(0, 2);
+				logoMini = projectName.substring(0, 3);
 			} else {
 				logoMini = projectName;
 			}
@@ -173,15 +171,11 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 		AdminFacet adminFacet = project.getFacet(AdminFacet.class);
 		AdminConfiguration adminConfig = adminFacet.getConfiguration();
 
-		ServletFacet servlet = project.getFacet(ServletFacet.class);
-		if (servlet instanceof ServletFacet_3_0) {
-			WebAppDescriptor servletConfig = (WebAppDescriptor) servlet.getConfig();
-			servletConfig.getOrCreateWelcomeFileList().welcomeFile(INDEX_HTML);
-		} else if (servlet instanceof ServletFacet_3_1) {
-			org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor servletConfig = (org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor) servlet
-					.getConfig();
-			servletConfig.getOrCreateWelcomeFileList().welcomeFile(INDEX_HTML);
-		}
+		ServletFacet_3_1 servlet = project.getFacet(ServletFacet_3_1.class);
+        
+        org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor servletConfig = (org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor) servlet
+                .getConfig();
+        servletConfig.getOrCreateWelcomeFileList().welcomeFile(INDEX_HTML);
 
 		HashMap<Object, Object> context = getTemplateContext();
 		context.put("appName", StringUtils.uncamelCase(adminConfig.getProjectName()));
@@ -198,10 +192,10 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 
 		// templates
 
-		result.add(createOrOverwrite(web.getWebResource(TEMPLATES),
+		result.add(createOrOverwrite(web.getWebResource(TEMPLATE_DEFAULT),
 				FreemarkerTemplateProcessor.processTemplate(context, templates.getTemplateDefault())));
 
-		result.add(createOrOverwrite(web.getWebResource(TEMPLATES),
+		result.add(createOrOverwrite(web.getWebResource(TEMPLATE_TOP),
 				FreemarkerTemplateProcessor.processTemplate(context, templates.getTemplateTop())));
 
 		// menus
@@ -274,8 +268,7 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 	}
 
 	protected void setupWebXML(Project project) {
-		WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
-		ServletFacet servlet = project.getFacet(ServletFacet.class);
+		ServletFacet_3_1 servlet = project.getFacet(ServletFacet_3_1.class);
 		WebAppDescriptor servletConfig = (WebAppDescriptor) servlet.getConfig();
 
 		// Use the server timezone since we accept dates in that timezone, and it makes
@@ -313,23 +306,24 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 		}
 	}
 
-	private void configPrimeFaces(WebAppCommonDescriptor servletConfig,
-			List<ParamValueType<WebAppDescriptor>> allContextParam) {
+	private void configPrimeFaces(WebAppDescriptor servletConfig, List<ParamValueType<WebAppDescriptor>> allContextParam) {
 		Optional<ParamValueType<WebAppDescriptor>> primefacesThemeParam = allContextParam.stream()
 				.filter(c -> c.getParamValue().equals("primefaces.THEME")).findAny();
 
 		if (!primefacesThemeParam.isPresent()) {
 			servletConfig.createContextParam().paramName("primefaces.THEME").paramValue("admin");
-		}
-		primefacesThemeParam.get().paramValue("admin");
+		} else {
+		    primefacesThemeParam.get().paramValue("admin");
+        }
 
 		Optional<ParamValueType<WebAppDescriptor>> fontAwesomeParam = allContextParam.stream()
 				.filter(c -> c.getParamValue().equals("primefaces.FONT_AWESOME")).findAny();
 
 		if (!fontAwesomeParam.isPresent()) {
 			servletConfig.createContextParam().paramName("primefaces.FONT_AWESOME").paramValue("true");
-		}
-		fontAwesomeParam.get().paramValue("true");
+		} else {
+            fontAwesomeParam.get().paramValue("true");
+        }
 
 	}
 
@@ -339,5 +333,6 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 		context.put("templatePath", PAGE_TEMPLATE);
 		return context;
 	}
+    
 
 }
