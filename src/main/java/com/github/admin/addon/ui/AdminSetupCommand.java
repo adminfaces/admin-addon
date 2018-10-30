@@ -65,7 +65,7 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 	private static final String INCLUDES = "/includes";
 	private static final String TEMPLATES = "/WEB-INF/templates";
 	private static final String TEMPLATE_DEFAULT = TEMPLATES + "/template.xhtml";
-	private static final String TEMPLATE_TOP = TEMPLATES + "/template-horizontal.xhtml";
+	private static final String TEMPLATE_TOP = TEMPLATES + "/template-top.xhtml";
 	private static final String INDEX_HTML = "/index.html";
 	private static final String SCAFFOLD_RESOURCES = "/scaffold";
 	private static final Logger LOG = Logger.getLogger(AdminSetupCommand.class.getName());
