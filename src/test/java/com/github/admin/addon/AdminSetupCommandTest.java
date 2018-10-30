@@ -36,6 +36,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
+import org.jboss.forge.addon.javaee.facets.JavaEE7Facet;
+import org.jboss.forge.addon.javaee.servlet.ServletFacet_3_1;
 
 import static org.junit.Assert.*;
 
@@ -64,7 +66,7 @@ public class AdminSetupCommandTest {
 
     @Before
     public void setUp() throws IOException {
-        project = projectFactory.createTempProject(Arrays.asList(JavaEEFacet.class, JPAFacet.class, JavaSourceFacet.class));
+        project = projectFactory.createTempProject(Arrays.asList(JavaEE7Facet.class,ServletFacet_3_1.class, JPAFacet.class, JavaSourceFacet.class));
         MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
         metadataFacet.setProjectGroupName("com.github.admin.addon");
 
@@ -86,7 +88,7 @@ public class AdminSetupCommandTest {
             assertEquals("AdminFaces: Setup", metadata.getName());
             assertEquals("AdminFaces", metadata.getCategory().getName());
             assertNull(metadata.getCategory().getSubCategory());
-            assertEquals(0, controller.getInputs().size());
+            assertEquals(1, controller.getInputs().size());
         }
     }
 
