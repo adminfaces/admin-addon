@@ -94,7 +94,7 @@ public class AdminSetupCommandTest {
     @Test
     public void checkCommandShellAdminSetup() throws Exception {
         shellTest.getShell().setCurrentResource(project.getRoot());
-        Result result = shellTest.execute("adminfaces-setup", 15, TimeUnit.MINUTES);
+        Result result = shellTest.execute("adminfaces-setup", 25, TimeUnit.SECONDS);
         assertThat(result).isNotNull()
                 .isNotInstanceOf(Failed.class)
                 .extracting("message")
@@ -120,7 +120,7 @@ public class AdminSetupCommandTest {
         assertThat(new File(includesDir.getAbsolutePath()+"/menubar.xhtml")).exists();
         assertThat(new File(includesDir.getAbsolutePath()+"/top-bar.xhtml")).exists();
 
-        //Assert.assertThat(project.getFacet(AdminFacet.class).hasSwaggerUIResources(), is(true));
+        assertThat(project.getFacet(AdminFacet.class).isInstalled()).isTrue();
     }
 
     /*@Test
