@@ -213,6 +213,8 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 
     result.add(createOrOverwrite(web.getWebResource(INCLUDES + "/top-bar.xhtml"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + INCLUDES + "/top-bar.xhtml")));
     
+    result.add(createOrOverwrite(web.getWebResource(INCLUDES + "/controlsidebar-tabs-content.xhtml"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + INCLUDES + "/controlsidebar-tabs-content.xhtml")));
+    
     if(!web.getWebResource("WEB-INF/beans.xml").exists()) {
       result.add(createOrOverwrite(web.getWebResource("WEB-INF/beans.xml"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/WEB-INF/beans.xml")));
     }
