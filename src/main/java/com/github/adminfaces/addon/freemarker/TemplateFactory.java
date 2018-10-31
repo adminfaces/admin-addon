@@ -1,4 +1,4 @@
-package com.github.admin.addon.freemarker;
+package com.github.adminfaces.addon.freemarker;
 
 import javax.annotation.PostConstruct;
 

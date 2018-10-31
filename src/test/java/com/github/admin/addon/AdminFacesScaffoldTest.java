@@ -26,7 +26,7 @@ import static org.hamcrest.CoreMatchers.is;
 
 /**
  *
- * Test class for {@link com.github.admin.addon.scaffold.AdminFacesScaffoldProvider}
+ * Test class for {@link com.github.adminfaces.addon.scaffold.AdminFacesScaffoldProvider}
  * 
  * @author <a href="github.com/rmpestano">Rafael Pestano</a>
  */

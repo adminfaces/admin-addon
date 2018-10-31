@@ -1,7 +1,8 @@
 package com.github.admin.addon;
 
-import com.github.admin.addon.facet.AdminFacet;
-import com.github.admin.addon.util.DependencyUtil;
+import com.github.adminfaces.addon.facet.AdminFacet;
+import com.github.adminfaces.addon.util.DependencyUtil;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.addon.dependencies.builder.DependencyBuilder;
@@ -101,6 +102,7 @@ public class AdminSetupCommandTest {
     assertThat(new File(web.getWebResource("login.xhtml").getFullyQualifiedName())).exists();
     assertThat(new File(web.getWebResource("WEB-INF/faces-config.xml").getFullyQualifiedName())).exists();
     assertThat(new File(web.getWebResource("WEB-INF/web.xml").getFullyQualifiedName())).exists();
+    assertThat(new File(web.getWebResource("WEB-INF/beans.xml").getFullyQualifiedName())).exists();
     assertThat(new File(web.getWebResource("includes/menu.xhtml").getFullyQualifiedName())).exists();
     assertThat(new File(web.getWebResource("includes/menubar.xhtml").getFullyQualifiedName())).exists();
     assertThat(new File(web.getWebResource("includes/top-bar.xhtml").getFullyQualifiedName())).exists();

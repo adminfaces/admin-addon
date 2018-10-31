@@ -1,6 +1,5 @@
-package com.github.admin.addon.facet;
+package com.github.adminfaces.addon.facet;
 
-import com.github.admin.addon.config.AdminConfiguration;
 import org.jboss.forge.addon.projects.ProjectFacet;
 
 /**
@@ -10,8 +9,5 @@ import org.jboss.forge.addon.projects.ProjectFacet;
  */
 public interface AdminFacet extends ProjectFacet {
 
-  AdminConfiguration getConfiguration();
-
-  void setConfiguration(AdminConfiguration configuration);
 
 }

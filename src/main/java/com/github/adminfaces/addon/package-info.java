@@ -1,0 +1,1 @@
+package com.github.adminfaces.addon;

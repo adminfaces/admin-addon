@@ -1,7 +1,7 @@
-package com.github.admin.addon.scaffold;
+package com.github.adminfaces.addon.scaffold;
 
-import static com.github.admin.addon.util.DependencyUtil.ADMIN_PERSISTENCE_COORDINATE;
-import static com.github.admin.addon.util.DependencyUtil.ADMIN_TEMPLATE_COORDINATE;
+import static com.github.adminfaces.addon.util.DependencyUtil.ADMIN_PERSISTENCE_COORDINATE;
+import static com.github.adminfaces.addon.util.DependencyUtil.ADMIN_TEMPLATE_COORDINATE;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,6 +33,7 @@ import org.jboss.forge.addon.projects.facets.DependencyFacet;
 import org.jboss.forge.addon.projects.facets.ResourcesFacet;
 import org.jboss.forge.addon.projects.facets.WebResourcesFacet;
 import org.jboss.forge.addon.resource.DirectoryResource;
+import org.jboss.forge.addon.resource.FileResource;
 import org.jboss.forge.addon.resource.Resource;
 import org.jboss.forge.addon.scaffold.spi.AccessStrategy;
 import org.jboss.forge.addon.scaffold.spi.ScaffoldGenerationContext;
@@ -42,10 +44,12 @@ import org.jboss.forge.addon.ui.command.UICommand;
 import org.jboss.forge.addon.ui.result.NavigationResult;
 import org.jboss.forge.addon.ui.result.navigation.NavigationResultBuilder;
 import org.jboss.forge.addon.ui.util.Metadata;
+import org.jboss.forge.parser.xml.Node;
+import org.jboss.forge.parser.xml.XMLParser;
 
-import com.github.admin.addon.freemarker.TemplateFactory;
-import com.github.admin.addon.ui.AdminSetupCommand;
-import com.github.admin.addon.util.DependencyUtil;
+import com.github.adminfaces.addon.freemarker.TemplateFactory;
+import com.github.adminfaces.addon.ui.AdminSetupCommand;
+import com.github.adminfaces.addon.util.DependencyUtil;
 
 public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 
@@ -89,11 +93,14 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 
 		dependencyUtil.installDependency(project.getFacet(DependencyFacet.class), adminPersistenceDependency);
 
-		Resource<?> resources = project.getFacet(ResourcesFacet.class).getResourceDirectory();
-		/*Resource<?> resources = project.getRoot().reify(DirectoryResource.class).getChildDirectory("src")
-				.getChildDirectory("main").getOrCreateChildDirectory("resources");*/
+		configDeltaSpike(project);
 
-		if (!resources.getChild("apache-deltaspike.properties").exists()) {
+	}
+
+  private void configDeltaSpike(Project project) {
+    Resource<?> resources = project.getFacet(ResourcesFacet.class).getResourceDirectory();
+
+    if (!resources.getChild("apache-deltaspike.properties").exists()) {
 			try {
 				IOUtils.copy( Thread.currentThread().getContextClassLoader()
 								.getResourceAsStream("/apache-deltaspike.properties"),
@@ -102,10 +109,22 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 			} catch (IOException e) {
 				LOG.log(Level.SEVERE, "Could not add 'apache-deltaspike.properties'.", e);
 			}
-
 		}
+    CDIFacet cdi = project.getFacet(CDIFacet.class);
+    FileResource<?> beansXml = cdi.getConfigFile();
+    Node node = XMLParser.parse(beansXml.getResourceInputStream());
+    Node alternativesNode = node.getOrCreate("alternatives");
+    Optional<Node> deltaspikeTransactionStrategy = alternativesNode.getChildren().stream()
+        .filter(f -> f.getName().equals("class") && f.getText().contains("BeanManagedUserTransactionStrategy")).findFirst();
 
-	}
+    if (!deltaspikeTransactionStrategy.isPresent()) {
+      alternativesNode.createChild("class")
+      .text("org.apache.deltaspike.jpa.impl.transaction.BeanManagedUserTransactionStrategy");
+      beansXml.setContents(XMLParser.toXMLInputStream(node));
+    }
+    
+    
+  }
 
 	@Override
 	public boolean isSetup(ScaffoldSetupContext setupContext) {

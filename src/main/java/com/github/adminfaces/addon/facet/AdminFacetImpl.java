@@ -1,7 +1,6 @@
-package com.github.admin.addon.facet;
+package com.github.adminfaces.addon.facet;
 
-import static com.github.admin.addon.util.DependencyUtil.ADMIN_TEMPLATE_COORDINATE;
-import static com.github.admin.addon.util.DependencyUtil.ADMIN_THEME_COORDINATE;
+import static com.github.adminfaces.addon.util.DependencyUtil.*;
 
 import java.util.logging.Logger;
 
@@ -12,8 +11,7 @@ import org.jboss.forge.addon.facets.AbstractFacet;
 import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.facets.DependencyFacet;
 
-import com.github.admin.addon.config.AdminConfiguration;
-import com.github.admin.addon.util.DependencyUtil;
+import com.github.adminfaces.addon.util.DependencyUtil;
 
 /**
  * The implementation of the {@link AdminFacet}
@@ -21,12 +19,8 @@ import com.github.admin.addon.util.DependencyUtil;
  * @author <a href="mailto:rmpestano@gmail.com">Rafael Pestano</a>
  */
 public class AdminFacetImpl extends AbstractFacet<Project> implements AdminFacet {
-
-    @Inject
-    private Logger logger;
-
-    @Inject
-    private AdminConfiguration configuration;
+     
+    private Logger logger = Logger.getLogger(AdminFacetImpl.class.getName());
 
     @Inject
     private DependencyUtil dependencyUtil;
@@ -46,9 +40,14 @@ public class AdminFacetImpl extends AbstractFacet<Project> implements AdminFacet
         DependencyBuilder adminTemplateDependency = DependencyBuilder.create()
                 .setCoordinate(dependencyUtil.getLatestVersion(ADMIN_TEMPLATE_COORDINATE));
         
+        DependencyBuilder primefacesExtensionsDependency = DependencyBuilder.create()
+            .setCoordinate(PRIMEFACES_EXTENSIONS_COORDINATE);
+        
         dependencyUtil.installDependency(dependencyFacet, adminThemeDependency);
 
         dependencyUtil.installDependency(dependencyFacet, adminTemplateDependency);
+        
+        dependencyUtil.installDependency(dependencyFacet, primefacesExtensionsDependency);//only for gravatar
 
     }
 
@@ -60,16 +59,5 @@ public class AdminFacetImpl extends AbstractFacet<Project> implements AdminFacet
                 .setArtifactId(ADMIN_TEMPLATE_COORDINATE.getArtifactId())
                 .setGroupId(ADMIN_TEMPLATE_COORDINATE.getGroupId()));
     }
-
-    @Override
-    public AdminConfiguration getConfiguration() {
-        return configuration;
-    }
-
-    @Override
-    public void setConfiguration(AdminConfiguration configuration) {
-        this.configuration = configuration;
-    }
-
 
 }

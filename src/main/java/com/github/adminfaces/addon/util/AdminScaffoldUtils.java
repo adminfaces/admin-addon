@@ -1,4 +1,4 @@
-package com.github.admin.addon.util;
+package com.github.adminfaces.addon.util;
 
 import java.io.File;
 import java.io.FileOutputStream;

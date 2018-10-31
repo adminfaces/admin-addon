@@ -1,4 +1,4 @@
-package com.github.admin.addon.util;
+package com.github.adminfaces.addon.util;
 
 import org.jboss.forge.addon.dependencies.Coordinate;
 import org.jboss.forge.addon.dependencies.DependencyResolver;
@@ -21,7 +21,7 @@ public class DependencyUtil {
     public static final Coordinate ADMIN_PERSISTENCE_COORDINATE = CoordinateBuilder.create().setGroupId(ADMIN_FACES_GROUP_ID).setArtifactId("admin-persistence");
 
     public static final Coordinate PRIMEFACES_EXTENSIONS_COORDINATE = //used only for gravatar
-            CoordinateBuilder.create().setGroupId("org.primefaces.extensions").setArtifactId("primefaces-extensions");
+            CoordinateBuilder.create().setGroupId("org.primefaces.extensions").setArtifactId("primefaces-extensions").setVersion("6.2.8");
 
 
     @Inject

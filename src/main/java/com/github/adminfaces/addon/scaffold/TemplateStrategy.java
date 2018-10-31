@@ -1,4 +1,4 @@
-package com.github.admin.addon.scaffold;
+package com.github.adminfaces.addon.scaffold;
 
 import org.jboss.forge.addon.resource.Resource;
 

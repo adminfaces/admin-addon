@@ -1,4 +1,4 @@
-package com.github.admin.addon.ui;
+package com.github.adminfaces.addon.ui;
 
 import static org.jboss.forge.addon.scaffold.util.ScaffoldUtil.createOrOverwrite;
 
@@ -50,10 +50,9 @@ import org.jboss.shrinkwrap.descriptor.api.javaee7.ParamValueType;
 import org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor;
 import org.metawidget.util.simple.StringUtils;
 
-import com.github.admin.addon.config.AdminConfiguration;
-import com.github.admin.addon.facet.AdminFacet;
-import com.github.admin.addon.freemarker.FreemarkerTemplateProcessor;
-import com.github.admin.addon.freemarker.TemplateFactory;
+import com.github.adminfaces.addon.facet.AdminFacet;
+import com.github.adminfaces.addon.freemarker.FreemarkerTemplateProcessor;
+import com.github.adminfaces.addon.freemarker.TemplateFactory;
 
 /**
  * AdminFaces: Setup command
@@ -88,9 +87,6 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 
   @Inject
   private ProjectFactory      projectFactory;
-
-  @Inject
-  private AdminConfiguration  adminConfig;
 
   @Inject
   private TemplateFactory     templates;
@@ -165,8 +161,6 @@ public class AdminSetupCommand extends AbstractProjectCommand {
     JavaSourceFacet javaSource = project.getFacet(JavaSourceFacet.class);
 
     AdminFacet adminFacet = project.getFacet(AdminFacet.class);
-    AdminConfiguration adminConfig = adminFacet.getConfiguration();
-
     ServletFacet_3_1 servlet = project.getFacet(ServletFacet_3_1.class);
 
     org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor servletConfig = (org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor) servlet.getConfig();
@@ -201,6 +195,10 @@ public class AdminSetupCommand extends AbstractProjectCommand {
     result.add(createOrOverwrite(web.getWebResource(INCLUDES + "/menubar.xhtml"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + INCLUDES + "/menubar.xhtml")));
 
     result.add(createOrOverwrite(web.getWebResource(INCLUDES + "/top-bar.xhtml"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + INCLUDES + "/top-bar.xhtml")));
+    
+    if(!web.getWebResource("WEB-INF/beans.xml").exists()) {
+      result.add(createOrOverwrite(web.getWebResource("WEB-INF/beans.xml"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/WEB-INF/beans.xml")));
+    }
 
     // beans
     try (InputStream logonStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("/infra/security/LogonMB.java")) {

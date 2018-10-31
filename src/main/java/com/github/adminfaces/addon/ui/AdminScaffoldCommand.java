@@ -4,7 +4,7 @@
  * Licensed under the Eclipse Public License version 1.0, available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package com.github.admin.addon.ui;
+package com.github.adminfaces.addon.ui;
 
 import javax.inject.Inject;
 
@@ -20,7 +20,7 @@ import org.jboss.forge.addon.ui.result.Results;
 import org.jboss.forge.addon.ui.util.Categories;
 import org.jboss.forge.addon.ui.util.Metadata;
 
-import com.github.admin.addon.facet.AdminFacet;
+import com.github.adminfaces.addon.facet.AdminFacet;
 
 /**
  * Swagger: Generate command
