@@ -24,6 +24,8 @@ import org.jboss.forge.addon.javaee.faces.FacesFacet;
 import org.jboss.forge.addon.javaee.faces.FacesFacet_2_0;
 import org.jboss.forge.addon.javaee.facets.JavaEE7Facet;
 import org.jboss.forge.addon.javaee.servlet.ServletFacet_3_1;
+import org.jboss.forge.addon.maven.projects.MavenFacet;
+import org.jboss.forge.addon.maven.resources.MavenModelResource;
 import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.ProjectFactory;
@@ -134,6 +136,21 @@ public class AdminSetupCommand extends AbstractProjectCommand {
       FacesFacet_2_0 facesFacet = facetFactory.create(project, FacesFacet_2_0.class);
       facetFactory.install(project, facesFacet);
     }
+    
+    MavenFacet m2 = project.getFacet(MavenFacet.class);
+    MavenModelResource m2Model = m2.getModelResource();
+    
+    Node node = XMLParser.parse(m2Model.getResourceInputStream());
+    Node resourcesNode = node.getOrCreate("build").getOrCreate("resources");
+    Optional<Node> resourcesFiltering = resourcesNode.get("resource").stream()
+        .filter(r -> r.getName().equals("directory") && r.getText().equals("src/main/resources")).findFirst();
+    
+    if(!resourcesFiltering.isPresent()) {
+      Node resource = resourcesNode.createChild("resource");
+      resource.createChild("filtering").text("true");
+      resource.createChild("directory").text("src/main/resources");
+      m2Model.setContents(XMLParser.toXMLInputStream(node));
+    }
 
     addAdminFacesResources(project).forEach(r -> results.add(Results.success("Added " + r.getFullyQualifiedName().replace(project.getRoot().getFullyQualifiedName(), ""))));
     setupWebXML(project);
@@ -172,7 +189,7 @@ public class AdminSetupCommand extends AbstractProjectCommand {
     String logoMini = resolveLogoMini(projectName);
     context.put("appName", StringUtils.uncamelCase(projectName));
     context.put("logoMini", logoMini);
-    context.put("copyrightYear", Year.now().getValue());
+    context.put("copyrightYear", Year.now().toString());
 
     //admin config
     addAdminConfig(project);
