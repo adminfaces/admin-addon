@@ -11,8 +11,6 @@ import javax.enterprise.context.ApplicationScoped;
 public class AdminConfiguration  {
 
     private String projectName;
-    
-    private String logoMini;
 
 
     public void setProjectName(String projectName) {
@@ -22,14 +20,6 @@ public class AdminConfiguration  {
     public String getProjectName() {
         return projectName;
     }
-
-	public String getLogoMini() {
-		return logoMini;
-	}
-
-	public void setLogoMini(String logoMini) {
-		this.logoMini = logoMini;
-	}
 
     
 }

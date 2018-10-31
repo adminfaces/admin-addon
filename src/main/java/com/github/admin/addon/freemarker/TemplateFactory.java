@@ -10,12 +10,16 @@ import javax.enterprise.context.ApplicationScoped;
 public class TemplateFactory implements Serializable {
 
 	private static final String INDEX_TEMPLATE = "scaffold/freemarker/index.xhtml";
+	
+	private static final String LOGIN_TEMPLATE = "scaffold/freemarker/login.xhtml";
 
 	private static final String TEMPLATE_TOP_TEMPLATE = "scaffold/freemarker/template-top.xhtml";
 
 	private static final String TEMPLATE_DEFAULT_TEMPLATE = "scaffold/freemarker/template.xhtml";
 
 	protected Template indexTemplate;
+	
+	protected Template loginTemplate;
 
 	protected Template templateTop;
 
@@ -24,6 +28,7 @@ public class TemplateFactory implements Serializable {
 	@PostConstruct
 	public void loadTemplates() {
 		indexTemplate = FreemarkerTemplateProcessor.getTemplate(INDEX_TEMPLATE);
+		loginTemplate = FreemarkerTemplateProcessor.getTemplate(LOGIN_TEMPLATE);
 		templateDefault = FreemarkerTemplateProcessor.getTemplate(TEMPLATE_DEFAULT_TEMPLATE);
 		templateTop = FreemarkerTemplateProcessor.getTemplate(TEMPLATE_TOP_TEMPLATE);
 	}
@@ -40,6 +45,9 @@ public class TemplateFactory implements Serializable {
 		return templateDefault;
 	}
 	
+	public Template getLoginTemplate() {
+    return loginTemplate;
+  }
 	
 	
 

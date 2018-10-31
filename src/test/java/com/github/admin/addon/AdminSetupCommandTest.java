@@ -35,6 +35,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import org.jboss.forge.addon.javaee.faces.FacesFacet_2_0;
 import org.jboss.forge.addon.javaee.facets.JavaEE7Facet;
 import org.jboss.forge.addon.javaee.servlet.ServletFacet_3_1;
 
@@ -58,7 +60,7 @@ public class AdminSetupCommandTest {
 
   @Before
   public void setUp() throws IOException {
-    project = projectFactory.createTempProject(Arrays.asList(JavaEE7Facet.class, ServletFacet_3_1.class, JPAFacet.class, JavaSourceFacet.class));
+    project = projectFactory.createTempProject(Arrays.asList(JavaEE7Facet.class, ServletFacet_3_1.class, JPAFacet.class, FacesFacet_2_0.class, JavaSourceFacet.class));
     MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
     metadataFacet.setProjectGroupName("com.github.admin.addon");
     metadataFacet.setProjectName("AdminFaces");
@@ -75,7 +77,7 @@ public class AdminSetupCommandTest {
   @Test
   public void shouldSetupAdminFaces() throws Exception {
     shellTest.getShell().setCurrentResource(project.getRoot());
-    Result result = shellTest.execute("adminfaces-setup --logoMini ADM", 25, TimeUnit.SECONDS);
+    Result result = shellTest.execute("adminfaces-setup", 50, TimeUnit.SECONDS);
     assertThat(result).isNotNull().isNotInstanceOf(Failed.class);
 
     List<Result> results = ((CompositeResult) result).getResults();
@@ -93,8 +95,12 @@ public class AdminSetupCommandTest {
     Resource<?> projectRoot = project.getRoot();
     File adminConfig = new File(projectRoot.getFullyQualifiedName() + "/src/main/resources/admin-config.properties");
     assertThat(adminConfig).exists().hasContent("admin.renderControlSidebar=true" + newLine() + "admin.controlSidebar.showOnMobile=true" + newLine() + "admin.ignoredResources=rest");
-
+    assertThat(new File(projectRoot.getFullyQualifiedName() + "/src/main/resources/messages.properties")).exists();
     WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
+    assertThat(new File(web.getWebResource("index.xhtml").getFullyQualifiedName())).exists();
+    assertThat(new File(web.getWebResource("login.xhtml").getFullyQualifiedName())).exists();
+    assertThat(new File(web.getWebResource("WEB-INF/faces-config.xml").getFullyQualifiedName())).exists();
+    assertThat(new File(web.getWebResource("WEB-INF/web.xml").getFullyQualifiedName())).exists();
     assertThat(new File(web.getWebResource("includes/menu.xhtml").getFullyQualifiedName())).exists();
     assertThat(new File(web.getWebResource("includes/menubar.xhtml").getFullyQualifiedName())).exists();
     assertThat(new File(web.getWebResource("includes/top-bar.xhtml").getFullyQualifiedName())).exists();

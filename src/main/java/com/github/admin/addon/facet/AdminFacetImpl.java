@@ -45,7 +45,7 @@ public class AdminFacetImpl extends AbstractFacet<Project> implements AdminFacet
 
         DependencyBuilder adminTemplateDependency = DependencyBuilder.create()
                 .setCoordinate(dependencyUtil.getLatestVersion(ADMIN_TEMPLATE_COORDINATE));
-    
+        
         dependencyUtil.installDependency(dependencyFacet, adminThemeDependency);
 
         dependencyUtil.installDependency(dependencyFacet, adminTemplateDependency);
