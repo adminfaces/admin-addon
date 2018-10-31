@@ -48,6 +48,7 @@ import com.github.admin.addon.facet.AdminFacet;
 import com.github.admin.addon.freemarker.FreemarkerTemplateProcessor;
 import com.github.admin.addon.freemarker.TemplateFactory;
 import java.time.Year;
+import org.jboss.forge.addon.javaee.faces.FacesFacet;
 import org.jboss.forge.addon.javaee.facets.JavaEE7Facet;
 import org.jboss.shrinkwrap.descriptor.api.javaee7.ParamValueType;
 import org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor;
@@ -123,6 +124,11 @@ public class AdminSetupCommand extends AbstractProjectCommand {
         if(!project.hasFacet(ServletFacet_3_1.class)) {
             ServletFacet_3_1 servletFacet_3_1 = facetFactory.create(project, ServletFacet_3_1.class);
             facetFactory.install(project, servletFacet_3_1);
+        }
+        
+        if(!project.hasFacet(FacesFacet.class)) {
+            FacesFacet facesFacet = facetFactory.create(project, FacesFacet.class);
+            facetFactory.install(project, facesFacet);
         }
 
 		MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
