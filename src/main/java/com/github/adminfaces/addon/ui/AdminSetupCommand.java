@@ -96,7 +96,8 @@ public class AdminSetupCommand extends AbstractProjectCommand {
  
   @Override
   public UICommandMetadata getMetadata(UIContext context) {
-    return Metadata.forCommand(getClass()).name("AdminFaces: Setup").category(Categories.create("AdminFaces")).description("Setup AdminFaces dependencies in the current project.");
+		return Metadata.forCommand(getClass()).name("AdminFaces: Setup").category(Categories.create("AdminFaces"))
+				.description("Setup AdminFaces dependencies in the current project.");
   }
 
   @Override
@@ -112,7 +113,8 @@ public class AdminSetupCommand extends AbstractProjectCommand {
   @Override
   public Result execute(UIExecutionContext context) throws Exception {
 
-    final Project project = getSelectedProject(context) != null ? getSelectedProject(context) : getSelectedProject(context.getUIContext());
+		final Project project = getSelectedProject(context) != null ? getSelectedProject(context)
+				: getSelectedProject(context.getUIContext());
 
     boolean execute = true;
     if (project.hasFacet(AdminFacet.class) && project.getFacet(AdminFacet.class).isInstalled()) {
@@ -152,7 +154,8 @@ public class AdminSetupCommand extends AbstractProjectCommand {
       m2Model.setContents(XMLParser.toXMLInputStream(node));
     }
 
-    addAdminFacesResources(project).forEach(r -> results.add(Results.success("Added " + r.getFullyQualifiedName().replace(project.getRoot().getFullyQualifiedName(), ""))));
+		addAdminFacesResources(project).forEach(r -> results.add(Results
+				.success("Added " + r.getFullyQualifiedName().replace(project.getRoot().getFullyQualifiedName(), ""))));
     setupWebXML(project);
 
     return Results.aggregate(results);
@@ -180,7 +183,8 @@ public class AdminSetupCommand extends AbstractProjectCommand {
     AdminFacet adminFacet = project.getFacet(AdminFacet.class);
     ServletFacet_3_1 servlet = project.getFacet(ServletFacet_3_1.class);
 
-    org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor servletConfig = (org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor) servlet.getConfig();
+		org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor servletConfig = (org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor) servlet
+				.getConfig();
     servletConfig.getOrCreateWelcomeFileList().welcomeFile(INDEX_HTML);
 
     HashMap<Object, Object> context = getTemplateContext();
@@ -207,52 +211,68 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 
     // menus
 
-    result.add(createOrOverwrite(web.getWebResource(INCLUDES + "/menu.xhtml"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + INCLUDES + "/menu.xhtml")));
+		result.add(createOrOverwrite(web.getWebResource(INCLUDES + "/menu.xhtml"),
+				getClass().getResourceAsStream(SCAFFOLD_RESOURCES + INCLUDES + "/menu.xhtml")));
 
-    result.add(createOrOverwrite(web.getWebResource(INCLUDES + "/menubar.xhtml"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + INCLUDES + "/menubar.xhtml")));
+		result.add(createOrOverwrite(web.getWebResource(INCLUDES + "/menubar.xhtml"),
+				getClass().getResourceAsStream(SCAFFOLD_RESOURCES + INCLUDES + "/menubar.xhtml")));
 
-    result.add(createOrOverwrite(web.getWebResource(INCLUDES + "/top-bar.xhtml"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + INCLUDES + "/top-bar.xhtml")));
+		result.add(createOrOverwrite(web.getWebResource(INCLUDES + "/top-bar.xhtml"),
+				getClass().getResourceAsStream(SCAFFOLD_RESOURCES + INCLUDES + "/top-bar.xhtml")));
     
-    result.add(createOrOverwrite(web.getWebResource(INCLUDES + "/controlsidebar-tabs-content.xhtml"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + INCLUDES + "/controlsidebar-tabs-content.xhtml")));
+    result.add(createOrOverwrite(web.getWebResource(INCLUDES + "/controlsidebar-tabs-content.xhtml"),
+       getClass().getResourceAsStream(SCAFFOLD_RESOURCES + INCLUDES + "/controlsidebar-tabs-content.xhtml")));
     
     if(!web.getWebResource("WEB-INF/beans.xml").exists()) {
-      result.add(createOrOverwrite(web.getWebResource("WEB-INF/beans.xml"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/WEB-INF/beans.xml")));
+			result.add(createOrOverwrite(web.getWebResource("WEB-INF/beans.xml"),
+					getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/WEB-INF/beans.xml")));
     }
 
     // beans
-    try (InputStream logonStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("/infra/security/LogonMB.java")) {
+		try (InputStream logonStream = Thread.currentThread().getContextClassLoader()
+				.getResourceAsStream("/infra/security/LogonMB.java")) {
       JavaSource<?> logonMB = (JavaSource<?>) Roaster.parse(logonStream);
       logonMB.setPackage(metadataFacet.getProjectGroupName() + ".infra");
       javaSource.saveJavaSource(logonMB);
-      FileUtils.copyInputStreamToFile(logonStream, new File(project.getRoot().getFullyQualifiedName() + logonMB.getPackage().replaceAll("\\.", "/")));
+			FileUtils.copyInputStreamToFile(logonStream,
+					new File(project.getRoot().getFullyQualifiedName() + logonMB.getPackage().replaceAll("\\.", "/")));
     } catch (Exception e) {
       LOG.log(Level.SEVERE, "Could not add 'LogonMB'.", e);
     }
 
     // Static resources
 
-    result.add(createOrOverwrite(web.getWebResource("/resources/favicon/favicon.ico"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon.ico")));
+		result.add(createOrOverwrite(web.getWebResource("/resources/favicon/favicon.ico"),
+				getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon.ico")));
 
-    result.add(createOrOverwrite(web.getWebResource("/resources/favicon/favicon-16x16.png"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon-16x16.png")));
+		result.add(createOrOverwrite(web.getWebResource("/resources/favicon/favicon-16x16.png"),
+				getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon-16x16.png")));
 
-    result.add(createOrOverwrite(web.getWebResource("/resources/favicon/favicon-32x32.png"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon-32x32.png")));
+		result.add(createOrOverwrite(web.getWebResource("/resources/favicon/favicon-32x32.png"),
+				getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon-32x32.png")));
 
-    result.add(createOrOverwrite(web.getWebResource("/resources/favicon/favicon-96x96.png"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon-96x96.png")));
+		result.add(createOrOverwrite(web.getWebResource("/resources/favicon/favicon-96x96.png"),
+				getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon-96x96.png")));
 
-    result.add(createOrOverwrite(web.getWebResource("/resources/images/login-bg.jpg"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/login-bg.jpg")));
+		result.add(createOrOverwrite(web.getWebResource("/resources/images/login-bg.jpg"),
+				getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/login-bg.jpg")));
 
-    result.add(createOrOverwrite(web.getWebResource("/resources/css/app.css"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/css/app.css")));
+		result.add(createOrOverwrite(web.getWebResource("/resources/css/app.css"),
+				getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/css/app.css")));
 
     return result;
   }
 
   private void addAdminConfig(Project project) {
 
-    Resource<?> resources = project.getRoot().reify(DirectoryResource.class).getChildDirectory("src").getChildDirectory("main").getOrCreateChildDirectory("resources");
+		Resource<?> resources = project.getRoot().reify(DirectoryResource.class).getChildDirectory("src")
+				.getChildDirectory("main").getOrCreateChildDirectory("resources");
 
     if (!resources.getChild("admin-config.properties").exists()) {
       try {
-        IOUtils.copy(Thread.currentThread().getContextClassLoader().getResourceAsStream("/admin-config.properties"), new FileOutputStream(new File(resources.getFullyQualifiedName() + "/admin-config.properties")));
+				IOUtils.copy(
+						Thread.currentThread().getContextClassLoader().getResourceAsStream("/admin-config.properties"),
+						new FileOutputStream(new File(resources.getFullyQualifiedName() + "/admin-config.properties")));
       } catch (IOException e) {
         LOG.log(Level.SEVERE, "Could not add 'admin-config.properties'.", e);
       }
@@ -261,7 +281,8 @@ public class AdminSetupCommand extends AbstractProjectCommand {
     
     if (!resources.getChild("messages.properties").exists()) {
       try {
-        IOUtils.copy(Thread.currentThread().getContextClassLoader().getResourceAsStream("/messages.properties"), new FileOutputStream(new File(resources.getFullyQualifiedName() + "/messages.properties")));
+				IOUtils.copy(Thread.currentThread().getContextClassLoader().getResourceAsStream("/messages.properties"),
+						new FileOutputStream(new File(resources.getFullyQualifiedName() + "/messages.properties")));
       } catch (IOException e) {
         LOG.log(Level.SEVERE, "Could not add 'admin-config.properties'.", e);
       }
@@ -280,12 +301,14 @@ public class AdminSetupCommand extends AbstractProjectCommand {
     boolean found = false;
     List<ParamValueType<WebAppDescriptor>> allContextParam = servletConfig.getAllContextParam();
     for (ParamValueCommonType<?> contextParam : allContextParam) {
-      if (contextParam.getParamName().equals("javax.faces.DATETIMECONVERTER_DEFAULT_TIMEZONE_IS_SYSTEM_TIMEZONE")) {
+			if (contextParam.getParamName()
+					.equals("javax.faces.DATETIMECONVERTER_DEFAULT_TIMEZONE_IS_SYSTEM_TIMEZONE")) {
         found = true;
       }
     }
     if (!found) {
-      servletConfig.createContextParam().paramName("javax.faces.DATETIMECONVERTER_DEFAULT_TIMEZONE_IS_SYSTEM_TIMEZONE").paramValue("true");
+			servletConfig.createContextParam()
+					.paramName("javax.faces.DATETIMECONVERTER_DEFAULT_TIMEZONE_IS_SYSTEM_TIMEZONE").paramValue("true");
     }
 
     configPrimeFaces(servletConfig, allContextParam);
@@ -312,7 +335,8 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 
       servletConfig.createErrorPage().errorCode("403").location("/403" + pageSuffix);
 
-      servletConfig.createErrorPage().exceptionType("com.github.adminfaces.template.exception.AccessDeniedException")
+			servletConfig.createErrorPage()
+					.exceptionType("com.github.adminfaces.template.exception.AccessDeniedException")
       .location("/403" + pageSuffix);
 
       servletConfig.createErrorPage().errorCode("404").location("/404" + pageSuffix);
@@ -331,11 +355,14 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 
   private void configOmniFaces(WebAppDescriptor servletConfig, FacesFacet facesFacet) {
     boolean found;
-    found = servletConfig.getAllFilter().stream().filter(f -> f.getFilterClass().equals("org.omnifaces.filter.GzipResponseFilter")).findAny().isPresent();
+		found = servletConfig.getAllFilter().stream()
+				.filter(f -> f.getFilterClass().equals("org.omnifaces.filter.GzipResponseFilter")).findAny()
+				.isPresent();
 
     if (!found) {
-      servletConfig.createFilter().filterClass("org.omnifaces.filter.GzipResponseFilter")
-      .filterName("gzipResponseFilter").createInitParam().paramName("threshold").paramValue("200");
+			servletConfig.createFilter().filterName("gzipResponseFilter")
+			.filterClass("org.omnifaces.filter.GzipResponseFilter")
+			.createInitParam().paramName("threshold").paramValue("200");
     }
 
     FileResource<?> configFile = facesFacet.getConfigFile();
@@ -343,7 +370,8 @@ public class AdminSetupCommand extends AbstractProjectCommand {
     Node node = XMLParser.parse(configFile.getResourceInputStream());
     Node applicationNode = node.getOrCreate("application");
     Optional<Node> combinedResourceHandler = applicationNode.getChildren().stream()
-        .filter(f -> f.getName().equals("resource-handler") && f.getText().contains("CombinedResourceHandler")).findFirst();
+				.filter(f -> f.getName().equals("resource-handler") && f.getText().contains("CombinedResourceHandler"))
+				.findFirst();
 
     if (!combinedResourceHandler.isPresent()) {
       applicationNode.createChild("resource-handler")
@@ -354,8 +382,10 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 
   }
 
-  private void configPrimeFaces(WebAppDescriptor servletConfig, List<ParamValueType<WebAppDescriptor>> allContextParam) {
-    Optional<ParamValueType<WebAppDescriptor>> primefacesThemeParam = allContextParam.stream().filter(c -> c.getParamValue().equals("primefaces.THEME")).findAny();
+	private void configPrimeFaces(WebAppDescriptor servletConfig,
+			List<ParamValueType<WebAppDescriptor>> allContextParam) {
+		Optional<ParamValueType<WebAppDescriptor>> primefacesThemeParam = allContextParam.stream()
+				.filter(c -> c.getParamValue().equals("primefaces.THEME")).findAny();
 
     if (!primefacesThemeParam.isPresent()) {
       servletConfig.createContextParam().paramName("primefaces.THEME").paramValue("admin");
@@ -363,7 +393,8 @@ public class AdminSetupCommand extends AbstractProjectCommand {
       primefacesThemeParam.get().paramValue("admin");
     }
 
-    Optional<ParamValueType<WebAppDescriptor>> fontAwesomeParam = allContextParam.stream().filter(c -> c.getParamValue().equals("primefaces.FONT_AWESOME")).findAny();
+		Optional<ParamValueType<WebAppDescriptor>> fontAwesomeParam = allContextParam.stream()
+				.filter(c -> c.getParamValue().equals("primefaces.FONT_AWESOME")).findAny();
 
     if (!fontAwesomeParam.isPresent()) {
       servletConfig.createContextParam().paramName("primefaces.FONT_AWESOME").paramValue("true");
