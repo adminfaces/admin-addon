@@ -138,6 +138,15 @@ public class AdminSetupCommandTest {
 		changeUrlPattern();
 		Result result = shellTest.execute("adminfaces-setup", 60, TimeUnit.SECONDS);
 		assertThat(result).isNotNull().isNotInstanceOf(Failed.class);
+    WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
+
+    File webXml = new File(web.getWebResource("WEB-INF/web.xhm").getFullyQualifiedName());
+	  assertThat(webXml).exists().exists();
+	  
+	  assertThat(contentOf(webXml)).contains("/500.jsf").contains("/401.jsf").contains("/403.jsf")
+	    .contains("/404.jsf").contains("<exception-type>javax.persistence.OptimisticLockException</exception-type>")
+	    .contains("<exception-type>javax.faces.application.ViewExpiredException</exception-type>");
+		
 
 	}
 
