@@ -64,318 +64,351 @@ import com.github.adminfaces.addon.freemarker.TemplateFactory;
 @FacetConstraint({ JavaEE7Facet.class, WebResourcesFacet.class })
 public class AdminSetupCommand extends AbstractProjectCommand {
 
-  private static final String PAGE_TEMPLATE      = "#{layoutMB.template}";
-
-  private static final String INDEX_PAGE         = "/index.xhtml";
-
-  private static final String INCLUDES           = "/includes";
-
-  private static final String TEMPLATES          = "/WEB-INF/templates";
-
-  private static final String TEMPLATE_DEFAULT   = TEMPLATES + "/template.xhtml";
-
-  private static final String TEMPLATE_TOP       = TEMPLATES + "/template-top.xhtml";
-
-  private static final String INDEX_HTML         = "/index.html";
-  
-  private static final String LOGIN_PAGE         = "/login.xhtml";
-
-  private static final String SCAFFOLD_RESOURCES = "/scaffold";
-
-  private static final Logger LOG                = Logger.getLogger(AdminSetupCommand.class.getName());
-
-  @Inject
-  private FacetFactory        facetFactory;
-
-  @Inject
-  private ProjectFactory      projectFactory;
-
-  @Inject
-  private TemplateFactory     templates;
-
- 
-  @Override
-  public UICommandMetadata getMetadata(UIContext context) {
-    return Metadata.forCommand(getClass()).name("AdminFaces: Setup").category(Categories.create("AdminFaces")).description("Setup AdminFaces dependencies in the current project.");
-  }
-
-  @Override
-  protected ProjectFactory getProjectFactory() {
-    return projectFactory;
-  }
-
-  @Override
-  protected boolean isProjectRequired() {
-    return true;
-  }
+	private static final String PAGE_TEMPLATE = "#{layoutMB.template}";
 
-  @Override
-  public Result execute(UIExecutionContext context) throws Exception {
+	private static final String INDEX_PAGE = "/index.xhtml";
 
-    final Project project = getSelectedProject(context) != null ? getSelectedProject(context) : getSelectedProject(context.getUIContext());
+	private static final String INCLUDES = "/includes";
 
-    boolean execute = true;
-    if (project.hasFacet(AdminFacet.class) && project.getFacet(AdminFacet.class).isInstalled()) {
-      execute = context.getPrompt().promptBoolean("AdminFaces is already installed, override it?");
-    }
+	private static final String TEMPLATES = "/WEB-INF/templates";
 
-    if (!execute) {
-      return Results.success();
-    }
-    List<Result> results = new ArrayList<>();
-    AdminFacet facet = facetFactory.create(project, AdminFacet.class);
-    facetFactory.install(project, facet);
-    results.add(Results.success("AdminFaces setup completed successfully!"));
-
-    if (!project.hasFacet(ServletFacet_3_1.class)) {
-      ServletFacet_3_1 servletFacet_3_1 = facetFactory.create(project, ServletFacet_3_1.class);
-      facetFactory.install(project, servletFacet_3_1);
-    }
+	private static final String TEMPLATE_DEFAULT = TEMPLATES + "/template.xhtml";
 
-    if (!project.hasFacet(FacesFacet_2_0.class)) {
-      FacesFacet_2_0 facesFacet = facetFactory.create(project, FacesFacet_2_0.class);
-      facetFactory.install(project, facesFacet);
-    }
-    
-    MavenFacet m2 = project.getFacet(MavenFacet.class);
-    MavenModelResource m2Model = m2.getModelResource();
-    
-    Node node = XMLParser.parse(m2Model.getResourceInputStream());
-    Node resourcesNode = node.getOrCreate("build").getOrCreate("resources");
-    Optional<Node> resourcesFiltering = resourcesNode.get("resource").stream()
-        .filter(r -> r.getName().equals("directory") && r.getText().equals("src/main/resources")).findFirst();
-    
-    if(!resourcesFiltering.isPresent()) {
-      Node resource = resourcesNode.createChild("resource");
-      resource.createChild("filtering").text("true");
-      resource.createChild("directory").text("src/main/resources");
-      m2Model.setContents(XMLParser.toXMLInputStream(node));
-    }
+	private static final String TEMPLATE_TOP = TEMPLATES + "/template-top.xhtml";
 
-    addAdminFacesResources(project).forEach(r -> results.add(Results.success("Added " + r.getFullyQualifiedName().replace(project.getRoot().getFullyQualifiedName(), ""))));
-    setupWebXML(project);
+	private static final String INDEX_HTML = "/index.html";
 
-    return Results.aggregate(results);
+	private static final String LOGIN_PAGE = "/login.xhtml";
 
-  }
+	private static final String SCAFFOLD_RESOURCES = "/scaffold";
 
-  private String resolveLogoMini(String projectName) {
-    if (projectName.length() > 3) {
-      return projectName.substring(0, 3);
-    } else {
-      return projectName;
-    }
-  }
+	private static final Logger LOG = Logger.getLogger(AdminSetupCommand.class.getName());
 
-  @Override
-  public void initializeUI(UIBuilder builder) throws Exception {
-  }
+	@Inject
+	private FacetFactory facetFactory;
 
-  @SuppressWarnings("rawtypes")
-  protected List<Resource<?>> addAdminFacesResources(Project project) {
-    List<Resource<?>> result = new ArrayList<>();
-    WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
-    JavaSourceFacet javaSource = project.getFacet(JavaSourceFacet.class);
+	@Inject
+	private ProjectFactory projectFactory;
 
-    AdminFacet adminFacet = project.getFacet(AdminFacet.class);
-    ServletFacet_3_1 servlet = project.getFacet(ServletFacet_3_1.class);
+	@Inject
+	private TemplateFactory templates;
 
-    org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor servletConfig = (org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor) servlet.getConfig();
-    servletConfig.getOrCreateWelcomeFileList().welcomeFile(INDEX_HTML);
+	@Override
+	public UICommandMetadata getMetadata(UIContext context) {
+		return Metadata.forCommand(getClass()).name("AdminFaces: Setup").category(Categories.create("AdminFaces"))
+				.description("Setup AdminFaces dependencies in the current project.");
+	}
 
-    HashMap<Object, Object> context = getTemplateContext();
-    MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
-    String projectName = metadataFacet.getProjectName();
-    String logoMini = resolveLogoMini(projectName);
-    context.put("appName", StringUtils.uncamelCase(projectName));
-    context.put("logoMini", logoMini);
-    context.put("copyrightYear", Year.now().toString());
+	@Override
+	protected ProjectFactory getProjectFactory() {
+		return projectFactory;
+	}
 
-    //admin config
-    addAdminConfig(project);
-    // Basic pages
+	@Override
+	protected boolean isProjectRequired() {
+		return true;
+	}
 
-    result.add(createOrOverwrite(web.getWebResource(INDEX_PAGE), FreemarkerTemplateProcessor.processTemplate(context, templates.getIndexTemplate())));
-    
-    result.add(createOrOverwrite(web.getWebResource(LOGIN_PAGE), FreemarkerTemplateProcessor.processTemplate(context, templates.getLoginTemplate())));
+	@Override
+	public Result execute(UIExecutionContext context) throws Exception {
 
-    // templates
+		final Project project = getSelectedProject(context) != null ? getSelectedProject(context)
+				: getSelectedProject(context.getUIContext());
 
-    result.add(createOrOverwrite(web.getWebResource(TEMPLATE_DEFAULT), FreemarkerTemplateProcessor.processTemplate(context, templates.getTemplateDefault())));
+		boolean execute = true;
+		if (project.hasFacet(AdminFacet.class) && project.getFacet(AdminFacet.class).isInstalled()) {
+			execute = context.getPrompt().promptBoolean("AdminFaces is already installed, override it?");
+		}
 
-    result.add(createOrOverwrite(web.getWebResource(TEMPLATE_TOP), FreemarkerTemplateProcessor.processTemplate(context, templates.getTemplateTop())));
+		if (!execute) {
+			return Results.success();
+		}
+		List<Result> results = new ArrayList<>();
+		AdminFacet facet = facetFactory.create(project, AdminFacet.class);
+		facetFactory.install(project, facet);
+		results.add(Results.success("AdminFaces setup completed successfully!"));
 
-    // menus
+		if (!project.hasFacet(ServletFacet_3_1.class)) {
+			ServletFacet_3_1 servletFacet_3_1 = facetFactory.create(project, ServletFacet_3_1.class);
+			facetFactory.install(project, servletFacet_3_1);
+		}
 
-    result.add(createOrOverwrite(web.getWebResource(INCLUDES + "/menu.xhtml"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + INCLUDES + "/menu.xhtml")));
+		if (!project.hasFacet(FacesFacet_2_0.class)) {
+			FacesFacet_2_0 facesFacet = facetFactory.create(project, FacesFacet_2_0.class);
+			facetFactory.install(project, facesFacet);
+		}
 
-    result.add(createOrOverwrite(web.getWebResource(INCLUDES + "/menubar.xhtml"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + INCLUDES + "/menubar.xhtml")));
+		MavenFacet m2 = project.getFacet(MavenFacet.class);
+		MavenModelResource m2Model = m2.getModelResource();
 
-    result.add(createOrOverwrite(web.getWebResource(INCLUDES + "/top-bar.xhtml"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + INCLUDES + "/top-bar.xhtml")));
-    
-    if(!web.getWebResource("WEB-INF/beans.xml").exists()) {
-      result.add(createOrOverwrite(web.getWebResource("WEB-INF/beans.xml"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/WEB-INF/beans.xml")));
-    }
+		Node node = XMLParser.parse(m2Model.getResourceInputStream());
+		Node resourcesNode = node.getOrCreate("build").getOrCreate("resources");
+		Optional<Node> resourcesFiltering = resourcesNode.get("resource").stream()
+				.filter(r -> r.getName().equals("directory") && r.getText().equals("src/main/resources")).findFirst();
 
-    // beans
-    try (InputStream logonStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("/infra/security/LogonMB.java")) {
-      JavaSource<?> logonMB = (JavaSource<?>) Roaster.parse(logonStream);
-      logonMB.setPackage(metadataFacet.getProjectGroupName() + ".infra");
-      javaSource.saveJavaSource(logonMB);
-      FileUtils.copyInputStreamToFile(logonStream, new File(project.getRoot().getFullyQualifiedName() + logonMB.getPackage().replaceAll("\\.", "/")));
-    } catch (Exception e) {
-      LOG.log(Level.SEVERE, "Could not add 'LogonMB'.", e);
-    }
+		if (!resourcesFiltering.isPresent()) {
+			Node resource = resourcesNode.createChild("resource");
+			resource.createChild("filtering").text("true");
+			resource.createChild("directory").text("src/main/resources");
+			m2Model.setContents(XMLParser.toXMLInputStream(node));
+		}
 
-    // Static resources
+		addAdminFacesResources(project).forEach(r -> results.add(Results
+				.success("Added " + r.getFullyQualifiedName().replace(project.getRoot().getFullyQualifiedName(), ""))));
+		setupWebXML(project);
 
-    result.add(createOrOverwrite(web.getWebResource("/resources/favicon/favicon.ico"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon.ico")));
+		return Results.aggregate(results);
 
-    result.add(createOrOverwrite(web.getWebResource("/resources/favicon/favicon-16x16.png"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon-16x16.png")));
+	}
 
-    result.add(createOrOverwrite(web.getWebResource("/resources/favicon/favicon-32x32.png"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon-32x32.png")));
+	private String resolveLogoMini(String projectName) {
+		if (projectName.length() > 3) {
+			return projectName.substring(0, 3);
+		} else {
+			return projectName;
+		}
+	}
 
-    result.add(createOrOverwrite(web.getWebResource("/resources/favicon/favicon-96x96.png"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon-96x96.png")));
+	@Override
+	public void initializeUI(UIBuilder builder) throws Exception {
+	}
 
-    result.add(createOrOverwrite(web.getWebResource("/resources/images/login-bg.jpg"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/login-bg.jpg")));
+	@SuppressWarnings("rawtypes")
+	protected List<Resource<?>> addAdminFacesResources(Project project) {
+		List<Resource<?>> result = new ArrayList<>();
+		WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
+		JavaSourceFacet javaSource = project.getFacet(JavaSourceFacet.class);
 
-    result.add(createOrOverwrite(web.getWebResource("/resources/css/app.css"), getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/css/app.css")));
+		AdminFacet adminFacet = project.getFacet(AdminFacet.class);
+		ServletFacet_3_1 servlet = project.getFacet(ServletFacet_3_1.class);
 
-    return result;
-  }
+		org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor servletConfig = (org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor) servlet
+				.getConfig();
+		servletConfig.getOrCreateWelcomeFileList().welcomeFile(INDEX_HTML);
+
+		HashMap<Object, Object> context = getTemplateContext();
+		MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
+		String projectName = metadataFacet.getProjectName();
+		String logoMini = resolveLogoMini(projectName);
+		context.put("appName", StringUtils.uncamelCase(projectName));
+		context.put("logoMini", logoMini);
+		context.put("copyrightYear", Year.now().toString());
 
-  private void addAdminConfig(Project project) {
+		// admin config
+		addAdminConfig(project);
+		// Basic pages
 
-    Resource<?> resources = project.getRoot().reify(DirectoryResource.class).getChildDirectory("src").getChildDirectory("main").getOrCreateChildDirectory("resources");
+		result.add(createOrOverwrite(web.getWebResource(INDEX_PAGE),
+				FreemarkerTemplateProcessor.processTemplate(context, templates.getIndexTemplate())));
 
-    if (!resources.getChild("admin-config.properties").exists()) {
-      try {
-        IOUtils.copy(Thread.currentThread().getContextClassLoader().getResourceAsStream("/admin-config.properties"), new FileOutputStream(new File(resources.getFullyQualifiedName() + "/admin-config.properties")));
-      } catch (IOException e) {
-        LOG.log(Level.SEVERE, "Could not add 'admin-config.properties'.", e);
-      }
+		result.add(createOrOverwrite(web.getWebResource(LOGIN_PAGE),
+				FreemarkerTemplateProcessor.processTemplate(context, templates.getLoginTemplate())));
+
+		// templates
+
+		result.add(createOrOverwrite(web.getWebResource(TEMPLATE_DEFAULT),
+				FreemarkerTemplateProcessor.processTemplate(context, templates.getTemplateDefault())));
+
+		result.add(createOrOverwrite(web.getWebResource(TEMPLATE_TOP),
+				FreemarkerTemplateProcessor.processTemplate(context, templates.getTemplateTop())));
+
+		// menus
+
+		result.add(createOrOverwrite(web.getWebResource(INCLUDES + "/menu.xhtml"),
+				getClass().getResourceAsStream(SCAFFOLD_RESOURCES + INCLUDES + "/menu.xhtml")));
+
+		result.add(createOrOverwrite(web.getWebResource(INCLUDES + "/menubar.xhtml"),
+				getClass().getResourceAsStream(SCAFFOLD_RESOURCES + INCLUDES + "/menubar.xhtml")));
 
-    }
-    
-    if (!resources.getChild("messages.properties").exists()) {
-      try {
-        IOUtils.copy(Thread.currentThread().getContextClassLoader().getResourceAsStream("/messages.properties"), new FileOutputStream(new File(resources.getFullyQualifiedName() + "/messages.properties")));
-      } catch (IOException e) {
-        LOG.log(Level.SEVERE, "Could not add 'admin-config.properties'.", e);
-      }
+		result.add(createOrOverwrite(web.getWebResource(INCLUDES + "/top-bar.xhtml"),
+				getClass().getResourceAsStream(SCAFFOLD_RESOURCES + INCLUDES + "/top-bar.xhtml")));
 
-    }
+		if (!web.getWebResource("WEB-INF/beans.xml").exists()) {
+			result.add(createOrOverwrite(web.getWebResource("WEB-INF/beans.xml"),
+					getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/WEB-INF/beans.xml")));
+		}
 
-  }
+		// beans
+		try (InputStream logonStream = Thread.currentThread().getContextClassLoader()
+				.getResourceAsStream("/infra/security/LogonMB.java")) {
+			JavaSource<?> logonMB = (JavaSource<?>) Roaster.parse(logonStream);
+			logonMB.setPackage(metadataFacet.getProjectGroupName() + ".infra");
+			javaSource.saveJavaSource(logonMB);
+			FileUtils.copyInputStreamToFile(logonStream,
+					new File(project.getRoot().getFullyQualifiedName() + logonMB.getPackage().replaceAll("\\.", "/")));
+		} catch (Exception e) {
+			LOG.log(Level.SEVERE, "Could not add 'LogonMB'.", e);
+		}
 
-  protected void setupWebXML(Project project) {
-    ServletFacet_3_1 servlet = project.getFacet(ServletFacet_3_1.class);
-    WebAppDescriptor servletConfig = (WebAppDescriptor) servlet.getConfig();
+		// Static resources
 
-    // Use the server timezone since we accept dates in that timezone, and it makes
-    // sense to display them in the
-    // same
-    boolean found = false;
-    List<ParamValueType<WebAppDescriptor>> allContextParam = servletConfig.getAllContextParam();
-    for (ParamValueCommonType<?> contextParam : allContextParam) {
-      if (contextParam.getParamName().equals("javax.faces.DATETIMECONVERTER_DEFAULT_TIMEZONE_IS_SYSTEM_TIMEZONE")) {
-        found = true;
-      }
-    }
-    if (!found) {
-      servletConfig.createContextParam().paramName("javax.faces.DATETIMECONVERTER_DEFAULT_TIMEZONE_IS_SYSTEM_TIMEZONE").paramValue("true");
-    }
+		result.add(createOrOverwrite(web.getWebResource("/resources/favicon/favicon.ico"),
+				getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon.ico")));
 
-    configPrimeFaces(servletConfig, allContextParam);
+		result.add(createOrOverwrite(web.getWebResource("/resources/favicon/favicon-16x16.png"),
+				getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon-16x16.png")));
 
-    FacesFacet facesFacet = project.getFacet(FacesFacet.class);
+		result.add(createOrOverwrite(web.getWebResource("/resources/favicon/favicon-32x32.png"),
+				getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon-32x32.png")));
 
-    configOmniFaces(servletConfig, facesFacet);
+		result.add(createOrOverwrite(web.getWebResource("/resources/favicon/favicon-96x96.png"),
+				getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon-96x96.png")));
 
-    setupErrorPages(facesFacet, servletConfig);
+		result.add(createOrOverwrite(web.getWebResource("/resources/images/login-bg.jpg"),
+				getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/login-bg.jpg")));
 
-    servlet.saveConfig(servletConfig);
-  }
+		result.add(createOrOverwrite(web.getWebResource("/resources/css/app.css"),
+				getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/css/app.css")));
 
-  private void setupErrorPages(FacesFacet facesFacet, WebAppDescriptor servletConfig) {
+		return result;
+	}
 
-    String pageSuffix = ".xhtml";
-    List<String> pageSuffixes = facesFacet.getFacesSuffixes();
-    if (pageSuffixes != null || !pageSuffixes.isEmpty()) {
-      pageSuffix = pageSuffixes.get(0);
-    }
+	private void addAdminConfig(Project project) {
 
-    if (!pageSuffix.equals(".xhtml")) {
-      servletConfig.createErrorPage().errorCode("401").location("/401" + pageSuffix);
+		Resource<?> resources = project.getRoot().reify(DirectoryResource.class).getChildDirectory("src")
+				.getChildDirectory("main").getOrCreateChildDirectory("resources");
 
-      servletConfig.createErrorPage().errorCode("403").location("/403" + pageSuffix);
+		if (!resources.getChild("admin-config.properties").exists()) {
+			try {
+				IOUtils.copy(
+						Thread.currentThread().getContextClassLoader().getResourceAsStream("/admin-config.properties"),
+						new FileOutputStream(new File(resources.getFullyQualifiedName() + "/admin-config.properties")));
+			} catch (IOException e) {
+				LOG.log(Level.SEVERE, "Could not add 'admin-config.properties'.", e);
+			}
 
-      servletConfig.createErrorPage().exceptionType("com.github.adminfaces.template.exception.AccessDeniedException")
-      .location("/403" + pageSuffix);
+		}
 
-      servletConfig.createErrorPage().errorCode("404").location("/404" + pageSuffix);
+		if (!resources.getChild("messages.properties").exists()) {
+			try {
+				IOUtils.copy(Thread.currentThread().getContextClassLoader().getResourceAsStream("/messages.properties"),
+						new FileOutputStream(new File(resources.getFullyQualifiedName() + "/messages.properties")));
+			} catch (IOException e) {
+				LOG.log(Level.SEVERE, "Could not add 'admin-config.properties'.", e);
+			}
 
-      servletConfig.createErrorPage().errorCode("500").location("/500" + pageSuffix);
+		}
 
-      servletConfig.createErrorPage().exceptionType("java.lang.Throwable").location("/500" + pageSuffix);
+	}
 
-      servletConfig.createErrorPage().exceptionType("javax.faces.application.ViewExpiredException")
-      .location("/expired" + pageSuffix);
+	protected void setupWebXML(Project project) {
+		ServletFacet_3_1 servlet = project.getFacet(ServletFacet_3_1.class);
+		WebAppDescriptor servletConfig = (WebAppDescriptor) servlet.getConfig();
 
-      servletConfig.createErrorPage().exceptionType("javax.persistence.OptimisticLockException")
-      .location("/optimistic" + pageSuffix);
-    }
-  }
+		// Use the server timezone since we accept dates in that timezone, and it makes
+		// sense to display them in the
+		// same
+		boolean found = false;
+		List<ParamValueType<WebAppDescriptor>> allContextParam = servletConfig.getAllContextParam();
+		for (ParamValueCommonType<?> contextParam : allContextParam) {
+			if (contextParam.getParamName()
+					.equals("javax.faces.DATETIMECONVERTER_DEFAULT_TIMEZONE_IS_SYSTEM_TIMEZONE")) {
+				found = true;
+			}
+		}
+		if (!found) {
+			servletConfig.createContextParam()
+					.paramName("javax.faces.DATETIMECONVERTER_DEFAULT_TIMEZONE_IS_SYSTEM_TIMEZONE").paramValue("true");
+		}
 
-  private void configOmniFaces(WebAppDescriptor servletConfig, FacesFacet facesFacet) {
-    boolean found;
-    found = servletConfig.getAllFilter().stream().filter(f -> f.getFilterClass().equals("org.omnifaces.filter.GzipResponseFilter")).findAny().isPresent();
+		configPrimeFaces(servletConfig, allContextParam);
 
-    if (!found) {
-      servletConfig.createFilter().filterClass("org.omnifaces.filter.GzipResponseFilter")
-      .filterName("gzipResponseFilter").createInitParam().paramName("threshold").paramValue("200");
-    }
+		FacesFacet facesFacet = project.getFacet(FacesFacet.class);
 
-    FileResource<?> configFile = facesFacet.getConfigFile();
+		configOmniFaces(servletConfig, facesFacet);
 
-    Node node = XMLParser.parse(configFile.getResourceInputStream());
-    Node applicationNode = node.getOrCreate("application");
-    Optional<Node> combinedResourceHandler = applicationNode.getChildren().stream()
-        .filter(f -> f.getName().equals("resource-handler") && f.getText().contains("CombinedResourceHandler")).findFirst();
+		setupErrorPages(facesFacet, servletConfig);
 
-    if (!combinedResourceHandler.isPresent()) {
-      applicationNode.createChild("resource-handler")
-      .text("org.omnifaces.resourcehandler.CombinedResourceHandler");
+		servlet.saveConfig(servletConfig);
+	}
 
-      configFile.setContents(XMLParser.toXMLInputStream(node));
-    }
+	private void setupErrorPages(FacesFacet facesFacet, WebAppDescriptor servletConfig) {
 
-  }
+		String pageSuffix = ".xhtml";
+		List<String> pageSuffixes = facesFacet.getFacesSuffixes();
+		if (pageSuffixes != null || !pageSuffixes.isEmpty()) {
+			pageSuffix = pageSuffixes.get(0);
+		}
 
-  private void configPrimeFaces(WebAppDescriptor servletConfig, List<ParamValueType<WebAppDescriptor>> allContextParam) {
-    Optional<ParamValueType<WebAppDescriptor>> primefacesThemeParam = allContextParam.stream().filter(c -> c.getParamValue().equals("primefaces.THEME")).findAny();
+		if (!pageSuffix.equals(".xhtml")) {
+			servletConfig.createErrorPage().errorCode("401").location("/401" + pageSuffix);
 
-    if (!primefacesThemeParam.isPresent()) {
-      servletConfig.createContextParam().paramName("primefaces.THEME").paramValue("admin");
-    } else {
-      primefacesThemeParam.get().paramValue("admin");
-    }
+			servletConfig.createErrorPage().errorCode("403").location("/403" + pageSuffix);
 
-    Optional<ParamValueType<WebAppDescriptor>> fontAwesomeParam = allContextParam.stream().filter(c -> c.getParamValue().equals("primefaces.FONT_AWESOME")).findAny();
+			servletConfig.createErrorPage()
+					.exceptionType("com.github.adminfaces.template.exception.AccessDeniedException")
+					.location("/403" + pageSuffix);
 
-    if (!fontAwesomeParam.isPresent()) {
-      servletConfig.createContextParam().paramName("primefaces.FONT_AWESOME").paramValue("true");
-    } else {
-      fontAwesomeParam.get().paramValue("true");
-    }
+			servletConfig.createErrorPage().errorCode("404").location("/404" + pageSuffix);
 
-  }
+			servletConfig.createErrorPage().errorCode("500").location("/500" + pageSuffix);
 
-  private HashMap<Object, Object> getTemplateContext() {
-    HashMap<Object, Object> context;
-    context = new HashMap<>();
-    context.put("templatePath", PAGE_TEMPLATE);
-    return context;
-  }
+			servletConfig.createErrorPage().exceptionType("java.lang.Throwable").location("/500" + pageSuffix);
+
+			servletConfig.createErrorPage().exceptionType("javax.faces.application.ViewExpiredException")
+					.location("/expired" + pageSuffix);
+
+			servletConfig.createErrorPage().exceptionType("javax.persistence.OptimisticLockException")
+					.location("/optimistic" + pageSuffix);
+		}
+	}
+
+	private void configOmniFaces(WebAppDescriptor servletConfig, FacesFacet facesFacet) {
+		boolean found;
+		found = servletConfig.getAllFilter().stream()
+				.filter(f -> f.getFilterClass().equals("org.omnifaces.filter.GzipResponseFilter")).findAny()
+				.isPresent();
+
+		if (!found) {
+			servletConfig.createFilter().filterName("gzipResponseFilter")
+			.filterClass("org.omnifaces.filter.GzipResponseFilter")
+			.createInitParam().paramName("threshold").paramValue("200");
+		}
+
+		FileResource<?> configFile = facesFacet.getConfigFile();
+
+		Node node = XMLParser.parse(configFile.getResourceInputStream());
+		Node applicationNode = node.getOrCreate("application");
+		Optional<Node> combinedResourceHandler = applicationNode.getChildren().stream()
+				.filter(f -> f.getName().equals("resource-handler") && f.getText().contains("CombinedResourceHandler"))
+				.findFirst();
+
+		if (!combinedResourceHandler.isPresent()) {
+			applicationNode.createChild("resource-handler")
+					.text("org.omnifaces.resourcehandler.CombinedResourceHandler");
+
+			configFile.setContents(XMLParser.toXMLInputStream(node));
+		}
+
+	}
+
+	private void configPrimeFaces(WebAppDescriptor servletConfig,
+			List<ParamValueType<WebAppDescriptor>> allContextParam) {
+		Optional<ParamValueType<WebAppDescriptor>> primefacesThemeParam = allContextParam.stream()
+				.filter(c -> c.getParamValue().equals("primefaces.THEME")).findAny();
+
+		if (!primefacesThemeParam.isPresent()) {
+			servletConfig.createContextParam().paramName("primefaces.THEME").paramValue("admin");
+		} else {
+			primefacesThemeParam.get().paramValue("admin");
+		}
+
+		Optional<ParamValueType<WebAppDescriptor>> fontAwesomeParam = allContextParam.stream()
+				.filter(c -> c.getParamValue().equals("primefaces.FONT_AWESOME")).findAny();
+
+		if (!fontAwesomeParam.isPresent()) {
+			servletConfig.createContextParam().paramName("primefaces.FONT_AWESOME").paramValue("true");
+		} else {
+			fontAwesomeParam.get().paramValue("true");
+		}
+
+	}
+
+	private HashMap<Object, Object> getTemplateContext() {
+		HashMap<Object, Object> context;
+		context = new HashMap<>();
+		context.put("templatePath", PAGE_TEMPLATE);
+		return context;
+	}
 
 }
