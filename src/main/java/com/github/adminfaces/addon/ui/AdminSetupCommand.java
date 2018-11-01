@@ -50,6 +50,7 @@ import org.jboss.forge.roaster.model.source.JavaSource;
 import org.jboss.shrinkwrap.descriptor.api.javaee.ParamValueCommonType;
 import org.jboss.shrinkwrap.descriptor.api.javaee7.ParamValueType;
 import org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor;
+import org.jboss.shrinkwrap.descriptor.api.webcommon31.ServletMappingType;
 import org.metawidget.util.simple.StringUtils;
 
 import com.github.adminfaces.addon.facet.AdminFacet;
@@ -317,40 +318,72 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 
     configOmniFaces(servletConfig, facesFacet);
 
-    setupErrorPages(facesFacet, servletConfig);
+    setupErrorPages(servletConfig);
 
     servlet.saveConfig(servletConfig);
   }
 
-  private void setupErrorPages(FacesFacet facesFacet, WebAppDescriptor servletConfig) {
+  private void setupErrorPages(WebAppDescriptor servletConfig) {
 
     String pageSuffix = ".xhtml";
-    List<String> pageSuffixes = facesFacet.getFacesSuffixes();
-    if (pageSuffixes != null || !pageSuffixes.isEmpty()) {
-      pageSuffix = pageSuffixes.get(0);
+    Optional<ServletMappingType<WebAppDescriptor>> facesServlet = servletConfig.getAllServletMapping().stream()
+        .filter(m -> m.getServletName().equals("Faces Servlet")).findFirst();
+    if (facesServlet.isPresent() && !facesServlet.get().getAllUrlPattern().isEmpty()) {
+      String urlMapping = facesServlet.get().getAllUrlPattern().get(0);
+      if(urlMapping.contains(".")) {
+        pageSuffix = facesServlet.get().getAllUrlPattern().get(0).substring(urlMapping.indexOf("."));
+      }
     }
 
-    if (!pageSuffix.equals(".xhtml")) {
-      servletConfig.createErrorPage().errorCode("401").location("/401" + pageSuffix);
+    if (!pageSuffix.endsWith(".xhtml")) {
+      String errorCode = "401";
+      if(!isErrorPageConfigured(servletConfig, errorCode)) {
+          servletConfig.createErrorPage().errorCode(errorCode).location("/"+errorCode + pageSuffix);
+      }
+        
+      errorCode = "403";
+      if(!isErrorPageConfigured(servletConfig, errorCode)) {
+          servletConfig.createErrorPage().errorCode(errorCode).location("/"+errorCode + pageSuffix);
+          servletConfig.createErrorPage()
+          .exceptionType("com.github.adminfaces.template.exception.AccessDeniedException")
+         .location("/"+errorCode + pageSuffix);
+      }
+      
+      errorCode = "404";
+      if(!isErrorPageConfigured(servletConfig, errorCode)) {
+        servletConfig.createErrorPage().errorCode(errorCode).location("/"+errorCode + pageSuffix);
+      }
+        
+      errorCode = "500";
+      if(!isErrorPageConfigured(servletConfig, errorCode)) {
+        servletConfig.createErrorPage().errorCode(errorCode).location("/"+errorCode + pageSuffix);
+        servletConfig.createErrorPage().exceptionType("java.lang.Throwable").location("/500" + pageSuffix);
+      }
 
-      servletConfig.createErrorPage().errorCode("403").location("/403" + pageSuffix);
-
-			servletConfig.createErrorPage()
-					.exceptionType("com.github.adminfaces.template.exception.AccessDeniedException")
-      .location("/403" + pageSuffix);
-
-      servletConfig.createErrorPage().errorCode("404").location("/404" + pageSuffix);
-
-      servletConfig.createErrorPage().errorCode("500").location("/500" + pageSuffix);
-
-      servletConfig.createErrorPage().exceptionType("java.lang.Throwable").location("/500" + pageSuffix);
-
-      servletConfig.createErrorPage().exceptionType("javax.faces.application.ViewExpiredException")
-      .location("/expired" + pageSuffix);
-
-      servletConfig.createErrorPage().exceptionType("javax.persistence.OptimisticLockException")
-      .location("/optimistic" + pageSuffix);
+      String exceptionType = "javax.faces.application.ViewExpiredException";
+      if(!isErrorPageExceptionTypeConfigured(servletConfig, exceptionType)) {
+        servletConfig.createErrorPage().exceptionType(exceptionType)
+        .location("/expired" + pageSuffix);
+      }
+     
+      exceptionType = "javax.persistence.OptimisticLockException";
+      if(!isErrorPageExceptionTypeConfigured(servletConfig, exceptionType)) {
+        servletConfig.createErrorPage().exceptionType(exceptionType)
+        .location("/optimistic" + pageSuffix);
+      }
     }
+  }
+
+  private boolean isErrorPageConfigured(WebAppDescriptor servletConfig, String errorCode) {
+    return servletConfig.getAllErrorPage().stream()
+      .filter(e -> errorCode.equals(e.getErrorCode()))
+      .count() > 0;
+  }
+  
+  private boolean isErrorPageExceptionTypeConfigured(WebAppDescriptor servletConfig, String exceptionType) {
+    return servletConfig.getAllErrorPage().stream()
+      .filter(e -> exceptionType.equals(e.getExceptionType()))
+      .count() > 0;
   }
 
   private void configOmniFaces(WebAppDescriptor servletConfig, FacesFacet facesFacet) {
@@ -385,7 +418,7 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 	private void configPrimeFaces(WebAppDescriptor servletConfig,
 			List<ParamValueType<WebAppDescriptor>> allContextParam) {
 		Optional<ParamValueType<WebAppDescriptor>> primefacesThemeParam = allContextParam.stream()
-				.filter(c -> c.getParamValue().equals("primefaces.THEME")).findAny();
+				.filter(c -> c.getParamName().equals("primefaces.THEME")).findAny();
 
     if (!primefacesThemeParam.isPresent()) {
       servletConfig.createContextParam().paramName("primefaces.THEME").paramValue("admin");
@@ -394,7 +427,7 @@ public class AdminSetupCommand extends AbstractProjectCommand {
     }
 
 		Optional<ParamValueType<WebAppDescriptor>> fontAwesomeParam = allContextParam.stream()
-				.filter(c -> c.getParamValue().equals("primefaces.FONT_AWESOME")).findAny();
+				.filter(c -> c.getParamName().equals("primefaces.FONT_AWESOME")).findAny();
 
     if (!fontAwesomeParam.isPresent()) {
       servletConfig.createContextParam().paramName("primefaces.FONT_AWESOME").paramValue("true");

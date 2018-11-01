@@ -87,7 +87,7 @@ public class AdminSetupCommandTest {
 	@Test
 	public void shouldSetupAdminFaces() throws Exception {
 		shellTest.getShell().setCurrentResource(project.getRoot());
-		Result result = shellTest.execute("adminfaces-setup", 50, TimeUnit.SECONDS);
+		Result result = shellTest.execute("adminfaces-setup", 60, TimeUnit.SECONDS);
 		assertThat(result).isNotNull().isNotInstanceOf(Failed.class);
 
 		List<Result> results = ((CompositeResult) result).getResults();
@@ -136,7 +136,7 @@ public class AdminSetupCommandTest {
 	public void shouldSetupAdminFacesErrorPagesWhenUsingNonDefaultUrlPattern() throws Exception {
 		shellTest.getShell().setCurrentResource(project.getRoot());
 		changeUrlPattern();
-		Result result = shellTest.execute("adminfaces-setup", 50, TimeUnit.SECONDS);
+		Result result = shellTest.execute("adminfaces-setup", 60, TimeUnit.SECONDS);
 		assertThat(result).isNotNull().isNotInstanceOf(Failed.class);
 
 	}
