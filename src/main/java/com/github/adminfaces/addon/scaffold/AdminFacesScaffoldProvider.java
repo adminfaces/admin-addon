@@ -53,158 +53,144 @@ import com.github.adminfaces.addon.util.DependencyUtil;
 
 public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 
-	private static final String INDEX_PAGE = "/index.xhtml";
-	private static final String TEMPLATES = "/WEB-INF/templates";
-	private static final String TEMPLATE_DEFAULT = TEMPLATES + "/template.xhtml";
-	private static final String TEMPLATE_HORIZONTAL = TEMPLATES + "/template-horizontal.xhtml";
-	private static final String INDEX_HTML = "/index.html";
-	private static final String SCAFFOLD_PAGE_TEMPLATE = "#{layoutMB.template}";
+    private static final String INDEX_PAGE = "/index.xhtml";
+    private static final String TEMPLATES = "/WEB-INF/templates";
+    private static final String TEMPLATE_DEFAULT = TEMPLATES + "/template.xhtml";
+    private static final String TEMPLATE_HORIZONTAL = TEMPLATES + "/template-horizontal.xhtml";
+    private static final String INDEX_HTML = "/index.html";
+    private static final String SCAFFOLD_PAGE_TEMPLATE = "#{layoutMB.template}";
 
-	private static final Logger LOG = Logger.getLogger(AdminSetupCommand.class.getName());
+    private static final Logger LOG = Logger.getLogger(AdminSetupCommand.class.getName());
 
-	@Inject
-	private TemplateFactory templates;
+    @Inject
+    private TemplateFactory templates;
 
-	@Inject
-	private DependencyUtil dependencyUtil;
+    @Inject
+    private DependencyUtil dependencyUtil;
 
-	private Project project;
+    private Project project;
 
-	@Override
-	public String getName() {
-		return "AdminFaces";
-	}
-
-	@Override
-	public String getDescription() {
-		return "Enables Scaffold for AdminFaces projects using JPA entities";
-	}
-
-	@Override
-	public List<Resource<?>> setup(ScaffoldSetupContext setupContext) {
-		this.project = setupContext.getProject();
-		addAdminPersistence();
-		return Collections.emptyList();
-	}
-
-	private void addAdminPersistence() {
-		DependencyBuilder adminPersistenceDependency = DependencyBuilder.create()
-				.setCoordinate(dependencyUtil.getLatestVersion(ADMIN_PERSISTENCE_COORDINATE));
-
-		dependencyUtil.installDependency(project.getFacet(DependencyFacet.class), adminPersistenceDependency);
-
-		configDeltaSpike(project);
-
-	}
-
-  private void configDeltaSpike(Project project) {
-    Resource<?> resources = project.getFacet(ResourcesFacet.class).getResourceDirectory();
-
-    if (!resources.getChild("apache-deltaspike.properties").exists()) {
-			try {
-				IOUtils.copy( Thread.currentThread().getContextClassLoader()
-								.getResourceAsStream("/apache-deltaspike.properties"),
-						new FileOutputStream(
-								new File(resources.getFullyQualifiedName() + "/apache-deltaspike.properties")));
-			} catch (IOException e) {
-				LOG.log(Level.SEVERE, "Could not add 'apache-deltaspike.properties'.", e);
-			}
-		}
-    CDIFacet cdi = project.getFacet(CDIFacet.class);
-    FileResource<?> beansXml = cdi.getConfigFile();
-    Node node = XMLParser.parse(beansXml.getResourceInputStream());
-    Node alternativesNode = node.getOrCreate("alternatives");
-    Optional<Node> deltaspikeTransactionStrategy = alternativesNode.getChildren().stream()
-        .filter(f -> f.getName().equals("class") && f.getText().contains("BeanManagedUserTransactionStrategy")).findFirst();
-
-    if (!deltaspikeTransactionStrategy.isPresent()) {
-      alternativesNode.createChild("class")
-      .text("org.apache.deltaspike.jpa.impl.transaction.BeanManagedUserTransactionStrategy");
-      beansXml.setContents(XMLParser.toXMLInputStream(node));
+    @Override
+    public String getName() {
+        return "AdminFaces";
     }
-    
-    
-  }
 
-	@Override
-	public boolean isSetup(ScaffoldSetupContext setupContext) {
-		Project project = setupContext.getProject();
-		DependencyFacet facet = project.getFacet(DependencyFacet.class);
-		boolean hasAdminFacesDependencies = facet
-				.hasDirectDependency(DependencyBuilder.create().setArtifactId(ADMIN_TEMPLATE_COORDINATE.getArtifactId())
-						.setGroupId(ADMIN_TEMPLATE_COORDINATE.getGroupId()));
+    @Override
+    public String getDescription() {
+        return "Enables Scaffold for AdminFaces projects using JPA entities";
+    }
 
-		WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
+    @Override
+    public List<Resource<?>> setup(ScaffoldSetupContext setupContext) {
+        this.project = setupContext.getProject();
+        addAdminPersistence();
+        return Collections.emptyList();
+    }
 
-		boolean areResourcesInstalled = web.getWebResource(INDEX_PAGE).exists()
-				&& web.getWebResource(TEMPLATE_DEFAULT).exists()
-				&& web.getWebResource(TEMPLATE_HORIZONTAL).exists();
-		
-		
-		Resource<?> resources = project.getFacet(ResourcesFacet.class).getResourceDirectory();
-		
-		boolean hasAdminConfig = resources.getChild("admin-config.properties").exists();
+    private void addAdminPersistence() {
+        DependencyBuilder adminPersistenceDependency = DependencyBuilder.create()
+                .setCoordinate(dependencyUtil.getLatestVersion(ADMIN_PERSISTENCE_COORDINATE));
 
-		return hasAdminFacesDependencies && areResourcesInstalled && hasAdminConfig;
-	}
+        dependencyUtil.installDependency(project.getFacet(DependencyFacet.class), adminPersistenceDependency);
 
-	@Override
-	public List<Resource<?>> generateFrom(ScaffoldGenerationContext scaffoldGenerationContext) {
-		return null;
-	}
+        configDeltaSpike(project);
 
-	@Override
-	public NavigationResult getSetupFlow(ScaffoldSetupContext setupContext) {
-		this.project = setupContext.getProject();
-		NavigationResultBuilder builder = NavigationResultBuilder.create();
-		List<Class<? extends UICommand>> setupCommands = new ArrayList<>();
-		if (!project.hasFacet(JPAFacet.class)) {
-			builder.add(JPASetupWizard.class);
-		}
-		if (!project.hasFacet(CDIFacet.class)) {
-			setupCommands.add(CDISetupCommand.class);
-		}
-		if (!project.hasFacet(EJBFacet.class)) {
-			setupCommands.add(EJBSetupWizard.class);
-		}
-		if (!project.hasFacet(ServletFacet.class)) {
-			// TODO: FORGE-1296. Ensure that this wizard only sets up Servlet 3.0+
-			setupCommands.add(ServletSetupWizard.class);
-		}
-		if (!project.hasFacet(FacesFacet.class)) {
-			setupCommands.add(FacesSetupWizard.class);
-		}
+    }
 
-		Metadata compositeSetupMetadata = Metadata.forCommand(ScaffoldSetupWizard.class).name("Setup AdminFacets")
-				.description("Setup all dependent facets for the AdminFaces scaffold.");
-		builder.add(compositeSetupMetadata, setupCommands);
-		return builder.build();
-	}
+    private void configDeltaSpike(Project project) {
+        Resource<?> resources = project.getFacet(ResourcesFacet.class).getResourceDirectory();
 
-	@Override
-	public NavigationResult getGenerationFlow(ScaffoldGenerationContext scaffoldGenerationContext) {
-		return null;
-	}
+        if (!resources.getChild("apache-deltaspike.properties").exists()) {
+            try {
+                IOUtils.copy(Thread.currentThread().getContextClassLoader()
+                                .getResourceAsStream("/apache-deltaspike.properties"),
+                        new FileOutputStream(
+                                new File(resources.getFullyQualifiedName() + "/apache-deltaspike.properties")));
+            } catch (IOException e) {
+                LOG.log(Level.SEVERE, "Could not add 'apache-deltaspike.properties'.", e);
+            }
+        }
+        CDIFacet cdi = project.getFacet(CDIFacet.class);
+        FileResource<?> beansXml = cdi.getConfigFile();
+        Node node = XMLParser.parse(beansXml.getResourceInputStream());
+        Node alternativesNode = node.getOrCreate("alternatives");
+        Optional<Node> deltaspikeTransactionStrategy = alternativesNode.getChildren().stream()
+                .filter(f -> f.getName().equals("class") && f.getText().contains("BeanManagedUserTransactionStrategy")).findFirst();
 
-	@Override
-	public AccessStrategy getAccessStrategy() {
-		return null;
-	}
+        if (!deltaspikeTransactionStrategy.isPresent()) {
+            alternativesNode.createChild("class")
+                    .text("org.apache.deltaspike.jpa.impl.transaction.BeanManagedUserTransactionStrategy");
+            beansXml.setContents(XMLParser.toXMLInputStream(node));
+        }
 
-	protected HashMap<Object, Object> getTemplateContext(String targetDir, final Resource<?> template) {
-		TemplateStrategy templateStrategy = getTemplateStrategy();
 
-		HashMap<Object, Object> context;
-		context = new HashMap<>();
-		context.put("template", template);
-		context.put("templatePath", SCAFFOLD_PAGE_TEMPLATE);
-		context.put("templateStrategy", templateStrategy);
-		context.put("targetDir", targetDir);
-		return context;
-	}
+    }
 
-	public TemplateStrategy getTemplateStrategy() {
-		return new AdminTemplateStrategy(this.project);
-	}
+    @Override
+    public boolean isSetup(ScaffoldSetupContext setupContext) {
+        Project project = setupContext.getProject();
+        DependencyFacet facet = project.getFacet(DependencyFacet.class);
+        boolean hasAdminFacesDependencies = facet
+                .hasDirectDependency(DependencyBuilder.create().setArtifactId(ADMIN_TEMPLATE_COORDINATE.getArtifactId())
+                        .setGroupId(ADMIN_TEMPLATE_COORDINATE.getGroupId()));
+
+        WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
+
+        boolean areResourcesInstalled = web.getWebResource(INDEX_PAGE).exists()
+                && web.getWebResource(TEMPLATE_DEFAULT).exists()
+                && web.getWebResource(TEMPLATE_HORIZONTAL).exists();
+
+
+        Resource<?> resources = project.getFacet(ResourcesFacet.class).getResourceDirectory();
+
+        boolean hasAdminConfig = resources.getChild("admin-config.properties").exists();
+
+        return hasAdminFacesDependencies && areResourcesInstalled && hasAdminConfig;
+    }
+
+    @Override
+    public List<Resource<?>> generateFrom(ScaffoldGenerationContext scaffoldGenerationContext) {
+        return null;
+    }
+
+    @Override
+    public NavigationResult getSetupFlow(ScaffoldSetupContext setupContext) {
+        this.project = setupContext.getProject();
+        NavigationResultBuilder builder = NavigationResultBuilder.create();
+        List<Class<? extends UICommand>> setupCommands = new ArrayList<>();
+        if (!project.hasFacet(JPAFacet.class)) {
+            builder.add(JPASetupWizard.class);
+        }
+        Metadata compositeSetupMetadata = Metadata.forCommand(ScaffoldSetupWizard.class).name("Setup AdminFacets")
+                .description("Setup all dependent facets for the AdminFaces scaffold.");
+        builder.add(compositeSetupMetadata, setupCommands);
+        return builder.build();
+    }
+
+    @Override
+    public NavigationResult getGenerationFlow(ScaffoldGenerationContext scaffoldGenerationContext) {
+        return null;
+    }
+
+    @Override
+    public AccessStrategy getAccessStrategy() {
+        return null;
+    }
+
+    protected HashMap<Object, Object> getTemplateContext(String targetDir, final Resource<?> template) {
+        TemplateStrategy templateStrategy = getTemplateStrategy();
+
+        HashMap<Object, Object> context;
+        context = new HashMap<>();
+        context.put("template", template);
+        context.put("templatePath", SCAFFOLD_PAGE_TEMPLATE);
+        context.put("templateStrategy", templateStrategy);
+        context.put("targetDir", targetDir);
+        return context;
+    }
+
+    public TemplateStrategy getTemplateStrategy() {
+        return new AdminTemplateStrategy(this.project);
+    }
 
 }
