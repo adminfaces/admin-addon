@@ -16,30 +16,30 @@ import org.slf4j.LoggerFactory;
  */
 public class AdminScaffoldUtils extends ScaffoldUtil {
 
-	public static final Logger log = LoggerFactory.getLogger(AdminScaffoldUtils.class.getName());
+    public static final Logger log = LoggerFactory.getLogger(AdminScaffoldUtils.class.getName());
 
-	public static void unzip(InputStream zipFile, String targetDir) throws IOException {
-		ZipInputStream zipInputStream = new ZipInputStream(zipFile);
-		try {
-			ZipEntry zipEntry = zipInputStream.getNextEntry();
-			while (zipEntry != null) {
-				File destPath = new File(targetDir, zipEntry.getName());
-				log.info("Unpacking {}.", destPath.getAbsoluteFile());
-				if (!zipEntry.isDirectory()) {
-					FileOutputStream fout = new FileOutputStream(destPath);
-					final byte[] buffer = new byte[8192];
-					int n = 0;
-					while (-1 != (n = zipInputStream.read(buffer))) {
-						fout.write(buffer, 0, n);
-					}
-					fout.close();
-				} else {
-					destPath.mkdir();
-				}
-				zipEntry = zipInputStream.getNextEntry();
-			}
-		} finally {
-			zipInputStream.close();
-		}
-	}
+    public static void unzip(InputStream zipFile, String targetDir) throws IOException {
+        ZipInputStream zipInputStream = new ZipInputStream(zipFile);
+        try {
+            ZipEntry zipEntry = zipInputStream.getNextEntry();
+            while (zipEntry != null) {
+                File destPath = new File(targetDir, zipEntry.getName());
+                log.info("Unpacking {}.", destPath.getAbsoluteFile());
+                if (!zipEntry.isDirectory()) {
+                    FileOutputStream fout = new FileOutputStream(destPath);
+                    final byte[] buffer = new byte[8192];
+                    int n = 0;
+                    while (-1 != (n = zipInputStream.read(buffer))) {
+                        fout.write(buffer, 0, n);
+                    }
+                    fout.close();
+                } else {
+                    destPath.mkdir();
+                }
+                zipEntry = zipInputStream.getNextEntry();
+            }
+        } finally {
+            zipInputStream.close();
+        }
+    }
 }

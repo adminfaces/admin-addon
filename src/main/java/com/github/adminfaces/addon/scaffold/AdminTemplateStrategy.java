@@ -21,49 +21,42 @@ import org.jboss.forge.furnace.util.Streams;
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  *
  */
-public class AdminTemplateStrategy implements TemplateStrategy
-{
-   private static final String SCAFFOLD_FORGE_TEMPLATE = "/resources/scaffold/pageTemplate.xhtml";
+public class AdminTemplateStrategy implements TemplateStrategy {
+    private static final String SCAFFOLD_FORGE_TEMPLATE = "/resources/scaffold/pageTemplate.xhtml";
 
-   private final Project project;
+    private final Project project;
 
-   public AdminTemplateStrategy(final Project project)
-   {
-      this.project = project;
-   }
+    public AdminTemplateStrategy(final Project project) {
+        this.project = project;
+    }
 
-   @Override
-   public boolean compatibleWith(final Resource<?> template)
-   {
-      String contents = Streams.toString(template.getResourceInputStream());
-      for (String section : Arrays.asList("main")) {
-         if (!contents.matches(".*:\\s*insert\\s+name\\s*=\\s*\"" + section + "\".*"))
-         {
-            return false;
-         }
-      }
-      return true;
-   }
+    @Override
+    public boolean compatibleWith(final Resource<?> template) {
+        String contents = Streams.toString(template.getResourceInputStream());
+        for (String section : Arrays.asList("main")) {
+            if (!contents.matches(".*:\\s*insert\\s+name\\s*=\\s*\"" + section + "\".*")) {
+                return false;
+            }
+        }
+        return true;
+    }
 
-   @Override
-   public String getReferencePath(final Resource<?> template)
-   {
-      WebResourcesFacet web = this.project.getFacet(WebResourcesFacet.class);
-      for (DirectoryResource dir : web.getWebRootDirectories()) {
-         if (ResourceUtil.isChildOf(dir, template))
-         {
-            String relativePath = template.getFullyQualifiedName().substring(dir.getFullyQualifiedName().length());
-            return relativePath;
-         }
-      }
-      throw new IllegalArgumentException("Not a valid template resource for this scaffold.");
-   }
+    @Override
+    public String getReferencePath(final Resource<?> template) {
+        WebResourcesFacet web = this.project.getFacet(WebResourcesFacet.class);
+        for (DirectoryResource dir : web.getWebRootDirectories()) {
+            if (ResourceUtil.isChildOf(dir, template)) {
+                String relativePath = template.getFullyQualifiedName().substring(dir.getFullyQualifiedName().length());
+                return relativePath;
+            }
+        }
+        throw new IllegalArgumentException("Not a valid template resource for this scaffold.");
+    }
 
-   @Override
-   public FileResource<?> getDefaultTemplate()
-   {
-      WebResourcesFacet web = this.project.getFacet(WebResourcesFacet.class);
-      return web.getWebResource(SCAFFOLD_FORGE_TEMPLATE);
-   }
+    @Override
+    public FileResource<?> getDefaultTemplate() {
+        WebResourcesFacet web = this.project.getFacet(WebResourcesFacet.class);
+        return web.getWebResource(SCAFFOLD_FORGE_TEMPLATE);
+    }
 
 }

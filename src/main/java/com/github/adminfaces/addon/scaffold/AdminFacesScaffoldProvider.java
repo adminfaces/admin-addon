@@ -6,6 +6,7 @@ import static com.github.adminfaces.addon.util.DependencyUtil.ADMIN_TEMPLATE_COO
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -101,9 +102,9 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
         Resource<?> resources = project.getFacet(ResourcesFacet.class).getResourceDirectory();
 
         if (!resources.getChild("apache-deltaspike.properties").exists()) {
-            try {
-                IOUtils.copy(Thread.currentThread().getContextClassLoader()
-                                .getResourceAsStream("/apache-deltaspike.properties"),
+            try(InputStream is = Thread.currentThread().getContextClassLoader()
+                        .getResourceAsStream("/apache-deltaspike.properties")) {
+                IOUtils.copy(is,
                         new FileOutputStream(
                                 new File(resources.getFullyQualifiedName() + "/apache-deltaspike.properties")));
             } catch (IOException e) {

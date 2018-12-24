@@ -17,13 +17,13 @@ public class TemplateFactory implements Serializable {
 
 	private static final String TEMPLATE_DEFAULT_TEMPLATE = "scaffold/freemarker/template.xhtml";
 
-	protected Template indexTemplate;
-	
-	protected Template loginTemplate;
+	private Template indexTemplate;
 
-	protected Template templateTop;
+	private Template loginTemplate;
 
-	protected Template templateDefault;
+	private Template templateTop;
+
+	private Template templateDefault;
 
 	@PostConstruct
 	public void loadTemplates() {
