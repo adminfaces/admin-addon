@@ -173,8 +173,9 @@ public class AdminSetupCommand extends AbstractProjectCommand {
         HashMap<Object, Object> context = getTemplateContext();
         MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
         String projectName = metadataFacet.getProjectName();
-        String logoMini = resolveLogoMini(projectName);
-        context.put("appName", StringUtils.uncamelCase(projectName));
+        String appName = StringUtils.uncamelCase(projectName.replaceAll("-"," "));
+        String logoMini = resolveLogoMini(appName);
+        context.put("appName", appName);
         context.put("logoMini", logoMini);
         context.put("copyrightYear", Year.now().toString());
 
