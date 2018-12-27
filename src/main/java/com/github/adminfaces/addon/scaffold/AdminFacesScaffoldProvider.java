@@ -7,11 +7,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,20 +16,16 @@ import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
 import org.jboss.forge.addon.dependencies.builder.DependencyBuilder;
 import org.jboss.forge.addon.javaee.cdi.CDIFacet;
-import org.jboss.forge.addon.javaee.cdi.ui.CDISetupCommand;
 import org.jboss.forge.addon.javaee.ejb.EJBFacet;
-import org.jboss.forge.addon.javaee.ejb.ui.EJBSetupWizard;
 import org.jboss.forge.addon.javaee.faces.FacesFacet;
-import org.jboss.forge.addon.javaee.faces.ui.FacesSetupWizard;
 import org.jboss.forge.addon.javaee.jpa.JPAFacet;
 import org.jboss.forge.addon.javaee.jpa.ui.setup.JPASetupWizard;
 import org.jboss.forge.addon.javaee.servlet.ServletFacet;
-import org.jboss.forge.addon.javaee.servlet.ui.ServletSetupWizard;
 import org.jboss.forge.addon.projects.Project;
+import org.jboss.forge.addon.projects.ProjectFacet;
 import org.jboss.forge.addon.projects.facets.DependencyFacet;
 import org.jboss.forge.addon.projects.facets.ResourcesFacet;
 import org.jboss.forge.addon.projects.facets.WebResourcesFacet;
-import org.jboss.forge.addon.resource.DirectoryResource;
 import org.jboss.forge.addon.resource.FileResource;
 import org.jboss.forge.addon.resource.Resource;
 import org.jboss.forge.addon.scaffold.spi.AccessStrategy;
@@ -57,7 +49,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
     private static final String INDEX_PAGE = "/index.xhtml";
     private static final String TEMPLATES = "/WEB-INF/templates";
     private static final String TEMPLATE_DEFAULT = TEMPLATES + "/template.xhtml";
-    private static final String TEMPLATE_HORIZONTAL = TEMPLATES + "/template-horizontal.xhtml";
+    private static final String TEMPLATE_TOP = TEMPLATES + "/template-top.xhtml";
     private static final String INDEX_HTML = "/index.html";
     private static final String SCAFFOLD_PAGE_TEMPLATE = "#{layoutMB.template}";
 
@@ -124,7 +116,6 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
             beansXml.setContents(XMLParser.toXMLInputStream(node));
         }
 
-
     }
 
     @Override
@@ -139,18 +130,27 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 
         boolean areResourcesInstalled = web.getWebResource(INDEX_PAGE).exists()
                 && web.getWebResource(TEMPLATE_DEFAULT).exists()
-                && web.getWebResource(TEMPLATE_HORIZONTAL).exists();
+                && web.getWebResource(TEMPLATE_TOP).exists();
 
 
         Resource<?> resources = project.getFacet(ResourcesFacet.class).getResourceDirectory();
 
         boolean hasAdminConfig = resources.getChild("admin-config.properties").exists();
 
-        return hasAdminFacesDependencies && areResourcesInstalled && hasAdminConfig;
+        List<Class<? extends ProjectFacet>> requiredFacetsLists = Arrays.asList(WebResourcesFacet.class, DependencyFacet.class, JPAFacet.class,
+                CDIFacet.class, ServletFacet.class, FacesFacet.class);
+
+        boolean areRequiredFacetsInstalled = project.hasAllFacets(requiredFacetsLists);
+        if(!areRequiredFacetsInstalled) {
+            LOG.warning("AdminFaces scaffold provided not enabled because required facets (CDI, JPA, JSF and Servlet) are not installed. Use AdminFaces setup command to install required facets.");
+        }
+
+        return hasAdminFacesDependencies && areResourcesInstalled && hasAdminConfig && areRequiredFacetsInstalled;
     }
 
     @Override
     public List<Resource<?>> generateFrom(ScaffoldGenerationContext scaffoldGenerationContext) {
+        System.out.println(scaffoldGenerationContext);
         return null;
     }
 

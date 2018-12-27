@@ -2,11 +2,13 @@ package com.github.admin.addon;
 
 import com.github.adminfaces.addon.facet.AdminFacet;
 import com.github.adminfaces.addon.util.DependencyUtil;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.addon.dependencies.builder.DependencyBuilder;
+import org.jboss.forge.addon.javaee.faces.FacesFacet_2_0;
+import org.jboss.forge.addon.javaee.facets.JavaEE7Facet;
 import org.jboss.forge.addon.javaee.jpa.JPAFacet;
+import org.jboss.forge.addon.javaee.servlet.ServletFacet_3_1;
 import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.ProjectFactory;
@@ -17,25 +19,12 @@ import org.jboss.forge.addon.resource.FileResource;
 import org.jboss.forge.addon.resource.Resource;
 import org.jboss.forge.addon.shell.test.ShellTest;
 import org.jboss.forge.addon.ui.result.CompositeResult;
-
-import static org.jboss.forge.addon.scaffold.util.ScaffoldUtil.createOrOverwrite;
-
 import org.jboss.forge.addon.ui.result.Failed;
 import org.jboss.forge.addon.ui.result.Result;
 import org.jboss.forge.arquillian.AddonDependencies;
 import org.jboss.forge.arquillian.archive.AddonArchive;
-import org.jboss.forge.parser.xml.Node;
-import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor;
-import org.jboss.shrinkwrap.descriptor.api.webcommon31.ServletMappingType;
-import org.jboss.shrinkwrap.descriptor.api.webcommon31.ServletType;
 import org.junit.After;
-
-import static com.github.admin.addon.TestUtil.newLine;
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.assertj.core.api.Assertions.*;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,22 +34,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.forge.addon.javaee.faces.FacesFacet_2_0;
-import org.jboss.forge.addon.javaee.facets.JavaEE7Facet;
-import org.jboss.forge.addon.javaee.servlet.ServletFacet_3_1;
+import static com.github.admin.addon.TestUtil.newLine;
+import static org.assertj.core.api.Assertions.contentOf;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @RunWith(Arquillian.class)
 public class AdminSetupCommandTest {
-
-    @Deployment
-    @AddonDependencies
-    public static AddonArchive getDeployment() {
-        return ShrinkWrap.create(AddonArchive.class).addBeansXML().addClass(TestUtil.class).addPackages(true,
-                "org.assertj.core");
-    }
 
     @Inject
     private ProjectFactory projectFactory;
@@ -70,6 +51,13 @@ public class AdminSetupCommandTest {
 
     private Project project;
 
+    @Deployment
+    @AddonDependencies
+    public static AddonArchive getDeployment() {
+        return ShrinkWrap.create(AddonArchive.class).addBeansXML().addClass(TestUtil.class).addPackages(true,
+                "org.assertj.core");
+    }
+
     @Before
     public void setUp() throws IOException {
         project = projectFactory.createTempProject(Arrays.asList(JavaEE7Facet.class, ServletFacet_3_1.class,
@@ -77,7 +65,6 @@ public class AdminSetupCommandTest {
         MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
         metadataFacet.setProjectGroupName("com.github.admin.addon");
         metadataFacet.setProjectName("AdminFaces");
-
         shellTest.clearScreen();
     }
 

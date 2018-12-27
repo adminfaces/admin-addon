@@ -20,6 +20,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.jboss.forge.addon.facets.FacetFactory;
 import org.jboss.forge.addon.facets.constraints.FacetConstraint;
+import org.jboss.forge.addon.javaee.cdi.CDIFacet;
+import org.jboss.forge.addon.javaee.cdi.CDIFacet_1_0;
 import org.jboss.forge.addon.javaee.faces.FacesFacet;
 import org.jboss.forge.addon.javaee.faces.FacesFacet_2_0;
 import org.jboss.forge.addon.javaee.facets.JavaEE7Facet;
@@ -122,6 +124,12 @@ public class AdminSetupCommand extends AbstractProjectCommand {
             FacesFacet_2_0 facesFacet = facetFactory.create(project, FacesFacet_2_0.class);
             facetFactory.install(project, facesFacet);
         }
+
+        if (!project.hasFacet(CDIFacet.class)) {
+            CDIFacet_1_0 cdiFacet = facetFactory.create(project, CDIFacet_1_0.class);
+            facetFactory.install(project, cdiFacet);
+        }
+
 
         MavenFacet m2 = project.getFacet(MavenFacet.class);
         MavenModelResource m2Model = m2.getModelResource();

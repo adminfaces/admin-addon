@@ -1,14 +1,23 @@
 package com.github.admin.addon;
 
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.forge.addon.javaee.faces.FacesFacet_2_0;
+import org.jboss.forge.addon.javaee.facets.JavaEE7Facet;
+import org.jboss.forge.addon.javaee.jpa.JPAFacet;
+import org.jboss.forge.addon.javaee.servlet.ServletFacet_3_1;
 import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.ProjectFacet;
 import org.jboss.forge.addon.projects.ProjectFactory;
+import org.jboss.forge.addon.projects.facets.MetadataFacet;
 import org.jboss.forge.addon.projects.facets.WebResourcesFacet;
 import org.jboss.forge.addon.shell.test.ShellTest;
 import org.jboss.forge.addon.ui.result.CompositeResult;
 import org.jboss.forge.addon.ui.result.Result;
+import org.jboss.forge.arquillian.AddonDependencies;
+import org.jboss.forge.arquillian.archive.AddonArchive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -17,49 +26,60 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.inject.Inject;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 
 /**
- *
  * Test class for {@link com.github.adminfaces.addon.scaffold.AdminFacesScaffoldProvider}
- * 
+ *
  * @author <a href="github.com/rmpestano">Rafael Pestano</a>
  */
 @RunWith(Arquillian.class)
-@Ignore
-public class AdminFacesScaffoldTest
-{
-   @Inject
-   ProjectFactory projectFactory;
-   @Inject
-   ShellTest shellTest;
+public class AdminFacesScaffoldTest {
 
-   Project project;
+    @Inject
+    ProjectFactory projectFactory;
 
-   @Before
-   public void setUp()
-   {
-      project = projectFactory.createTempProject(
-               Arrays.<Class<? extends ProjectFacet>>asList(JavaSourceFacet.class, WebResourcesFacet.class));
-      shellTest.getShell().setCurrentResource(project.getRoot());
-   }
+    @Inject
+    ShellTest shellTest;
 
-   @Test
-   public void testScaffoldSetup() throws Exception
-   {
-      shellTest.execute("jpa-new-entity --named Customer", 15, TimeUnit.SECONDS);
-      shellTest.execute("jpa-new-field --named firstName", 10, TimeUnit.SECONDS);
-      Result result = shellTest.execute("scaffold-setup", 10, TimeUnit.SECONDS);
-      assertThat(result).isInstanceOf(CompositeResult.class)
-              .extracting("message")
-              .contains("");
-      Assert.assertThat(result, is(instanceOf(CompositeResult.class)));
-   }
+    Project project;
+
+    @Deployment
+    @AddonDependencies
+    public static AddonArchive getDeployment() {
+        return ShrinkWrap.create(AddonArchive.class).addBeansXML().addClass(TestUtil.class).addPackages(true,
+                "org.assertj.core");
+    }
+
+    @Before
+    public void setUp() throws IOException, TimeoutException {
+        project = projectFactory.createTempProject(Arrays.asList(JavaEE7Facet.class, ServletFacet_3_1.class,
+                JPAFacet.class, FacesFacet_2_0.class, JavaSourceFacet.class));
+        shellTest.getShell().setCurrentResource(project.getRoot());
+        MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
+        metadataFacet.setProjectGroupName("com.github.admin.addon");
+        metadataFacet.setProjectName("AdminFaces");
+        shellTest.execute("adminfaces-setup", 60, TimeUnit.SECONDS);
+        shellTest.clearScreen();
+    }
+
+    @Test
+    public void testScaffoldSetup() throws Exception {
+        shellTest.execute("jpa-new-entity --named Customer", 15, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named firstName", 10, TimeUnit.SECONDS);
+        Result result = shellTest.execute("scaffold-setup --provider AdminFaces", 10, TimeUnit.SECONDS);
+        assertThat(result).isInstanceOf(CompositeResult.class)
+                .extracting("message")
+                .contains("Scaffold was setup successfully");
+        Assert.assertThat(result, is(instanceOf(CompositeResult.class)));
+    }
 
    /*@Test
    public void shouldCreateOneErrorPageForEachErrorCode() throws Exception
@@ -114,11 +134,11 @@ public class AdminFacesScaffoldTest
       Assert.assertThat(result, not(instanceOf(Failed.class)));
    }*/
 
-   @After
-   public void tearDown() throws Exception
-   {
-      if (project != null)
-         project.getRoot().delete(true);
-      shellTest.close();
-   }
+    @After
+    public void tearDown() throws Exception {
+        if (project != null) {
+            project.getRoot().delete(true);
+        }
+        shellTest.close();
+    }
 }
