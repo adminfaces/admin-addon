@@ -6,4 +6,4 @@ cache:
     - '$HOME/.m2/repository'
  
 script:
-       - mvn clean test jacoco:report coveralls:report -Pcoverage
+       - mvn clean test -Ptests jacoco:report coveralls:report -Pcoverage

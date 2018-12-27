@@ -77,7 +77,7 @@ public class AdminFacesScaffoldTest {
         Result result = shellTest.execute("scaffold-setup --provider AdminFaces", 10, TimeUnit.SECONDS);
         assertThat(result).isInstanceOf(CompositeResult.class)
                 .extracting("message")
-                .contains("Scaffold was setup successfully");
+                .contains("***SUCCESS*** Scaffold was setup successfully.");
         Assert.assertThat(result, is(instanceOf(CompositeResult.class)));
     }
 

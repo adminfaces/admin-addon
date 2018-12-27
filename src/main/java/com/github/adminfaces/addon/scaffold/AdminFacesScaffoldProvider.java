@@ -150,7 +150,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 
     @Override
     public List<Resource<?>> generateFrom(ScaffoldGenerationContext scaffoldGenerationContext) {
-        System.out.println(scaffoldGenerationContext);
+        LOG.log(Level.ALL, scaffoldGenerationContext.toString());
         return null;
     }
 
