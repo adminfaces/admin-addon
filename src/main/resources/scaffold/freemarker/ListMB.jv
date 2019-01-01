@@ -1,0 +1,74 @@
+package com.github.adminfaces.starter.bean;
+
+import com.github.adminfaces.persistence.bean.CrudMB;
+import com.github.adminfaces.persistence.service.CrudService;
+import com.github.adminfaces.persistence.service.Service;
+import com.github.adminfaces.persistence.util.Messages;
+import com.github.adminfaces.template.exception.BusinessException;
+import org.omnifaces.cdi.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.io.Serializable;
+import java.util.List;
+
+import ${entity.getQualifiedName()};
+import ${service.getQualifiedName()};
+
+import static com.github.adminfaces.persistence.util.Messages.addDetailMessage;
+import static com.github.adminfaces.persistence.util.Messages.getMessage;
+import static com.github.adminfaces.template.util.Assert.has;
+
+
+@Named
+@ViewScoped
+public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> implements Serializable {
+
+    @Inject
+    ${entity.getName()}Service ${ccEntity}Service;
+
+    @Inject
+    public void initService() {
+        setCrudService(${ccEntity}Service);
+    }
+
+    public void delete() {
+        int deletedEntities = 0;
+        for (${entity.getName()} selected : selectionList) {
+        	deletedEntities++;
+        	${ccEntity}Service.remove(selected);
+        }
+        selectionList.clear();
+        addDetailMessage(deletedEntities + " ${ccEntity}(s) deleted successfully!");
+        clear();
+    }
+
+    public String getSearchCriteria() {
+        StringBuilder sb = new StringBuilder(21);
+
+        ${entity.getName() ${ccEntity}Filter = filter.getEntity();
+
+        Integer idParam = null;
+        if (filter.hasParam("id")) {
+            idParam = filter.getIntParam("id");
+        }
+
+        if (has(idParam)) {
+            sb.append("<b>id</b>: ").append(idParam).append(", ");
+        }
+
+        //get other fields by relection
+
+        int commaIndex = sb.lastIndexOf(",");
+
+        if (commaIndex != -1) {
+            sb.deleteCharAt(commaIndex);
+        }
+
+        if (sb.toString().trim().isEmpty()) {
+            return "No search criteria";
+        }
+
+        return sb.toString();
+    }
+
+}

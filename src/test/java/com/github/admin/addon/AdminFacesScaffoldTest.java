@@ -14,6 +14,7 @@ import org.jboss.forge.addon.projects.facets.MetadataFacet;
 import org.jboss.forge.addon.projects.facets.WebResourcesFacet;
 import org.jboss.forge.addon.shell.test.ShellTest;
 import org.jboss.forge.addon.ui.result.CompositeResult;
+import org.jboss.forge.addon.ui.result.Failed;
 import org.jboss.forge.addon.ui.result.Result;
 import org.jboss.forge.arquillian.AddonDependencies;
 import org.jboss.forge.arquillian.archive.AddonArchive;
@@ -34,6 +35,7 @@ import java.util.concurrent.TimeoutException;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 
 /**
  * Test class for {@link com.github.adminfaces.addon.scaffold.AdminFacesScaffoldProvider}
@@ -71,14 +73,21 @@ public class AdminFacesScaffoldTest {
     }
 
     @Test
-    public void testScaffoldSetup() throws Exception {
+    public void shouldScaffoldFromEntities() throws Exception {
         shellTest.execute("jpa-new-entity --named Customer", 15, TimeUnit.SECONDS);
         shellTest.execute("jpa-new-field --named firstName", 10, TimeUnit.SECONDS);
-        Result result = shellTest.execute("scaffold-setup --provider AdminFaces", 10, TimeUnit.SECONDS);
+        Result result = shellTest.execute("scaffold-setup --provider AdminFaces", 10, TimeUnit.MINUTES);
         assertThat(result).isInstanceOf(CompositeResult.class)
                 .extracting("message")
                 .contains("***SUCCESS*** Scaffold was setup successfully.");
         Assert.assertThat(result, is(instanceOf(CompositeResult.class)));
+        
+        String entityPackageName = project.getFacet(JavaSourceFacet.class).getBasePackage() + ".model";
+        Result scaffoldGenerate1 = shellTest
+                 .execute(("scaffold-generate --entities " + entityPackageName
+                          + ".Customer"), 10,
+                          TimeUnit.MINUTES);
+        Assert.assertThat(scaffoldGenerate1, not(instanceOf(Failed.class)));
     }
 
    /*@Test
