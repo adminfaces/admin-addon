@@ -3,7 +3,6 @@ language: java
 jdk: oraclejdk8
 cache:
   directories:
-    - '$HOME/.m2/repository'
- 
+  - $HOME/.m2/repository
 script:
-       - mvn clean test -Ptests jacoco:report coveralls:report -Pcoverage
+- mvn clean test -Ptests jacoco:report coveralls:report -Pcoverage
