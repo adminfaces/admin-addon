@@ -4,8 +4,8 @@ import com.github.adminfaces.persistence.model.Filter;
 import com.github.adminfaces.persistence.service.CrudService;
 import com.github.adminfaces.template.exception.BusinessException;
 import org.apache.deltaspike.data.api.criteria.Criteria;
-import ${entityPackage}.${entity.getName()};
-import ${repositoryPackage}.${entity.getName()}Repository;
+import ${entity.getQualifiedName()};
+import ${repository.getQualifiedName()};
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;

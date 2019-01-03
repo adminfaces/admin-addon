@@ -2,7 +2,6 @@ package com.github.adminfaces.addon.scaffold;
 
 import static com.github.adminfaces.addon.util.DependencyUtil.ADMIN_PERSISTENCE_COORDINATE;
 import static com.github.adminfaces.addon.util.DependencyUtil.ADMIN_TEMPLATE_COORDINATE;
-import static org.jboss.forge.addon.javaee.JavaEEPackageConstants.DEFAULT_FACES_PACKAGE;
 import static org.jboss.forge.addon.scaffold.util.ScaffoldUtil.createOrOverwrite;
 
 import java.io.File;
@@ -42,13 +41,11 @@ import org.jboss.forge.addon.projects.facets.ResourcesFacet;
 import org.jboss.forge.addon.projects.facets.WebResourcesFacet;
 import org.jboss.forge.addon.resource.FileResource;
 import org.jboss.forge.addon.resource.Resource;
-import com.github.adminfaces.addon.freemarker.FreemarkerTemplateProcessor;
 import org.jboss.forge.addon.scaffold.spi.AccessStrategy;
 import org.jboss.forge.addon.scaffold.spi.ScaffoldGenerationContext;
 import org.jboss.forge.addon.scaffold.spi.ScaffoldProvider;
 import org.jboss.forge.addon.scaffold.spi.ScaffoldSetupContext;
 import org.jboss.forge.addon.scaffold.ui.ScaffoldSetupWizard;
-import org.jboss.forge.addon.scaffold.util.ScaffoldUtil;
 import org.jboss.forge.addon.ui.command.UICommand;
 import org.jboss.forge.addon.ui.result.NavigationResult;
 import org.jboss.forge.addon.ui.result.navigation.NavigationResultBuilder;
@@ -66,10 +63,12 @@ import org.jboss.forge.roaster.model.util.Types;
 import org.metawidget.util.CollectionUtils;
 import org.metawidget.util.simple.StringUtils;
 
+import com.github.adminfaces.addon.freemarker.FreemarkerTemplateProcessor;
 import com.github.adminfaces.addon.freemarker.TemplateFactory;
 import com.github.adminfaces.addon.ui.AdminSetupCommand;
 import com.github.adminfaces.addon.util.Constants;
 import com.github.adminfaces.addon.util.DependencyUtil;
+
 
 public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 
@@ -237,10 +236,9 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 	private Resource<?> generateRepository(Map<Object, Object> context, JavaSource<?> entitySource, JavaSourceFacet java) {
 		JavaInterfaceSource repository = Roaster.parse(JavaInterfaceSource.class,
 				FreemarkerTemplateProcessor.processTemplate(context, templates.getRepositoryTemplate()));
-		String repositoryPackage = java.getBasePackage() + "." + Constants.Packages.REPOSITORY;
-		repository.setPackage(repositoryPackage);
-		context.put("repositoryPackage", repositoryPackage);
-		return createOrOverwrite(java.getJavaResource(repository), repository.toString());
+		repository.setPackage(java.getBasePackage() + "." + Constants.Packages.REPOSITORY);
+		context.put("repository", repository);
+		return createOrOverwrite(java.getJavaResource(repository), repository.toUnformattedString());
 	}
 	
 	/**
@@ -254,11 +252,9 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 	private Resource<?> generateService(Map<Object, Object> context, JavaSource<?> entitySource, JavaSourceFacet java) {
 		JavaClassSource service = Roaster.parse(JavaClassSource.class,
 				FreemarkerTemplateProcessor.processTemplate(context, templates.getServiceTemplate()));
-		String servicePackage = java.getBasePackage() + "." + Constants.Packages.SERVICE;
-		service.setPackage(servicePackage);
-		context.put("servicePackage", servicePackage);
-		service.setPackage(servicePackage);
-		return createOrOverwrite(java.getJavaResource(service), service.toString());
+		service.setPackage(java.getBasePackage() + "." + Constants.Packages.SERVICE);
+		context.put("service", service);
+		return createOrOverwrite(java.getJavaResource(service), service.toUnformattedString());
 	}
 
 	@Override

@@ -2,7 +2,7 @@ package com.github.adminfaces.repository;
 
 import org.apache.deltaspike.data.api.EntityRepository;
 import org.apache.deltaspike.data.api.Repository;
-import ${entityPackage}.${entity.getName()};
+import ${entity.getQualifiedName()};
 
 
 @Repository

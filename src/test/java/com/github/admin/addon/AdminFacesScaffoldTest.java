@@ -96,7 +96,7 @@ public class AdminFacesScaffoldTest {
 		Assert.assertThat(scaffoldGenerate1, not(instanceOf(Failed.class)));
 		
 		Resource<?> src = sourceFacet.getSourceDirectory();
-
+		
 		Resource<?> repository = src
 				.getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
 				.getChild(Constants.Packages.REPOSITORY+"/CustomerRepository.java");
