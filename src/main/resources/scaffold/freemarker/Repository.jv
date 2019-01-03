@@ -1,0 +1,11 @@
+package com.github.adminfaces.repository;
+
+import org.apache.deltaspike.data.api.EntityRepository;
+import org.apache.deltaspike.data.api.Repository;
+import ${entityPackage}.${entity.getName()};
+
+
+@Repository
+public interface ${entity.getName()}Repository extends EntityRepository<${entity.getName()},${nullablePrimaryKeyType}> {
+
+}

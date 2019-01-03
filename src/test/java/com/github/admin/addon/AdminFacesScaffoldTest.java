@@ -11,7 +11,9 @@ import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.ProjectFacet;
 import org.jboss.forge.addon.projects.ProjectFactory;
 import org.jboss.forge.addon.projects.facets.MetadataFacet;
+import org.jboss.forge.addon.projects.facets.ResourcesFacet;
 import org.jboss.forge.addon.projects.facets.WebResourcesFacet;
+import org.jboss.forge.addon.resource.Resource;
 import org.jboss.forge.addon.shell.test.ShellTest;
 import org.jboss.forge.addon.ui.result.CompositeResult;
 import org.jboss.forge.addon.ui.result.Failed;
@@ -26,6 +28,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.github.adminfaces.addon.util.Constants;
+
 import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Arrays;
@@ -33,121 +37,136 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.*;
 
 /**
- * Test class for {@link com.github.adminfaces.addon.scaffold.AdminFacesScaffoldProvider}
+ * Test class for
+ * {@link com.github.adminfaces.addon.scaffold.AdminFacesScaffoldProvider}
  *
  * @author <a href="github.com/rmpestano">Rafael Pestano</a>
  */
 @RunWith(Arquillian.class)
 public class AdminFacesScaffoldTest {
 
-    @Inject
-    ProjectFactory projectFactory;
+	@Inject
+	ProjectFactory projectFactory;
 
-    @Inject
-    ShellTest shellTest;
+	@Inject
+	ShellTest shellTest;
 
-    Project project;
+	Project project;
 
-    @Deployment
-    @AddonDependencies
-    public static AddonArchive getDeployment() {
-        return ShrinkWrap.create(AddonArchive.class).addBeansXML().addClass(TestUtil.class).addPackages(true,
-                "org.assertj.core");
-    }
+	@Deployment
+	@AddonDependencies
+	public static AddonArchive getDeployment() {
+		return ShrinkWrap.create(AddonArchive.class).addBeansXML().addClass(TestUtil.class).addPackages(true,
+				"org.assertj.core");
+	}
 
-    @Before
-    public void setUp() throws IOException, TimeoutException {
-        project = projectFactory.createTempProject(Arrays.asList(JavaEE7Facet.class, ServletFacet_3_1.class,
-                JPAFacet.class, FacesFacet_2_0.class, JavaSourceFacet.class));
-        shellTest.getShell().setCurrentResource(project.getRoot());
-        MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
-        metadataFacet.setProjectGroupName("com.github.admin.addon");
-        metadataFacet.setProjectName("AdminFaces");
-        shellTest.execute("adminfaces-setup", 60, TimeUnit.SECONDS);
-        shellTest.clearScreen();
-    }
+	@Before
+	public void setUp() throws IOException, TimeoutException {
+		project = projectFactory.createTempProject(Arrays.asList(JavaEE7Facet.class, ServletFacet_3_1.class,
+				JPAFacet.class, FacesFacet_2_0.class, JavaSourceFacet.class));
+		shellTest.getShell().setCurrentResource(project.getRoot());
+		MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
+		metadataFacet.setProjectGroupName("com.github.admin.addon");
+		metadataFacet.setProjectName("AdminFaces");
+		shellTest.execute("adminfaces-setup", 60, TimeUnit.SECONDS);
+		shellTest.clearScreen();
+	}
 
-    @Test
-    public void shouldScaffoldFromEntities() throws Exception {
-        shellTest.execute("jpa-new-entity --named Customer", 15, TimeUnit.SECONDS);
-        shellTest.execute("jpa-new-field --named firstName", 10, TimeUnit.SECONDS);
-        Result result = shellTest.execute("scaffold-setup --provider AdminFaces", 10, TimeUnit.MINUTES);
-        assertThat(result).isInstanceOf(CompositeResult.class)
-                .extracting("message")
-                .contains("***SUCCESS*** Scaffold was setup successfully.");
-        Assert.assertThat(result, is(instanceOf(CompositeResult.class)));
-        
-        String entityPackageName = project.getFacet(JavaSourceFacet.class).getBasePackage() + ".model";
-        Result scaffoldGenerate1 = shellTest
-                 .execute(("scaffold-generate --entities " + entityPackageName
-                          + ".Customer"), 10,
-                          TimeUnit.MINUTES);
-        Assert.assertThat(scaffoldGenerate1, not(instanceOf(Failed.class)));
-    }
+	@Test
+	public void shouldScaffoldFromEntities() throws Exception {
+		shellTest.execute("jpa-new-entity --named Customer", 15, TimeUnit.SECONDS);
+		shellTest.execute("jpa-new-field --named firstName", 10, TimeUnit.SECONDS);
+		Result result = shellTest.execute("scaffold-setup --provider AdminFaces", 10, TimeUnit.MINUTES);
+		assertThat(result).isInstanceOf(CompositeResult.class).extracting("message")
+				.contains("***SUCCESS*** Scaffold was setup successfully.");
+		Assert.assertThat(result, is(instanceOf(CompositeResult.class)));
 
-   /*@Test
-   public void shouldCreateOneErrorPageForEachErrorCode() throws Exception
-   {
-      shellTest.execute("servlet-setup --servlet-version 3.1", 10, TimeUnit.SECONDS);
-      shellTest.execute("jpa-setup", 10, TimeUnit.SECONDS);
-      shellTest.execute("jpa-new-entity --named Customer", 10, TimeUnit.SECONDS);
-      shellTest.execute("jpa-new-field --named firstName", 10, TimeUnit.SECONDS);
-      shellTest.execute("jpa-new-entity --named Publisher", 10, TimeUnit.SECONDS);
-      shellTest.execute("jpa-new-field --named firstName", 10, TimeUnit.SECONDS);
-      Result result = shellTest.execute("scaffold-setup --provider Faces", 10, TimeUnit.SECONDS);
-      Assert.assertThat(result, not(instanceOf(Failed.class)));
-      Project project = projectFactory.findProject(shellTest.getShell().getCurrentResource());
-      Assert.assertTrue(project.hasFacet(ServletFacet_3_1.class));
-      ServletFacet_3_1 servletFacet = project.getFacet(ServletFacet_3_1.class);
-      Assert.assertNotNull(servletFacet.getConfig());
+		JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
+		String entityPackageName = sourceFacet.getBasePackage() + ".model";
+		Result scaffoldGenerate1 = shellTest
+				.execute(("scaffold-generate --entities " + entityPackageName + ".Customer"), 10, TimeUnit.MINUTES);
 
-      String entityPackageName = project.getFacet(JavaSourceFacet.class).getBasePackage() + ".model";
-      Result scaffoldGenerate1 = shellTest
-               .execute(("scaffold-generate --web-root /admin --targets " + entityPackageName
-                        + ".Customer"), 10,
-                        TimeUnit.SECONDS);
-      Assert.assertThat(scaffoldGenerate1, not(instanceOf(Failed.class)));
+		
+		if (scaffoldGenerate1 instanceof Failed) {
+			((Failed) scaffoldGenerate1).getException().printStackTrace();
+		}
+		Assert.assertThat(scaffoldGenerate1, not(instanceOf(Failed.class)));
+		
+		Resource<?> src = sourceFacet.getSourceDirectory();
 
-      Assert.assertEquals(2, servletFacet.getConfig().getAllErrorPage().size());
+		Resource<?> repository = src
+				.getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
+				.getChild(Constants.Packages.REPOSITORY+"/CustomerRepository.java");
+		
+		Assert.assertThat(repository.exists(), is(true));
+		
+		Resource<?> service = src
+				.getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
+				.getChild(Constants.Packages.SERVICE+"/CustomerService.java");
 
-      Result scaffoldGenerate2 = shellTest
-               .execute(("scaffold-generate --web-root /admin --targets " + entityPackageName
-                        + ".Publisher"), 10,
-                        TimeUnit.SECONDS);
-      Assert.assertThat(scaffoldGenerate2, not(instanceOf(Failed.class)));
-      Assert.assertEquals(2, servletFacet.getConfig().getAllErrorPage().size());
-   }
+		Assert.assertThat(service.exists(), is(true));
+	}
 
-   @Test
-   public void shouldScaffoldEntity() throws Exception
-   {
-      Assert.assertThat(shellTest.execute("javaee-setup --java-ee-version 7", 10, TimeUnit.SECONDS),
-               not(instanceOf(Failed.class)));
-      Assert.assertThat(shellTest.execute("jpa-setup", 10, TimeUnit.SECONDS), not(instanceOf(Failed.class)));
-      Assert.assertThat(shellTest.execute("jpa-new-entity --named Customer", 10, TimeUnit.SECONDS),
-               not(instanceOf(Failed.class)));
-      Assert.assertThat(shellTest.execute("jpa-new-field --named firstName", 10, TimeUnit.SECONDS),
-               not(instanceOf(Failed.class)));
-      Result result = shellTest.execute("scaffold-setup --provider Faces", 10, TimeUnit.SECONDS);
-      Assert.assertThat(result, not(instanceOf(Failed.class)));
+	/*
+	 * @Test public void shouldCreateOneErrorPageForEachErrorCode() throws Exception
+	 * { shellTest.execute("servlet-setup --servlet-version 3.1", 10,
+	 * TimeUnit.SECONDS); shellTest.execute("jpa-setup", 10, TimeUnit.SECONDS);
+	 * shellTest.execute("jpa-new-entity --named Customer", 10, TimeUnit.SECONDS);
+	 * shellTest.execute("jpa-new-field --named firstName", 10, TimeUnit.SECONDS);
+	 * shellTest.execute("jpa-new-entity --named Publisher", 10, TimeUnit.SECONDS);
+	 * shellTest.execute("jpa-new-field --named firstName", 10, TimeUnit.SECONDS);
+	 * Result result = shellTest.execute("scaffold-setup --provider Faces", 10,
+	 * TimeUnit.SECONDS); Assert.assertThat(result, not(instanceOf(Failed.class)));
+	 * Project project =
+	 * projectFactory.findProject(shellTest.getShell().getCurrentResource());
+	 * Assert.assertTrue(project.hasFacet(ServletFacet_3_1.class)); ServletFacet_3_1
+	 * servletFacet = project.getFacet(ServletFacet_3_1.class);
+	 * Assert.assertNotNull(servletFacet.getConfig());
+	 * 
+	 * String entityPackageName =
+	 * project.getFacet(JavaSourceFacet.class).getBasePackage() + ".model"; Result
+	 * scaffoldGenerate1 = shellTest
+	 * .execute(("scaffold-generate --web-root /admin --targets " +
+	 * entityPackageName + ".Customer"), 10, TimeUnit.SECONDS);
+	 * Assert.assertThat(scaffoldGenerate1, not(instanceOf(Failed.class)));
+	 * 
+	 * Assert.assertEquals(2, servletFacet.getConfig().getAllErrorPage().size());
+	 * 
+	 * Result scaffoldGenerate2 = shellTest
+	 * .execute(("scaffold-generate --web-root /admin --targets " +
+	 * entityPackageName + ".Publisher"), 10, TimeUnit.SECONDS);
+	 * Assert.assertThat(scaffoldGenerate2, not(instanceOf(Failed.class)));
+	 * Assert.assertEquals(2, servletFacet.getConfig().getAllErrorPage().size()); }
+	 * 
+	 * @Test public void shouldScaffoldEntity() throws Exception {
+	 * Assert.assertThat(shellTest.execute("javaee-setup --java-ee-version 7", 10,
+	 * TimeUnit.SECONDS), not(instanceOf(Failed.class)));
+	 * Assert.assertThat(shellTest.execute("jpa-setup", 10, TimeUnit.SECONDS),
+	 * not(instanceOf(Failed.class)));
+	 * Assert.assertThat(shellTest.execute("jpa-new-entity --named Customer", 10,
+	 * TimeUnit.SECONDS), not(instanceOf(Failed.class)));
+	 * Assert.assertThat(shellTest.execute("jpa-new-field --named firstName", 10,
+	 * TimeUnit.SECONDS), not(instanceOf(Failed.class))); Result result =
+	 * shellTest.execute("scaffold-setup --provider Faces", 10, TimeUnit.SECONDS);
+	 * Assert.assertThat(result, not(instanceOf(Failed.class)));
+	 * 
+	 * Project project =
+	 * projectFactory.findProject(shellTest.getShell().getCurrentResource()); String
+	 * entityPackageName = project.getFacet(JavaSourceFacet.class).getBasePackage()
+	 * + ".model"; result = shellTest.execute(
+	 * "scaffold-generate --provider Faces --targets " + entityPackageName +
+	 * ".Customer", 10, TimeUnit.SECONDS); Assert.assertThat(result,
+	 * not(instanceOf(Failed.class))); }
+	 */
 
-      Project project = projectFactory.findProject(shellTest.getShell().getCurrentResource());
-      String entityPackageName = project.getFacet(JavaSourceFacet.class).getBasePackage() + ".model";
-      result = shellTest.execute(
-               "scaffold-generate --provider Faces --targets " + entityPackageName + ".Customer", 10, TimeUnit.SECONDS);
-      Assert.assertThat(result, not(instanceOf(Failed.class)));
-   }*/
-
-    @After
-    public void tearDown() throws Exception {
-        if (project != null) {
-            project.getRoot().delete(true);
-        }
-        shellTest.close();
-    }
+	/*@After
+	public void tearDown() throws Exception {
+		if (project != null) {
+			project.getRoot().delete(true);
+		}
+		shellTest.close();
+	}*/
 }

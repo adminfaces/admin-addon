@@ -8,7 +8,9 @@ public interface Constants {
 
         public static final String SERVICE = "service";
 
-        public static final String model = "model";
+        public static final String MODEL = "model";
+
+		public static final String REPOSITORY = "repository";
     }
 
     class WebResources {

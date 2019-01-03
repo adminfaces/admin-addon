@@ -10,12 +10,16 @@ import javax.enterprise.context.ApplicationScoped;
 public class TemplateFactory implements Serializable {
 
 	private static final String INDEX_TEMPLATE = "scaffold/freemarker/index.xhtml";
-	
+
 	private static final String LOGIN_TEMPLATE = "scaffold/freemarker/login.xhtml";
 
 	private static final String TEMPLATE_TOP_TEMPLATE = "scaffold/freemarker/template-top.xhtml";
 
 	private static final String TEMPLATE_DEFAULT_TEMPLATE = "scaffold/freemarker/template.xhtml";
+
+	private static final String SERVICE_TEMPLATE = "scaffold/freemarker/Service.jv";
+	
+	private static final String REPOSITORY_TEMPLATE = "scaffold/freemarker/Repository.jv";
 
 	private Template indexTemplate;
 
@@ -25,12 +29,18 @@ public class TemplateFactory implements Serializable {
 
 	private Template templateDefault;
 
+	private Template serviceTemplate;
+	
+	private Template repositoryTemplate;
+
 	@PostConstruct
 	public void loadTemplates() {
 		indexTemplate = FreemarkerTemplateProcessor.getTemplate(INDEX_TEMPLATE);
 		loginTemplate = FreemarkerTemplateProcessor.getTemplate(LOGIN_TEMPLATE);
 		templateDefault = FreemarkerTemplateProcessor.getTemplate(TEMPLATE_DEFAULT_TEMPLATE);
 		templateTop = FreemarkerTemplateProcessor.getTemplate(TEMPLATE_TOP_TEMPLATE);
+		serviceTemplate = FreemarkerTemplateProcessor.getTemplate(SERVICE_TEMPLATE);
+		repositoryTemplate = FreemarkerTemplateProcessor.getTemplate(REPOSITORY_TEMPLATE);
 	}
 
 	public Template getIndexTemplate() {
@@ -44,11 +54,17 @@ public class TemplateFactory implements Serializable {
 	public Template getTemplateDefault() {
 		return templateDefault;
 	}
-	
+
 	public Template getLoginTemplate() {
-    return loginTemplate;
-  }
+		return loginTemplate;
+	}
+
+	public Template getServiceTemplate() {
+		return serviceTemplate;
+	}
 	
-	
+	public Template getRepositoryTemplate() {
+		return repositoryTemplate;
+	}
 
 }

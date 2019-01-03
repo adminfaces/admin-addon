@@ -1,0 +1,86 @@
+package com.github.adminfaces.starter.service;
+
+import com.github.adminfaces.persistence.model.Filter;
+import com.github.adminfaces.persistence.service.CrudService;
+import com.github.adminfaces.template.exception.BusinessException;
+import org.apache.deltaspike.data.api.criteria.Criteria;
+import ${entityPackage}.${entity.getName()};
+import ${repositoryPackage}.${entity.getName()}Repository;
+
+import javax.ejb.Stateless;
+import javax.inject.Inject;
+import java.io.Serializable;
+
+import static com.github.adminfaces.template.util.Assert.has;
+
+ 
+@Stateless
+public class ${entity.getName()}Service extends CrudService<${entity.getName()}, ${nullablePrimaryKeyType}> implements Serializable {
+
+    @Inject
+    protected ${entity.getName()}Repository ${ccEntity}Repository;// you can use repositories to extract complex queries from your service
+
+
+    /** 
+     * This method is used for (real) pagination and is called by lazy PrimeFaces datatable on list page
+     * @param filter holds restrictions populated on the list page
+     * @return a criteria populated with given restrictions 
+     */ 
+    protected Criteria<${entity.getName()}, ${entity.getName()}> configRestrictions(Filter<${entity.getName()}> filter) {
+
+        Criteria<${entity.getName()}, ${entity.getName()}> criteria = criteria();
+
+		/** just an example of restriction by param
+        if (filter.hasParam("name")) {
+			criteria.likeIgnoreCase(${entity.getName()}_.name, "%" + filterEntity.getName() + "%");        
+        } */
+
+        //create restrictions based on filter entity
+        if (has(filter.getEntity())) {
+            ${entity.getName()} filterEntity = filter.getEntity();
+            
+            /** just an example of restriction by entity
+            if (has(filterEntity.getNamel())) {
+                criteria.likeIgnoreCase(${entity.getName()}_.model, "%" + filterEntity.getName());
+            } */
+        }
+        return criteria;
+    }
+
+    public void beforeInsert(${entity.getName()} ${ccEntity}) {
+        validate(${ccEntity});
+    }
+
+    public void beforeUpdate(${entity.getName()} ${ccEntity}) {
+        validate(${ccEntity});
+    }
+
+    public void validate(${entity.getName()} ${ccEntity}) {
+        BusinessException be = new BusinessException();
+        /** just an example of validation
+        if (!car.hasModel()) {
+            be.addException(new BusinessException("Car model cannot be empty"));
+        }
+        if (!car.hasName()) {
+            be.addException(new BusinessException("Car name cannot be empty"));
+        }
+
+        if (!has(car.getPrice())) {
+            be.addException(new BusinessException("Car price cannot be empty"));
+        } 
+
+        if (count(criteria()
+                .eqIgnoreCase(Car_.name, car.getName())
+                .notEq(Car_.id, car.getId())) > 0) {
+
+            be.addException(new BusinessException("Car name must be unique"));
+        }
+        **/
+
+        //if there is exceptions enqueued then throw them. Each business exception will be transformed into a JSF error message and displayed on the page
+        if (has(be.getExceptionList())) {
+            throw be;
+        }
+    }
+
+}

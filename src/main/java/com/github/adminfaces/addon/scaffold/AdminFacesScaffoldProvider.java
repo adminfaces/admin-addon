@@ -2,6 +2,8 @@ package com.github.adminfaces.addon.scaffold;
 
 import static com.github.adminfaces.addon.util.DependencyUtil.ADMIN_PERSISTENCE_COORDINATE;
 import static com.github.adminfaces.addon.util.DependencyUtil.ADMIN_TEMPLATE_COORDINATE;
+import static org.jboss.forge.addon.javaee.JavaEEPackageConstants.DEFAULT_FACES_PACKAGE;
+import static org.jboss.forge.addon.scaffold.util.ScaffoldUtil.createOrOverwrite;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -20,6 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
+import javax.persistence.EmbeddedId;
 import javax.persistence.Id;
 
 import org.apache.commons.io.IOUtils;
@@ -30,6 +33,7 @@ import org.jboss.forge.addon.javaee.faces.FacesFacet;
 import org.jboss.forge.addon.javaee.jpa.JPAFacet;
 import org.jboss.forge.addon.javaee.jpa.ui.setup.JPASetupWizard;
 import org.jboss.forge.addon.javaee.servlet.ServletFacet;
+import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.parser.java.resources.JavaResource;
 import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.ProjectFacet;
@@ -38,19 +42,23 @@ import org.jboss.forge.addon.projects.facets.ResourcesFacet;
 import org.jboss.forge.addon.projects.facets.WebResourcesFacet;
 import org.jboss.forge.addon.resource.FileResource;
 import org.jboss.forge.addon.resource.Resource;
+import com.github.adminfaces.addon.freemarker.FreemarkerTemplateProcessor;
 import org.jboss.forge.addon.scaffold.spi.AccessStrategy;
 import org.jboss.forge.addon.scaffold.spi.ScaffoldGenerationContext;
 import org.jboss.forge.addon.scaffold.spi.ScaffoldProvider;
 import org.jboss.forge.addon.scaffold.spi.ScaffoldSetupContext;
 import org.jboss.forge.addon.scaffold.ui.ScaffoldSetupWizard;
+import org.jboss.forge.addon.scaffold.util.ScaffoldUtil;
 import org.jboss.forge.addon.ui.command.UICommand;
 import org.jboss.forge.addon.ui.result.NavigationResult;
 import org.jboss.forge.addon.ui.result.navigation.NavigationResultBuilder;
 import org.jboss.forge.addon.ui.util.Metadata;
 import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
+import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.Field;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
+import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 import org.jboss.forge.roaster.model.source.MemberSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
@@ -60,6 +68,7 @@ import org.metawidget.util.simple.StringUtils;
 
 import com.github.adminfaces.addon.freemarker.TemplateFactory;
 import com.github.adminfaces.addon.ui.AdminSetupCommand;
+import com.github.adminfaces.addon.util.Constants;
 import com.github.adminfaces.addon.util.DependencyUtil;
 
 public class AdminFacesScaffoldProvider implements ScaffoldProvider {
@@ -101,11 +110,8 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 	private void addAdminPersistence() {
 		DependencyBuilder adminPersistenceDependency = DependencyBuilder.create()
 				.setCoordinate(dependencyUtil.getLatestVersion(ADMIN_PERSISTENCE_COORDINATE));
-
 		dependencyUtil.installDependency(project.getFacet(DependencyFacet.class), adminPersistenceDependency);
-
 		configDeltaSpike(project);
-
 	}
 
 	private void configDeltaSpike(Project project) {
@@ -167,22 +173,28 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 
 	@Override
 	public List<Resource<?>> generateFrom(ScaffoldGenerationContext scaffoldGenerationContext) {
+		Project project = scaffoldGenerationContext.getProject();
 		Collection<Resource<?>> entities = scaffoldGenerationContext.getResources();
 		List<Resource<?>> generatedResources = new ArrayList<>();
 		Map<Object, Object> context = CollectionUtils.newHashMap();
+		JavaSourceFacet java = project.getFacet(JavaSourceFacet.class);
 		for (Resource<?> resource : entities) {
 			if (resource instanceof JavaResource) {
 				JavaResource javaResource = (JavaResource) resource;
 				try {
 					JavaClassSource entity = (JavaClassSource) javaResource.getJavaType();
+					entity.addImport("com.github.adminfaces.persistence.model.PersistenceEntity");
+					entity.addInterface("PersistenceEntity");
+					createOrOverwrite(java.getJavaResource(entity), entity.toString());
 					context.put("entity", entity);
 					String ccEntity = StringUtils.decapitalize(entity.getName());
+					context.put("entityPackage", entity.getPackage());
 					context.put("ccEntity", ccEntity);
 					setPrimaryKeyMetaData(context, entity);
-					Resource<?> generatedService = generateService(entity);
-					// TODO add service to freemarker context
-					generatedResources.add(generateListMBean(entity));
-					generatedResources.add(generateFormMBean(entity));
+					generatedResources.add(generateRepository(context, entity, java));
+					generatedResources.add(generateService(context, entity, java));
+					generatedResources.add(generateListMBean(context, entity, java));
+					generatedResources.add(generateFormMBean(context, entity, java));
 				} catch (FileNotFoundException fileEx) {
 					throw new IllegalStateException(fileEx);
 				} finally {
@@ -199,7 +211,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 	 * @param entitySource target entity
 	 * @return fully qualified name of generated Bean
 	 */
-	private Resource<?> generateFormMBean(JavaSource<?> entitySource) {
+	private Resource<?> generateFormMBean(Map<Object, Object> context, JavaSource<?> entitySource, JavaSourceFacet java) {
 
 		throw new NotImplementedException("TODO");
 	}
@@ -210,18 +222,43 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 	 * @param entitySource target entity
 	 * @return fully qualified name of generated Bean
 	 */
-	private Resource<?> generateListMBean(JavaSource<?> entitySource) {
+	private Resource<?> generateListMBean(Map<Object, Object> context, JavaSource<?> entitySource, JavaSourceFacet java) {
 		throw new NotImplementedException("TODO");
 	}
 
 	/**
+	 * Generates JPA repository for target entity
+	 * 
+	 * @param context
+	 * 
+	 * @param entitySource target entity
+	 * @return fully qualified name of generated Repository
+	 */
+	private Resource<?> generateRepository(Map<Object, Object> context, JavaSource<?> entitySource, JavaSourceFacet java) {
+		JavaInterfaceSource repository = Roaster.parse(JavaInterfaceSource.class,
+				FreemarkerTemplateProcessor.processTemplate(context, templates.getRepositoryTemplate()));
+		String repositoryPackage = java.getBasePackage() + "." + Constants.Packages.REPOSITORY;
+		repository.setPackage(repositoryPackage);
+		context.put("repositoryPackage", repositoryPackage);
+		return createOrOverwrite(java.getJavaResource(repository), repository.toString());
+	}
+	
+	/**
 	 * Generates service for target entity
+	 * 
+	 * @param context
 	 * 
 	 * @param entitySource target entity
 	 * @return fully qualified name of generated Service
 	 */
-	private Resource<?> generateService(JavaSource<?> entitySource) {
-		throw new NotImplementedException("TODO");
+	private Resource<?> generateService(Map<Object, Object> context, JavaSource<?> entitySource, JavaSourceFacet java) {
+		JavaClassSource service = Roaster.parse(JavaClassSource.class,
+				FreemarkerTemplateProcessor.processTemplate(context, templates.getServiceTemplate()));
+		String servicePackage = java.getBasePackage() + "." + Constants.Packages.SERVICE;
+		service.setPackage(servicePackage);
+		context.put("servicePackage", servicePackage);
+		service.setPackage(servicePackage);
+		return createOrOverwrite(java.getJavaResource(service), service.toString());
 	}
 
 	@Override
@@ -268,6 +305,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 
 	/**
 	 * Copied from forge-core/javaee/scafold-faces/FacesScaffoldProvider.java
+	 * 
 	 * @param context
 	 * @param entity
 	 */
@@ -276,7 +314,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 		String pkType = "Long";
 		String nullablePkType = "Long";
 		for (MemberSource<JavaClassSource, ?> m : entity.getMembers()) {
-			if (m.hasAnnotation(Id.class)) {
+			if (m.hasAnnotation(Id.class) || m.hasAnnotation(EmbeddedId.class)) {
 				if (m instanceof Field) {
 					Field<?> field = (Field<?>) m;
 					pkName = field.getName();
