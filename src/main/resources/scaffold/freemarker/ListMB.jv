@@ -42,30 +42,33 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
         clear();
     }
 
+    /**
+     * Used in datatable footer to display current search criteria
+     */
     public String getSearchCriteria() {
         StringBuilder sb = new StringBuilder(21);
-
-        ${entity.getName() ${ccEntity}Filter = filter.getEntity();
-
-        Integer idParam = null;
-        if (filter.hasParam("id")) {
-            idParam = filter.getIntParam("id");
+        ${entity.getName()} ${ccEntity}Filter = filter.getEntity();
+<#list fields as field>
+    <#if field.getName() != "serialVersionUID" && field.getName() != "version">
+        ${field.getType().getSimpleName()} ${field.getName()} = null;
+        if(filter.hasParam("${field.getName()}")) {
+            ${field.getName()} = (${field.getType().getSimpleName()})filter.getParam("${field.getName()}");
+        } else if(has(${ccEntity}Filter.get${field.getName()?cap_first}())) {
+             ${field.getName()} = ${ccEntity}Filter.get${field.getName()?cap_first}();
         }
-
-        if (has(idParam)) {
-            sb.append("<b>id</b>: ").append(idParam).append(", ");
-        }
-
-        //get other fields by relection
-
+        if(has(${field.getName()})) {
+	    <#assign s = "<b>${field.getName()}</b>:">
+	        sb.append("${s} ").append(${ccEntity}Filter.get${field.getName()?cap_first}()).append(", ");
+	    }
+	</#if>
+</#list>
         int commaIndex = sb.lastIndexOf(",");
-
         if (commaIndex != -1) {
             sb.deleteCharAt(commaIndex);
         }
 
         if (sb.toString().trim().isEmpty()) {
-            return "No search criteria";
+            return getMessage("empty-search-criteria");
         }
 
         return sb.toString();

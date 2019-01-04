@@ -189,11 +189,25 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 					String ccEntity = StringUtils.decapitalize(entity.getName());
 					context.put("entityPackage", entity.getPackage());
 					context.put("ccEntity", ccEntity);
+					context.put("fields", entity.getFields());
 					setPrimaryKeyMetaData(context, entity);
-					generatedResources.add(generateRepository(context, entity, java));
-					generatedResources.add(generateService(context, entity, java));
-					generatedResources.add(generateListMBean(context, entity, java));
-					generatedResources.add(generateFormMBean(context, entity, java));
+					Optional<Resource<?>> generatedRepository = generateRepository(context, entity, java);
+					if(generatedRepository.isPresent()) {
+						generatedResources.add(generatedRepository.get());
+					}
+					Optional<Resource<?>> generatedService = generateService(context, entity, java);
+					if(generatedService.isPresent()) {
+						generatedResources.add(generatedService.get());
+					}
+					Optional<Resource<?>> generatedListMBean = generateListMBean(context, entity, java);
+					if(generatedListMBean.isPresent()) {
+						generatedResources.add(generatedListMBean.get());
+					}
+					Optional<Resource<?>> generatedFormMBean = generateFormMBean(context, entity, java);
+					if(generatedFormMBean.isPresent()) {
+						generatedResources.add(generatedFormMBean.get());
+					}
+					
 				} catch (FileNotFoundException fileEx) {
 					throw new IllegalStateException(fileEx);
 				} finally {
@@ -210,7 +224,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 	 * @param entitySource target entity
 	 * @return fully qualified name of generated Bean
 	 */
-	private Resource<?> generateFormMBean(Map<Object, Object> context, JavaSource<?> entitySource, JavaSourceFacet java) {
+	private Optional<Resource<?>> generateFormMBean(Map<Object, Object> context, JavaSource<?> entitySource, JavaSourceFacet java) {
 
 		throw new NotImplementedException("TODO");
 	}
@@ -221,8 +235,15 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 	 * @param entitySource target entity
 	 * @return fully qualified name of generated Bean
 	 */
-	private Resource<?> generateListMBean(Map<Object, Object> context, JavaSource<?> entitySource, JavaSourceFacet java) {
-		throw new NotImplementedException("TODO");
+	private Optional<Resource<?>> generateListMBean(Map<Object, Object> context, JavaSource<?> entitySource, JavaSourceFacet java) {
+		JavaClassSource listMB = Roaster.parse(JavaClassSource.class,
+				FreemarkerTemplateProcessor.processTemplate(context, templates.getListMBTemplate()));
+		listMB.setPackage(java.getBasePackage() + "." + Constants.Packages.BEAN);
+		JavaResource javaResource = java.getJavaResource(listMB);
+		if(javaResource.exists()) {
+			return Optional.empty();
+		}
+		return Optional.of(createOrOverwrite(javaResource, listMB.toUnformattedString()));
 	}
 
 	/**
@@ -233,12 +254,16 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 	 * @param entitySource target entity
 	 * @return fully qualified name of generated Repository
 	 */
-	private Resource<?> generateRepository(Map<Object, Object> context, JavaSource<?> entitySource, JavaSourceFacet java) {
+	private Optional<Resource<?>> generateRepository(Map<Object, Object> context, JavaSource<?> entitySource, JavaSourceFacet java) {
 		JavaInterfaceSource repository = Roaster.parse(JavaInterfaceSource.class,
 				FreemarkerTemplateProcessor.processTemplate(context, templates.getRepositoryTemplate()));
 		repository.setPackage(java.getBasePackage() + "." + Constants.Packages.REPOSITORY);
 		context.put("repository", repository);
-		return createOrOverwrite(java.getJavaResource(repository), repository.toUnformattedString());
+		JavaResource javaResource = java.getJavaResource(repository);
+		if(javaResource.exists()) {
+			return Optional.empty();
+		}
+		return Optional.of(createOrOverwrite(java.getJavaResource(repository), repository.toUnformattedString()));
 	}
 	
 	/**
@@ -249,12 +274,16 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 	 * @param entitySource target entity
 	 * @return fully qualified name of generated Service
 	 */
-	private Resource<?> generateService(Map<Object, Object> context, JavaSource<?> entitySource, JavaSourceFacet java) {
+	private Optional<Resource<?>> generateService(Map<Object, Object> context, JavaSource<?> entitySource, JavaSourceFacet java) {
 		JavaClassSource service = Roaster.parse(JavaClassSource.class,
 				FreemarkerTemplateProcessor.processTemplate(context, templates.getServiceTemplate()));
 		service.setPackage(java.getBasePackage() + "." + Constants.Packages.SERVICE);
 		context.put("service", service);
-		return createOrOverwrite(java.getJavaResource(service), service.toUnformattedString());
+		JavaResource javaResource = java.getJavaResource(service);
+		if(javaResource.exists()) {
+			return Optional.empty();
+		}
+		return Optional.of(createOrOverwrite(javaResource, service.toUnformattedString()));
 	}
 
 	@Override
