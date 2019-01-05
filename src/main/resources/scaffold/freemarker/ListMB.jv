@@ -1,8 +1,6 @@
 package com.github.adminfaces.starter.bean;
 
 import com.github.adminfaces.persistence.bean.CrudMB;
-import com.github.adminfaces.persistence.service.CrudService;
-import com.github.adminfaces.persistence.service.Service;
 import com.github.adminfaces.persistence.util.Messages;
 import com.github.adminfaces.template.exception.BusinessException;
 import org.omnifaces.cdi.ViewScoped;
@@ -54,7 +52,7 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
         if(filter.hasParam("${field.getName()}")) {
             ${field.getName()} = (${field.getType().getSimpleName()})filter.getParam("${field.getName()}");
         } else if(has(${ccEntity}Filter.get${field.getName()?cap_first}())) {
-             ${field.getName()} = ${ccEntity}Filter.get${field.getName()?cap_first}();
+            ${field.getName()} = ${ccEntity}Filter.get${field.getName()?cap_first}();
         }
         if(has(${field.getName()})) {
 	    <#assign s = "<b>${field.getName()}</b>:">

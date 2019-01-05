@@ -1,0 +1,46 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.github.adminfaces.starter.bean;
+
+import com.github.adminfaces.persistence.bean.BeanService;
+import com.github.adminfaces.persistence.bean.CrudMB;
+import ${entity.getQualifiedName()};
+import ${service.getQualifiedName()};
+import org.omnifaces.cdi.ViewScoped;
+import org.omnifaces.util.Faces;
+
+import javax.inject.Named;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.logging.Level;
+
+@Named
+@ViewScoped
+@BeanService(${service.getName()}.class)//use annotation instead of setter
+public class ${entity.getName()}FormMB extends CrudMB<${entity.getName()}> implements Serializable {
+
+    public void afterRemove() {
+        try {
+            addDetailMsg("${entity.getName()} " + entity.getId() + " removed successfully");
+            Faces.redirect("${ccEntity}-list.xhtml");
+            clear(); 
+            sessionFilter.clear(${entity.getName()}FormMB.class.getName());//removes filter saved in session for this bean.
+        } catch (IOException e) {
+           log.log(Level.WARNING, "",e);
+        }
+    }
+
+    @Override
+    public void afterInsert() {
+        addDetailMsg("${entity.getName()} " + entity.getId() + " created successfully");
+    }
+
+    @Override
+    public void afterUpdate() {
+        addDetailMsg("${entity.getName()} " + entity.getId() + " updated successfully");
+    }
+    
+
+}

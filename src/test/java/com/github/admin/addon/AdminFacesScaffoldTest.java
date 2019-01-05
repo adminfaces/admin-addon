@@ -108,6 +108,16 @@ public class AdminFacesScaffoldTest {
 				.getChild(Constants.Packages.SERVICE+"/CustomerService.java");
 
 		Assert.assertThat(service.exists(), is(true));
+		
+		Resource<?> formMB = src
+				.getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
+				.getChild(Constants.Packages.BEAN+"/CustomerFormMB.java");
+		
+		Resource<?> listMB = src
+				.getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
+				.getChild(Constants.Packages.BEAN+"/CustomerListMB.java");
+
+		Assert.assertThat(listMB.exists(), is(true));
 	}
 
 	/*

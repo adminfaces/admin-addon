@@ -225,8 +225,14 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 	 * @return fully qualified name of generated Bean
 	 */
 	private Optional<Resource<?>> generateFormMBean(Map<Object, Object> context, JavaSource<?> entitySource, JavaSourceFacet java) {
-
-		throw new NotImplementedException("TODO");
+		JavaClassSource formMB = Roaster.parse(JavaClassSource.class,
+				FreemarkerTemplateProcessor.processTemplate(context, templates.getFormMBTemplate()));
+		formMB.setPackage(java.getBasePackage() + "." + Constants.Packages.BEAN);
+		JavaResource javaResource = java.getJavaResource(formMB);
+		if(javaResource.exists()) {
+			return Optional.empty();
+		}
+		return Optional.of(createOrOverwrite(javaResource, formMB.toUnformattedString()));
 	}
 
 	/**

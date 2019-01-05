@@ -29,11 +29,18 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
     protected Criteria<${entity.getName()}, ${entity.getName()}> configRestrictions(Filter<${entity.getName()}> filter) {
 
         Criteria<${entity.getName()}, ${entity.getName()}> criteria = criteria();
-
+        
 		/** just an example of restriction by param
         if (filter.hasParam("name")) {
 			criteria.likeIgnoreCase(${entity.getName()}_.name, "%" + filterEntity.getName() + "%");        
         } */
+<#list fields as field>
+	<#if field.getName() != "serialVersionUID" && field.getName() != "version">
+	    if(filter.hasParam("${field.getName()}")) {
+	        criteria.eq(${entity.getName()}_.${field.getName()}, filter.getParam("${field.getName()}"));   
+	    }  
+	</#if>
+</#list>
 
         //create restrictions based on filter entity
         if (has(filter.getEntity())) {
@@ -41,8 +48,16 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
             
             /** just an example of restriction by entity
             if (has(filterEntity.getNamel())) {
-                criteria.likeIgnoreCase(${entity.getName()}_.model, "%" + filterEntity.getName());
+                criteria.likeIgnoreCase(${entity.getName()}_.name, "%" + filterEntity.getName());
             } */
+            
+<#list fields as field>
+	<#if field.getName() != "serialVersionUID" && field.getName() != "version">
+	        if(has(filterEntity.get${field.getName()?cap_first}())) {
+	            criteria.eq(${entity.getName()}_.${field.getName()}, filterEntity.get${field.getName()?cap_first}());   
+	        }  
+	</#if>
+</#list>
         }
         return criteria;
     }

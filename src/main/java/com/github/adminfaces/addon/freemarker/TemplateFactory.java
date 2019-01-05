@@ -22,6 +22,8 @@ public class TemplateFactory implements Serializable {
 	private static final String REPOSITORY_TEMPLATE = "scaffold/freemarker/Repository.jv";
 	
 	private static final String LIST_MB_TEMPLATE = "scaffold/freemarker/ListMB.jv";
+	
+	private static final String FORM_MB_TEMPLATE = "scaffold/freemarker/FormMB.jv";
 
 	private Template indexTemplate;
 
@@ -36,6 +38,8 @@ public class TemplateFactory implements Serializable {
 	private Template repositoryTemplate;
 	
 	private Template listMBTemplate;
+	
+	private Template formMBTemplate;
 
 	@PostConstruct
 	public void loadTemplates() {
@@ -46,6 +50,7 @@ public class TemplateFactory implements Serializable {
 		serviceTemplate = FreemarkerTemplateProcessor.getTemplate(SERVICE_TEMPLATE);
 		repositoryTemplate = FreemarkerTemplateProcessor.getTemplate(REPOSITORY_TEMPLATE);
 		listMBTemplate = FreemarkerTemplateProcessor.getTemplate(LIST_MB_TEMPLATE);
+		formMBTemplate = FreemarkerTemplateProcessor.getTemplate(FORM_MB_TEMPLATE);
 	}
 
 	public Template getIndexTemplate() {
@@ -74,6 +79,10 @@ public class TemplateFactory implements Serializable {
 
 	public Template getListMBTemplate() {
 		return listMBTemplate;
+	}
+	
+	public Template getFormMBTemplate() {
+		return formMBTemplate;
 	}
 
 }
