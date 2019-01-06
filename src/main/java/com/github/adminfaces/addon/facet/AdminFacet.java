@@ -9,5 +9,4 @@ import org.jboss.forge.addon.projects.ProjectFacet;
  */
 public interface AdminFacet extends ProjectFacet {
 
-
 }

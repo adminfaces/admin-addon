@@ -8,11 +8,8 @@ import org.jboss.forge.addon.javaee.jpa.JPAFacet;
 import org.jboss.forge.addon.javaee.servlet.ServletFacet_3_1;
 import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.projects.Project;
-import org.jboss.forge.addon.projects.ProjectFacet;
 import org.jboss.forge.addon.projects.ProjectFactory;
 import org.jboss.forge.addon.projects.facets.MetadataFacet;
-import org.jboss.forge.addon.projects.facets.ResourcesFacet;
-import org.jboss.forge.addon.projects.facets.WebResourcesFacet;
 import org.jboss.forge.addon.resource.Resource;
 import org.jboss.forge.addon.shell.test.ShellTest;
 import org.jboss.forge.addon.ui.result.CompositeResult;
@@ -21,10 +18,8 @@ import org.jboss.forge.addon.ui.result.Result;
 import org.jboss.forge.arquillian.AddonDependencies;
 import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -48,79 +43,78 @@ import static org.hamcrest.CoreMatchers.*;
 @RunWith(Arquillian.class)
 public class AdminFacesScaffoldTest {
 
-	@Inject
-	ProjectFactory projectFactory;
+    @Inject
+    ProjectFactory projectFactory;
 
-	@Inject
-	ShellTest shellTest;
+    @Inject
+    ShellTest shellTest;
 
-	Project project;
+    Project project;
 
-	@Deployment
-	@AddonDependencies
-	public static AddonArchive getDeployment() {
-		return ShrinkWrap.create(AddonArchive.class).addBeansXML().addClass(TestUtil.class).addPackages(true,
-				"org.assertj.core");
-	}
+    @Deployment
+    @AddonDependencies
+    public static AddonArchive getDeployment() {
+        return ShrinkWrap.create(AddonArchive.class).addBeansXML().addClass(TestUtil.class).addPackages(true,
+            "org.assertj.core");
+    }
 
-	@Before
-	public void setUp() throws IOException, TimeoutException {
-		project = projectFactory.createTempProject(Arrays.asList(JavaEE7Facet.class, ServletFacet_3_1.class,
-				JPAFacet.class, FacesFacet_2_0.class, JavaSourceFacet.class));
-		shellTest.getShell().setCurrentResource(project.getRoot());
-		MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
-		metadataFacet.setProjectGroupName("com.github.admin.addon");
-		metadataFacet.setProjectName("AdminFaces");
-		shellTest.execute("adminfaces-setup", 60, TimeUnit.SECONDS);
-		shellTest.clearScreen();
-	}
+    @Before
+    public void setUp() throws IOException, TimeoutException {
+        project = projectFactory.createTempProject(Arrays.asList(JavaEE7Facet.class, ServletFacet_3_1.class,
+            JPAFacet.class, FacesFacet_2_0.class, JavaSourceFacet.class));
+        shellTest.getShell().setCurrentResource(project.getRoot());
+        MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
+        metadataFacet.setProjectGroupName("com.github.admin.addon");
+        metadataFacet.setProjectName("AdminFaces");
+        shellTest.execute("adminfaces-setup", 60, TimeUnit.SECONDS);
+        shellTest.clearScreen();
+    }
 
-	@Test
-	public void shouldScaffoldFromEntities() throws Exception {
-		shellTest.execute("jpa-new-entity --named Customer", 15, TimeUnit.SECONDS);
-		shellTest.execute("jpa-new-field --named firstName", 10, TimeUnit.SECONDS);
-		Result result = shellTest.execute("scaffold-setup --provider AdminFaces", 10, TimeUnit.MINUTES);
-		assertThat(result).isInstanceOf(CompositeResult.class).extracting("message")
-				.contains("***SUCCESS*** Scaffold was setup successfully.");
-		Assert.assertThat(result, is(instanceOf(CompositeResult.class)));
+    @Test
+    public void shouldScaffoldFromEntities() throws Exception {
+        shellTest.execute("jpa-new-entity --named Customer", 15, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named firstName", 10, TimeUnit.SECONDS);
+        Result result = shellTest.execute("scaffold-setup --provider AdminFaces", 10, TimeUnit.MINUTES);
+        assertThat(result).isInstanceOf(CompositeResult.class).extracting("message")
+            .contains("***SUCCESS*** Scaffold was setup successfully.");
+        Assert.assertThat(result, is(instanceOf(CompositeResult.class)));
 
-		JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
-		String entityPackageName = sourceFacet.getBasePackage() + ".model";
-		Result scaffoldGenerate1 = shellTest
-				.execute(("scaffold-generate --entities " + entityPackageName + ".Customer"), 10, TimeUnit.MINUTES);
+        JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
+        String entityPackageName = sourceFacet.getBasePackage() + ".model";
+        Result scaffoldGenerate1 = shellTest
+            .execute(("scaffold-generate --entities " + entityPackageName + ".Customer"), 10, TimeUnit.MINUTES);
 
-		
-		if (scaffoldGenerate1 instanceof Failed) {
-			((Failed) scaffoldGenerate1).getException().printStackTrace();
-		}
-		Assert.assertThat(scaffoldGenerate1, not(instanceOf(Failed.class)));
-		
-		Resource<?> src = sourceFacet.getSourceDirectory();
-		
-		Resource<?> repository = src
-				.getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
-				.getChild(Constants.Packages.REPOSITORY+"/CustomerRepository.java");
-		
-		Assert.assertThat(repository.exists(), is(true));
-		
-		Resource<?> service = src
-				.getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
-				.getChild(Constants.Packages.SERVICE+"/CustomerService.java");
+        if (scaffoldGenerate1 instanceof Failed) {
+            ((Failed) scaffoldGenerate1).getException().printStackTrace();
+        }
+        Assert.assertThat(scaffoldGenerate1, not(instanceOf(Failed.class)));
 
-		Assert.assertThat(service.exists(), is(true));
-		
-		Resource<?> formMB = src
-				.getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
-				.getChild(Constants.Packages.BEAN+"/CustomerFormMB.java");
-		
-		Resource<?> listMB = src
-				.getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
-				.getChild(Constants.Packages.BEAN+"/CustomerListMB.java");
+        Resource<?> src = sourceFacet.getSourceDirectory();
 
-		Assert.assertThat(listMB.exists(), is(true));
-	}
+        Resource<?> repository = src
+            .getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
+            .getChild(Constants.Packages.REPOSITORY + "/CustomerRepository.java");
 
-	/*
+        Assert.assertThat(repository.exists(), is(true));
+
+        Resource<?> service = src
+            .getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
+            .getChild(Constants.Packages.SERVICE + "/CustomerService.java");
+
+        Assert.assertThat(service.exists(), is(true));
+
+        Resource<?> formMB = src
+            .getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
+            .getChild(Constants.Packages.BEAN + "/CustomerFormMB.java");
+
+        Resource<?> listMB = src
+            .getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
+            .getChild(Constants.Packages.BEAN + "/CustomerListMB.java");
+
+        Assert.assertThat(listMB.exists(), is(true));
+    }
+
+    /*
 	 * @Test public void shouldCreateOneErrorPageForEachErrorCode() throws Exception
 	 * { shellTest.execute("servlet-setup --servlet-version 3.1", 10,
 	 * TimeUnit.SECONDS); shellTest.execute("jpa-setup", 10, TimeUnit.SECONDS);
@@ -170,9 +164,9 @@ public class AdminFacesScaffoldTest {
 	 * "scaffold-generate --provider Faces --targets " + entityPackageName +
 	 * ".Customer", 10, TimeUnit.SECONDS); Assert.assertThat(result,
 	 * not(instanceOf(Failed.class))); }
-	 */
+     */
 
-	/*@After
+ /*@After
 	public void tearDown() throws Exception {
 		if (project != null) {
 			project.getRoot().delete(true);

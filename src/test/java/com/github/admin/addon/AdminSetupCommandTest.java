@@ -55,13 +55,13 @@ public class AdminSetupCommandTest {
     @AddonDependencies
     public static AddonArchive getDeployment() {
         return ShrinkWrap.create(AddonArchive.class).addBeansXML().addClass(TestUtil.class).addPackages(true,
-                "org.assertj.core");
+            "org.assertj.core");
     }
 
     @Before
     public void setUp() throws IOException {
         project = projectFactory.createTempProject(Arrays.asList(JavaEE7Facet.class, ServletFacet_3_1.class,
-                JPAFacet.class, FacesFacet_2_0.class, JavaSourceFacet.class));
+            JPAFacet.class, FacesFacet_2_0.class, JavaSourceFacet.class));
         MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
         metadataFacet.setProjectGroupName("com.github.admin.addon");
         metadataFacet.setProjectName("AdminFaces");
@@ -90,13 +90,13 @@ public class AdminSetupCommandTest {
         DependencyFacet dependencyFacet = project.getFacet(DependencyFacet.class);
 
         assertThat(dependencyFacet.hasDirectDependency(
-                DependencyBuilder.create().setCoordinate(DependencyUtil.ADMIN_TEMPLATE_COORDINATE))).isTrue();
+            DependencyBuilder.create().setCoordinate(DependencyUtil.ADMIN_TEMPLATE_COORDINATE))).isTrue();
 
         Resource<?> projectRoot = project.getRoot();
         File adminConfig = new File(
-                projectRoot.getFullyQualifiedName() + "/src/main/resources/admin-config.properties");
+            projectRoot.getFullyQualifiedName() + "/src/main/resources/admin-config.properties");
         assertThat(adminConfig).exists().hasContent("admin.renderControlSidebar=true" + newLine()
-                + "admin.controlSidebar.showOnMobile=true" + newLine() + "admin.ignoredResources=rest");
+            + "admin.controlSidebar.showOnMobile=true" + newLine() + "admin.ignoredResources=rest");
         assertThat(new File(projectRoot.getFullyQualifiedName() + "/src/main/resources/messages.properties")).exists();
         WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
         assertThat(new File(web.getWebResource("index.xhtml").getFullyQualifiedName())).exists();
@@ -111,12 +111,12 @@ public class AdminSetupCommandTest {
         File template = new File(web.getWebResource("WEB-INF/templates/template.xhtml").getFullyQualifiedName());
         assertThat(template).exists();
         assertThat(contentOf(template)).contains("        <title>Admin Faces</title>")
-                .contains("    <ui:define name=\"logo\">" + newLine() + "        Admin Faces" + newLine()
-                        + "    </ui:define>")
-                .contains("    <ui:define name=\"logo-mini\">" + newLine() + "         Adm" + newLine()
-                        + "    </ui:define>");
+            .contains("    <ui:define name=\"logo\">" + newLine() + "        Admin Faces" + newLine()
+                + "    </ui:define>")
+            .contains("    <ui:define name=\"logo-mini\">" + newLine() + "         Adm" + newLine()
+                + "    </ui:define>");
         assertThat(new File(web.getWebResource("WEB-INF/templates/template-top.xhtml").getFullyQualifiedName()))
-                .exists();
+            .exists();
 
         assertThat(project.getFacet(AdminFacet.class).isInstalled()).isTrue();
     }
@@ -133,26 +133,24 @@ public class AdminSetupCommandTest {
         assertThat(webXml).exists().exists();
 
         assertThat(contentOf(webXml)).contains("/500.jsf").contains("/401.jsf").contains("/403.jsf")
-                .contains("/404.jsf").contains("<exception-type>javax.persistence.OptimisticLockException</exception-type>")
-                .contains("<exception-type>javax.faces.application.ViewExpiredException</exception-type>");
-
+            .contains("/404.jsf").contains("<exception-type>javax.persistence.OptimisticLockException</exception-type>")
+            .contains("<exception-type>javax.faces.application.ViewExpiredException</exception-type>");
 
     }
 
     private void changeUrlPattern() {
         WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
         FileResource<?> webXml = web.getWebResource("WEB-INF/web.xml");
-        webXml.setContents("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<web-app xmlns=\"http://java.sun.com/xml/ns/javaee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-                "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd\"\n" +
-                "         version=\"3.0\">" + newLine() +
-                "<servlet-mapping>" + newLine() +
-                "        <servlet-name>Faces Servlet</servlet-name>" + newLine() +
-                "        <url-pattern>*.jsf</url-pattern>" + newLine() +
-                "    </servlet-mapping>" + newLine() +
-                "    " + newLine() +
-                "</web-app>"
-
+        webXml.setContents("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            + "<web-app xmlns=\"http://java.sun.com/xml/ns/javaee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+            + "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd\"\n"
+            + "         version=\"3.0\">" + newLine()
+            + "<servlet-mapping>" + newLine()
+            + "        <servlet-name>Faces Servlet</servlet-name>" + newLine()
+            + "        <url-pattern>*.jsf</url-pattern>" + newLine()
+            + "    </servlet-mapping>" + newLine()
+            + "    " + newLine()
+            + "</web-app>"
         );
     }
 

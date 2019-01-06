@@ -20,21 +20,20 @@ public class DependencyUtil {
     public static final Coordinate ADMIN_TEMPLATE_COORDINATE = CoordinateBuilder.create().setGroupId(ADMIN_FACES_GROUP_ID).setArtifactId("admin-template");
     public static final Coordinate ADMIN_PERSISTENCE_COORDINATE = CoordinateBuilder.create().setGroupId(ADMIN_FACES_GROUP_ID).setArtifactId("admin-persistence");
 
-    public static final Coordinate PRIMEFACES_EXTENSIONS_COORDINATE = //used only for gravatar
-            CoordinateBuilder.create().setGroupId("org.primefaces.extensions").setArtifactId("primefaces-extensions").setVersion("6.2.8");
-
+    public static final Coordinate PRIMEFACES_EXTENSIONS_COORDINATE = CoordinateBuilder.create().setGroupId("org.primefaces.extensions")
+        .setArtifactId("primefaces-extensions").setVersion("6.2.8");
 
     @Inject
     private DependencyResolver resolver;
 
     public Coordinate getLatestVersion(Coordinate coordinate) {
-         return resolver.resolveVersions(DependencyQueryBuilder.create(coordinate))
-                 .stream()
-                 .filter(d -> !d.getVersion().contains("SNAPSHOT"))
-                 .reduce((a, b) -> b)
-                 .orElse(null);
-     }
-    
+        return resolver.resolveVersions(DependencyQueryBuilder.create(coordinate))
+            .stream()
+            .filter(d -> !d.getVersion().contains("SNAPSHOT"))
+            .reduce((a, b) -> b)
+            .orElse(null);
+    }
+
     public void installDependency(DependencyFacet facet, DependencyBuilder dependency) {
         if (!facet.hasDirectDependency(dependency)) {
             facet.addDirectDependency(dependency);

@@ -31,118 +31,117 @@ import org.jboss.shrinkwrap.descriptor.api.persistence.PersistenceCommonDescript
 
 public class AdminFacesEntitySelectionWizard extends AbstractProjectCommand implements UIWizardStep {
 
-	private UISelectMany<JavaClassSource> entities;
-	private UIInput<Boolean> generateEqualsAndHashCode;
-	
-	@Inject
-	private ProjectFactory projectFactory;
+    private UISelectMany<JavaClassSource> entities;
+    private UIInput<Boolean> generateEqualsAndHashCode;
 
-	@Override
-	@SuppressWarnings("unchecked")
-	public void initializeUI(final UIBuilder builder) throws Exception {
-		InputComponentFactory factory = builder.getInputComponentFactory();
-		entities = factory.createSelectMany("entities", JavaClassSource.class).setLabel("Entities").setRequired(true)
-				.setDescription("The JPA entities to use as the basis for generating the scaffold.");
-		generateEqualsAndHashCode = factory.createInput("generateEqualsAndHashCode", Boolean.class)
-				.setLabel("Generate missing .equals() and .hashCode() methods").setDescription(
-						"If enabled, entities missing an .equals() or .hashCode() method will be updated to provide them");
+    @Inject
+    private ProjectFactory projectFactory;
 
-		Project project = getSelectedProject(builder);
+    @Override
+    @SuppressWarnings("unchecked")
+    public void initializeUI(final UIBuilder builder) throws Exception {
+        InputComponentFactory factory = builder.getInputComponentFactory();
+        entities = factory.createSelectMany("entities", JavaClassSource.class).setLabel("Entities").setRequired(true)
+            .setDescription("The JPA entities to use as the basis for generating the scaffold.");
+        generateEqualsAndHashCode = factory.createInput("generateEqualsAndHashCode", Boolean.class)
+            .setLabel("Generate missing .equals() and .hashCode() methods").setDescription(
+            "If enabled, entities missing an .equals() or .hashCode() method will be updated to provide them");
 
-		JPAFacet<PersistenceCommonDescriptor> persistenceFacet = project.getFacet(JPAFacet.class);
-		entities.setValueChoices(persistenceFacet.getAllEntities());
-		entities.setItemLabelConverter(source -> source.getQualifiedName());
-		builder.add(entities);
-		generateEqualsAndHashCode.setEnabled(new Callable<Boolean>() {
-			@Override
-			public Boolean call() throws Exception {
-				for (JavaClassSource javaSource : entities.getValue()) {
-					if (!javaSource.hasMethodSignature("hashCode")
-							|| !javaSource.hasMethodSignature("equals", Object.class)) {
-						return true;
-					}
-				}
-				return false;
-			}
-		});
-		builder.add(generateEqualsAndHashCode);
-	}
+        Project project = getSelectedProject(builder);
 
-	@Override
-	public NavigationResult next(UINavigationContext context) throws Exception {
-		UIContext uiContext = context.getUIContext();
-		Map<Object, Object> attributeMap = uiContext.getAttributeMap();
-		ResourceCollection resourceCollection = new ResourceCollection();
-		if (entities.getValue() != null) {
-			for (JavaClassSource klass : entities.getValue()) {
-				Project project = getSelectedProject(uiContext);
-				JavaSourceFacet javaSource = project.getFacet(JavaSourceFacet.class);
-				Resource<?> resource = javaSource.getJavaResource(klass);
-				if (resource != null) {
-					resourceCollection.addToCollection(resource);
-				}
-			}
-		}
+        JPAFacet<PersistenceCommonDescriptor> persistenceFacet = project.getFacet(JPAFacet.class);
+        entities.setValueChoices(persistenceFacet.getAllEntities());
+        entities.setItemLabelConverter(source -> source.getQualifiedName());
+        builder.add(entities);
+        generateEqualsAndHashCode.setEnabled(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                for (JavaClassSource javaSource : entities.getValue()) {
+                    if (!javaSource.hasMethodSignature("hashCode")
+                        || !javaSource.hasMethodSignature("equals", Object.class)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
+        builder.add(generateEqualsAndHashCode);
+    }
 
-		attributeMap.put(ResourceCollection.class, resourceCollection);
-		return null;
-	}
+    @Override
+    public NavigationResult next(UINavigationContext context) throws Exception {
+        UIContext uiContext = context.getUIContext();
+        Map<Object, Object> attributeMap = uiContext.getAttributeMap();
+        ResourceCollection resourceCollection = new ResourceCollection();
+        if (entities.getValue() != null) {
+            for (JavaClassSource klass : entities.getValue()) {
+                Project project = getSelectedProject(uiContext);
+                JavaSourceFacet javaSource = project.getFacet(JavaSourceFacet.class);
+                Resource<?> resource = javaSource.getJavaResource(klass);
+                if (resource != null) {
+                    resourceCollection.addToCollection(resource);
+                }
+            }
+        }
 
-	@Override
-	public UICommandMetadata getMetadata(UIContext context) {
-		return Metadata.forCommand(getClass()).name("Select JPA entities")
-				.description("Select the JPA entities to be used for scaffolding.");
-	}
+        attributeMap.put(ResourceCollection.class, resourceCollection);
+        return null;
+    }
 
-	@Override
-	public boolean isEnabled(UIContext context) {
-		return true;
-	}
+    @Override
+    public UICommandMetadata getMetadata(UIContext context) {
+        return Metadata.forCommand(getClass()).name("Select JPA entities")
+            .description("Select the JPA entities to be used for scaffolding.");
+    }
 
-	@Override
-	public Result execute(UIExecutionContext context) throws Exception {
-		for (JavaClassSource javaSource : entities.getValue()) {
-			UIContext uiContext = context.getUIContext();
-			Project project = getSelectedProject(uiContext);
-			JavaSourceFacet javaSourceFacet = project.getFacet(JavaSourceFacet.class);
-			if (!javaSource.hasMethodSignature("hashCode")) {
-				if (generateEqualsAndHashCode.getValue()) {
-					if (javaSource.getField("id") != null) {
-						Refactory.createHashCode(javaSource, javaSource.getField("id"));
-					} else {
-						Refactory.createHashCode(javaSource,
-								javaSource.getFields().toArray(new FieldSource[javaSource.getFields().size()]));
-					}
+    @Override
+    public boolean isEnabled(UIContext context) {
+        return true;
+    }
 
-				}
-			}
+    @Override
+    public Result execute(UIExecutionContext context) throws Exception {
+        for (JavaClassSource javaSource : entities.getValue()) {
+            UIContext uiContext = context.getUIContext();
+            Project project = getSelectedProject(uiContext);
+            JavaSourceFacet javaSourceFacet = project.getFacet(JavaSourceFacet.class);
+            if (!javaSource.hasMethodSignature("hashCode")) {
+                if (generateEqualsAndHashCode.getValue()) {
+                    if (javaSource.getField("id") != null) {
+                        Refactory.createHashCode(javaSource, javaSource.getField("id"));
+                    } else {
+                        Refactory.createHashCode(javaSource,
+                            javaSource.getFields().toArray(new FieldSource[javaSource.getFields().size()]));
+                    }
 
-			if (!javaSource.hasMethodSignature("equals", Object.class)) {
-				if (generateEqualsAndHashCode.getValue()) {
-					if (javaSource.getField("id") != null) {
-						Refactory.createEquals(javaSource, javaSource.getField("id"));
-					} else {
-						Refactory.createEquals(javaSource,
-								javaSource.getFields().toArray(new FieldSource[javaSource.getFields().size()]));
-					}
-				}
-			}
-			javaSourceFacet.saveJavaSource(javaSource);
+                }
+            }
 
-		}
+            if (!javaSource.hasMethodSignature("equals", Object.class)) {
+                if (generateEqualsAndHashCode.getValue()) {
+                    if (javaSource.getField("id") != null) {
+                        Refactory.createEquals(javaSource, javaSource.getField("id"));
+                    } else {
+                        Refactory.createEquals(javaSource,
+                            javaSource.getFields().toArray(new FieldSource[javaSource.getFields().size()]));
+                    }
+                }
+            }
+            javaSourceFacet.saveJavaSource(javaSource);
 
-		return null;
-	}
+        }
 
+        return null;
+    }
 
-	@Override
-	protected ProjectFactory getProjectFactory() {
-		return projectFactory;
-	}
+    @Override
+    protected ProjectFactory getProjectFactory() {
+        return projectFactory;
+    }
 
-	@Override
-	protected boolean isProjectRequired() {
-		return true;
-	}
+    @Override
+    protected boolean isProjectRequired() {
+        return true;
+    }
 
 }
