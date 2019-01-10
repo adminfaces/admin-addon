@@ -25,7 +25,6 @@ import javax.persistence.EmbeddedId;
 import javax.persistence.Id;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.NotImplementedException;
 import org.jboss.forge.addon.dependencies.builder.DependencyBuilder;
 import org.jboss.forge.addon.javaee.cdi.CDIFacet;
 import org.jboss.forge.addon.javaee.faces.FacesFacet;
@@ -56,7 +55,6 @@ import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.Field;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
-import org.jboss.forge.roaster.model.source.JavaSource;
 import org.jboss.forge.roaster.model.source.MemberSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 import org.jboss.forge.roaster.model.util.Types;
@@ -68,15 +66,14 @@ import com.github.adminfaces.addon.freemarker.TemplateFactory;
 import com.github.adminfaces.addon.ui.AdminSetupCommand;
 import com.github.adminfaces.addon.util.Constants;
 import com.github.adminfaces.addon.util.DependencyUtil;
+import java.nio.charset.Charset;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.parser.ParseSettings;
+import org.jsoup.parser.Parser;
 
 public class AdminFacesScaffoldProvider implements ScaffoldProvider {
-
-    private static final String INDEX_PAGE = "/index.xhtml";
-    private static final String TEMPLATES = "/WEB-INF/templates";
-    private static final String TEMPLATE_DEFAULT = TEMPLATES + "/template.xhtml";
-    private static final String TEMPLATE_TOP = TEMPLATES + "/template-top.xhtml";
-    private static final String INDEX_HTML = "/index.html";
-    private static final String SCAFFOLD_PAGE_TEMPLATE = "#{layoutMB.template}";
 
     private static final Logger LOG = Logger.getLogger(AdminSetupCommand.class.getName());
 
@@ -85,8 +82,6 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 
     @Inject
     private DependencyUtil dependencyUtil;
-
-    private Project project;
 
     @Override
     public String getName() {
@@ -100,12 +95,12 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 
     @Override
     public List<Resource<?>> setup(ScaffoldSetupContext setupContext) {
-        this.project = setupContext.getProject();
-        addAdminPersistence();
+        Project project = setupContext.getProject();
+        addAdminPersistence(project);
         return Collections.emptyList();
     }
 
-    private void addAdminPersistence() {
+    private void addAdminPersistence(Project project) {
         DependencyBuilder adminPersistenceDependency = DependencyBuilder.create()
             .setCoordinate(dependencyUtil.getLatestVersion(ADMIN_PERSISTENCE_COORDINATE));
         dependencyUtil.installDependency(project.getFacet(DependencyFacet.class), adminPersistenceDependency);
@@ -150,8 +145,8 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 
         WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
 
-        boolean areResourcesInstalled = web.getWebResource(INDEX_PAGE).exists()
-            && web.getWebResource(TEMPLATE_DEFAULT).exists() && web.getWebResource(TEMPLATE_TOP).exists();
+        boolean areResourcesInstalled = web.getWebResource(Constants.WebResources.INDEX_PAGE).exists()
+            && web.getWebResource(Constants.WebResources.TEMPLATE_DEFAULT).exists() && web.getWebResource(Constants.WebResources.TEMPLATE_TOP).exists();
 
         Resource<?> resources = project.getFacet(ResourcesFacet.class).getResourceDirectory();
 
@@ -190,22 +185,11 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
                     context.put("ccEntity", ccEntity);
                     context.put("fields", entity.getFields());
                     setPrimaryKeyMetaData(context, entity);
-                    Optional<Resource<?>> generatedRepository = generateRepository(context, entity, java);
-                    if (generatedRepository.isPresent()) {
-                        generatedResources.add(generatedRepository.get());
-                    }
-                    Optional<Resource<?>> generatedService = generateService(context, entity, java);
-                    if (generatedService.isPresent()) {
-                        generatedResources.add(generatedService.get());
-                    }
-                    Optional<Resource<?>> generatedListMBean = generateListMBean(context, entity, java);
-                    if (generatedListMBean.isPresent()) {
-                        generatedResources.add(generatedListMBean.get());
-                    }
-                    Optional<Resource<?>> generatedFormMBean = generateFormMBean(context, entity, java);
-                    if (generatedFormMBean.isPresent()) {
-                        generatedResources.add(generatedFormMBean.get());
-                    }
+                    generateRepository(context, java, generatedResources);
+                    generateService(context, java, generatedResources);
+                    generateListMBean(context, java, generatedResources);
+                    generateFormMBean(context, java, generatedResources);
+                    addMenuEntry(context, generatedResources, project);
 
                 } catch (FileNotFoundException fileEx) {
                     throw new IllegalStateException(fileEx);
@@ -223,15 +207,14 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
      * @param entitySource target entity
      * @return fully qualified name of generated Bean
      */
-    private Optional<Resource<?>> generateFormMBean(Map<Object, Object> context, JavaSource<?> entitySource, JavaSourceFacet java) {
+    private void generateFormMBean(Map<Object, Object> context, JavaSourceFacet java, List<Resource<?>> generatedResources) {
         JavaClassSource formMB = Roaster.parse(JavaClassSource.class,
             FreemarkerTemplateProcessor.processTemplate(context, templates.getFormMBTemplate()));
         formMB.setPackage(java.getBasePackage() + "." + Constants.Packages.BEAN);
         JavaResource javaResource = java.getJavaResource(formMB);
-        if (javaResource.exists()) {
-            return Optional.empty();
+        if (!javaResource.exists()) {
+            generatedResources.add(createOrOverwrite(javaResource, formMB.toUnformattedString()));
         }
-        return Optional.of(createOrOverwrite(javaResource, formMB.toUnformattedString()));
     }
 
     /**
@@ -240,15 +223,14 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
      * @param entitySource target entity
      * @return fully qualified name of generated Bean
      */
-    private Optional<Resource<?>> generateListMBean(Map<Object, Object> context, JavaSource<?> entitySource, JavaSourceFacet java) {
+    private void generateListMBean(Map<Object, Object> context, JavaSourceFacet java, List<Resource<?>> generatedResources) {
         JavaClassSource listMB = Roaster.parse(JavaClassSource.class,
             FreemarkerTemplateProcessor.processTemplate(context, templates.getListMBTemplate()));
         listMB.setPackage(java.getBasePackage() + "." + Constants.Packages.BEAN);
         JavaResource javaResource = java.getJavaResource(listMB);
-        if (javaResource.exists()) {
-            return Optional.empty();
+        if (!javaResource.exists()) {
+            generatedResources.add(createOrOverwrite(javaResource, listMB.toUnformattedString()));
         }
-        return Optional.of(createOrOverwrite(javaResource, listMB.toUnformattedString()));
     }
 
     /**
@@ -259,16 +241,15 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
      * @param entitySource target entity
      * @return fully qualified name of generated Repository
      */
-    private Optional<Resource<?>> generateRepository(Map<Object, Object> context, JavaSource<?> entitySource, JavaSourceFacet java) {
+    private void generateRepository(Map<Object, Object> context, JavaSourceFacet java, List<Resource<?>> generatedResources) {
         JavaInterfaceSource repository = Roaster.parse(JavaInterfaceSource.class,
             FreemarkerTemplateProcessor.processTemplate(context, templates.getRepositoryTemplate()));
         repository.setPackage(java.getBasePackage() + "." + Constants.Packages.REPOSITORY);
         context.put("repository", repository);
         JavaResource javaResource = java.getJavaResource(repository);
-        if (javaResource.exists()) {
-            return Optional.empty();
+        if (!javaResource.exists()) {
+            generatedResources.add(createOrOverwrite(javaResource, repository.toUnformattedString()));
         }
-        return Optional.of(createOrOverwrite(java.getJavaResource(repository), repository.toUnformattedString()));
     }
 
     /**
@@ -279,21 +260,44 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
      * @param entitySource target entity
      * @return fully qualified name of generated Service
      */
-    private Optional<Resource<?>> generateService(Map<Object, Object> context, JavaSource<?> entitySource, JavaSourceFacet java) {
+    private void generateService(Map<Object, Object> context, JavaSourceFacet java, List<Resource<?>> generatedResources) {
         JavaClassSource service = Roaster.parse(JavaClassSource.class,
             FreemarkerTemplateProcessor.processTemplate(context, templates.getServiceTemplate()));
         service.setPackage(java.getBasePackage() + "." + Constants.Packages.SERVICE);
         context.put("service", service);
         JavaResource javaResource = java.getJavaResource(service);
-        if (javaResource.exists()) {
-            return Optional.empty();
+        if (!javaResource.exists()) {
+            generatedResources.add(createOrOverwrite(javaResource, service.toUnformattedString()));
         }
-        return Optional.of(createOrOverwrite(javaResource, service.toUnformattedString()));
+    }
+
+    public void addMenuEntry(Map<Object, Object> context, List<Resource<?>> generatedResources, Project project) {
+        Document.OutputSettings outputSettings = new Document.OutputSettings();
+        outputSettings.prettyPrint(true)
+            .charset("UTF-8")
+            .indentAmount(4)
+            .syntax(Document.OutputSettings.Syntax.xml);
+        Parser parser = Parser.xmlParser().settings(new ParseSettings(true, true));
+        WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
+        FileResource<?> leftMenu = web.getWebResource(Constants.WebResources.LEFT_MENU);
+        Document leftMenuDocument = Jsoup.parse(leftMenu.getContents(Charset.forName("UTF-8")));
+        Element contentElement = leftMenuDocument.getElementsByClass("sidebar-menu").get(0);
+        contentElement.append("<li>\n"
+            + "                    <p:link href=\"/non-existing.xhtml\" title=\"404 page\">\n"
+            + "                        <i class=\"fa fa-circle-o\"></i>\n"
+            + "                        <span>404</span>\n"
+            + "                    </p:link>\n"
+            + "                </li>");
+        
+        String content = leftMenuDocument.body().toString();
+        int startIndex = content.indexOf("<ui:composition");
+        int endIndex = content.indexOf("</body");
+        leftMenu.setContents(parser.parseInput(content.substring(startIndex,endIndex),"UTF-8").outputSettings(outputSettings).toString());
     }
 
     @Override
     public NavigationResult getSetupFlow(ScaffoldSetupContext setupContext) {
-        this.project = setupContext.getProject();
+        Project project = setupContext.getProject();
         NavigationResultBuilder builder = NavigationResultBuilder.create();
         List<Class<? extends UICommand>> setupCommands = new ArrayList<>();
         if (!project.hasFacet(JPAFacet.class)) {
@@ -318,19 +322,11 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
     }
 
     protected HashMap<Object, Object> getTemplateContext(String targetDir, final Resource<?> template) {
-        TemplateStrategy templateStrategy = getTemplateStrategy();
-
-        HashMap<Object, Object> context;
-        context = new HashMap<>();
+        HashMap<Object, Object> context = new HashMap<>();
         context.put("template", template);
-        context.put("templatePath", SCAFFOLD_PAGE_TEMPLATE);
-        context.put("templateStrategy", templateStrategy);
+        context.put("templatePath", Constants.WebResources.PAGE_TEMPLATE);
         context.put("targetDir", targetDir);
         return context;
-    }
-
-    public TemplateStrategy getTemplateStrategy() {
-        return new AdminTemplateStrategy(this.project);
     }
 
     /**

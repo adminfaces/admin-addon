@@ -75,6 +75,11 @@
 			<classifier>forge-addon</classifier>
 		</dependency>
 		<dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.11.3</version>
+        </dependency>
+		<dependency>
 			<groupId>org.jboss.forge.furnace.container</groupId>
 			<artifactId>cdi</artifactId>
 			<classifier>forge-addon</classifier>
