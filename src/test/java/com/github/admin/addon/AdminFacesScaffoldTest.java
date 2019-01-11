@@ -20,7 +20,6 @@ import org.jboss.forge.addon.ui.result.Result;
 import org.jboss.forge.arquillian.AddonDependencies;
 import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,6 +35,7 @@ import java.util.concurrent.TimeoutException;
 import org.jboss.forge.addon.projects.facets.WebResourcesFacet;
 import org.jboss.forge.addon.resource.FileResource;
 import static org.assertj.core.api.Assertions.contentOf;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 /**
@@ -131,6 +131,11 @@ public class AdminFacesScaffoldTest {
 "                <span>Customers</span> "+NEW_LINE +
 "            </p:link>");
         
+        FileResource<?> topMenu = web.getWebResource(Constants.WebResources.TOP_MENU);
+        File topMenuFile = new File(topMenu.getFullyQualifiedName());
+        assertThat(topMenuFile).exists();
+        assertThat(contentOf(topMenuFile))
+            .contains("<li id=\"menuCustomer\" class=\"dropdown\"> <a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">Customers <span class=\"caret\"></span> <i class=\"fa fa-circle-o\"></i> </a> ");
     }
 
     /*

@@ -78,6 +78,13 @@ import org.jsoup.parser.Parser;
 public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 
     private static final Logger LOG = Logger.getLogger(AdminSetupCommand.class.getName());
+    
+    private final Document.OutputSettings outputSettings = new Document.OutputSettings().prettyPrint(true)
+            .charset("UTF-8")
+            .indentAmount(4)
+            .syntax(Document.OutputSettings.Syntax.xml);
+    
+    private final Parser parser = Parser.xmlParser().settings(new ParseSettings(true, true));
 
     @Inject
     private TemplateFactory templates;
@@ -173,6 +180,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
         List<Resource<?>> generatedResources = new ArrayList<>();
         Map<Object, Object> context = CollectionUtils.newHashMap();
         JavaSourceFacet java = project.getFacet(JavaSourceFacet.class);
+        WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
         for (Resource<?> resource : entities) {
             if (resource instanceof JavaResource) {
                 JavaResource javaResource = (JavaResource) resource;
@@ -193,8 +201,10 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
                     generateFormMBean(context, java, generatedResources);
                     addLeftMenuEntry(project, entity, generatedResources);
                     addToptMenuEntry(project, entity, generatedResources);
-                } catch (FileNotFoundException fileEx) {
-                    throw new IllegalStateException(fileEx);
+                    generateListPage(context, web, generatedResources);
+                } catch (Exception e) {
+                    LOG.log(Level.SEVERE, "Problems during AdminFaces scaffold execution.",e);
+                    throw new RuntimeException(e);
                 } finally {
                     context.clear();
                 }
@@ -206,8 +216,9 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
     /**
      * Generates JSF bean for Create and update target entity
      *
-     * @param entitySource target entity
-     * @return fully qualified name of generated Bean
+     * @param context generation context containing entity 
+     * @param java Forge Java facet used to access java files
+     * @param generatedResources generated resources on current scaffold execution
      */
     private void generateFormMBean(Map<Object, Object> context, JavaSourceFacet java, List<Resource<?>> generatedResources) {
         JavaClassSource formMB = Roaster.parse(JavaClassSource.class,
@@ -222,8 +233,9 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
     /**
      * Generates JSF bean for list and search target entity
      *
-     * @param entitySource target entity
-     * @return fully qualified name of generated Bean
+     * @param context generation context containing entity 
+     * @param java Forge Java facet used to access java files
+     * @param generatedResources generated resources on current scaffold execution
      */
     private void generateListMBean(Map<Object, Object> context, JavaSourceFacet java, List<Resource<?>> generatedResources) {
         JavaClassSource listMB = Roaster.parse(JavaClassSource.class,
@@ -238,10 +250,9 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
     /**
      * Generates JPA repository for target entity
      *
-     * @param context
-     *
-     * @param entitySource target entity
-     * @return fully qualified name of generated Repository
+     * @param context generation context containing entity 
+     * @param java Forge Java facet used to access java files
+     * @param generatedResources generated resources on current scaffold execution
      */
     private void generateRepository(Map<Object, Object> context, JavaSourceFacet java, List<Resource<?>> generatedResources) {
         JavaInterfaceSource repository = Roaster.parse(JavaInterfaceSource.class,
@@ -257,10 +268,10 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
     /**
      * Generates service for target entity
      *
-     * @param context
-     *
-     * @param entitySource target entity
-     * @return fully qualified name of generated Service
+     * @param context generation context containing entity 
+     * @param java Forge Java facet used to access java files
+     * @param generatedResources generated resources on current scaffold execution
+     * 
      */
     private void generateService(Map<Object, Object> context, JavaSourceFacet java, List<Resource<?>> generatedResources) {
         JavaClassSource service = Roaster.parse(JavaClassSource.class,
@@ -272,14 +283,25 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
             generatedResources.add(createOrOverwrite(javaResource, service.toUnformattedString()));
         }
     }
+    
+     /**
+     * Generates entity list page
+     * 
+     * @param context generation context containing entity 
+     * @param web Forge web facet used to access web resources
+     * @param generatedResources 
+     */
+    private void generateListPage(Map<Object, Object> context, WebResourcesFacet web, List<Resource<?>> generatedResources) {
+        String listPage = FreemarkerTemplateProcessor.processTemplate(context, templates.getListPageTemplate());
+        JavaClassSource entity = (JavaClassSource) context.get("entity");
+        String entityName = entity.getName().toLowerCase();
+        FileResource<?> listPageFile = web.getWebResource("/"+entityName+"/"+entityName+"-list.xhtml");
+        if (!listPageFile.exists()) {
+            generatedResources.add(createOrOverwrite(listPageFile, parser.parseInput(listPage,"UTF-8").outputSettings(outputSettings).toString()));
+        }
+    }
 
     void addLeftMenuEntry(Project project, JavaClassSource entity, List<Resource<?>> generatedResources) {
-        Document.OutputSettings outputSettings = new Document.OutputSettings();
-        outputSettings.prettyPrint(true)
-            .charset("UTF-8")
-            .indentAmount(4)
-            .syntax(Document.OutputSettings.Syntax.xml);
-        Parser parser = Parser.xmlParser().settings(new ParseSettings(true, true));
         WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
         FileResource<?> leftMenu = web.getWebResource(Constants.WebResources.LEFT_MENU);
         Document leftMenuDocument = Jsoup.parse(leftMenu.getContents(Charset.forName("UTF-8")));
@@ -304,15 +326,8 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
             generatedResources.add(leftMenu);
         }
     }
-
     
     void addToptMenuEntry(Project project, JavaClassSource entity, List<Resource<?>> generatedResources) {
-        Document.OutputSettings outputSettings = new Document.OutputSettings();
-        outputSettings.prettyPrint(true)
-            .charset("UTF-8")
-            .indentAmount(4)
-            .syntax(Document.OutputSettings.Syntax.xml);
-        Parser parser = Parser.xmlParser().settings(new ParseSettings(true, true));
         WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
         FileResource<?> topMenu = web.getWebResource(Constants.WebResources.TOP_MENU);
         Document leftMenuDocument = Jsoup.parse(topMenu.getContents(Charset.forName("UTF-8")));
