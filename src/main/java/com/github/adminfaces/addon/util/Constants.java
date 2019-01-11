@@ -1,6 +1,8 @@
 package com.github.adminfaces.addon.util;
 
 public interface Constants {
+    
+    public static final String NEW_LINE = System.getProperty("line.separator");
 
     class Packages {
 

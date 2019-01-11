@@ -3,6 +3,7 @@ package com.github.adminfaces.addon.scaffold;
 import static com.github.adminfaces.addon.util.DependencyUtil.ADMIN_PERSISTENCE_COORDINATE;
 import static com.github.adminfaces.addon.util.DependencyUtil.ADMIN_TEMPLATE_COORDINATE;
 import static org.jboss.forge.addon.scaffold.util.ScaffoldUtil.createOrOverwrite;
+import static com.github.adminfaces.addon.util.Constants.NEW_LINE;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -72,6 +73,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.ParseSettings;
 import org.jsoup.parser.Parser;
+
 
 public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 
@@ -189,8 +191,8 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
                     generateService(context, java, generatedResources);
                     generateListMBean(context, java, generatedResources);
                     generateFormMBean(context, java, generatedResources);
-                    addMenuEntry(context, generatedResources, project);
-
+                    addLeftMenuEntry(project, entity, generatedResources);
+                    addToptMenuEntry(project, entity, generatedResources);
                 } catch (FileNotFoundException fileEx) {
                     throw new IllegalStateException(fileEx);
                 } finally {
@@ -271,7 +273,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
         }
     }
 
-    public void addMenuEntry(Map<Object, Object> context, List<Resource<?>> generatedResources, Project project) {
+    void addLeftMenuEntry(Project project, JavaClassSource entity, List<Resource<?>> generatedResources) {
         Document.OutputSettings outputSettings = new Document.OutputSettings();
         outputSettings.prettyPrint(true)
             .charset("UTF-8")
@@ -281,18 +283,79 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
         WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
         FileResource<?> leftMenu = web.getWebResource(Constants.WebResources.LEFT_MENU);
         Document leftMenuDocument = Jsoup.parse(leftMenu.getContents(Charset.forName("UTF-8")));
-        Element contentElement = leftMenuDocument.getElementsByClass("sidebar-menu").get(0);
-        contentElement.append("<li>\n"
-            + "                    <p:link href=\"/non-existing.xhtml\" title=\"404 page\">\n"
-            + "                        <i class=\"fa fa-circle-o\"></i>\n"
-            + "                        <span>404</span>\n"
-            + "                    </p:link>\n"
-            + "                </li>");
-        
-        String content = leftMenuDocument.body().toString();
-        int startIndex = content.indexOf("<ui:composition");
-        int endIndex = content.indexOf("</body");
-        leftMenu.setContents(parser.parseInput(content.substring(startIndex,endIndex),"UTF-8").outputSettings(outputSettings).toString());
+        Element menuContent = leftMenuDocument.getElementsByClass("sidebar-menu").get(0);
+
+        String entityName = entity.getName();
+        boolean menuEntryExists = menuContent.getElementById("menu" + entityName) != null;
+        if (!menuEntryExists) {
+            String pageFolder = "/" + entityName.toLowerCase() + "/";
+            String listPage = pageFolder + entityName.toLowerCase() + "-list.xhtml";
+            menuContent.append("<li>"+NEW_LINE
+                + "                    <p:link id=\"menu" + entityName + "\" outcome=\"" + listPage + "\" title=\""+ entityName + "s page\">"+NEW_LINE
+                + "                        <i class=\"fa fa-circle-o\"></i>"+NEW_LINE
+                + "                        <span>" + entityName + "s</span>"+NEW_LINE
+                + "                    </p:link>"+NEW_LINE
+                + "                </li>");
+
+            String content = leftMenuDocument.body().toString();
+            int startIndex = content.indexOf("<ui:composition");
+            int endIndex = content.indexOf("</body");
+            leftMenu.setContents(parser.parseInput("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+content.substring(startIndex, endIndex), "UTF-8").outputSettings(outputSettings).toString());
+            generatedResources.add(leftMenu);
+        }
+    }
+
+    
+    void addToptMenuEntry(Project project, JavaClassSource entity, List<Resource<?>> generatedResources) {
+        Document.OutputSettings outputSettings = new Document.OutputSettings();
+        outputSettings.prettyPrint(true)
+            .charset("UTF-8")
+            .indentAmount(4)
+            .syntax(Document.OutputSettings.Syntax.xml);
+        Parser parser = Parser.xmlParser().settings(new ParseSettings(true, true));
+        WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
+        FileResource<?> topMenu = web.getWebResource(Constants.WebResources.TOP_MENU);
+        Document leftMenuDocument = Jsoup.parse(topMenu.getContents(Charset.forName("UTF-8")));
+        Element menuContent = leftMenuDocument.getElementsByClass("navbar-nav").get(0);
+
+        String entityName = entity.getName();
+        boolean menuEntryExists = menuContent.getElementById("menu" + entityName) != null;
+        if (!menuEntryExists) {
+            String pageFolder = "/" + entityName.toLowerCase() + "/";
+            String listPage = pageFolder + entityName.toLowerCase() + "-list.xhtml";
+            String formPage = pageFolder + entityName.toLowerCase() + "-form.xhtml";
+            menuContent.append("<li id=\""+ "menu"+entityName + "\" class=\"dropdown\">"+NEW_LINE + NEW_LINE +
+"            <a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">" + entityName + "s <span"+NEW_LINE +
+"                    class=\"caret\"></span>"+NEW_LINE +
+"                <i class=\"fa fa-circle-o\"></i>"+NEW_LINE +
+"            </a>"+NEW_LINE +
+""+NEW_LINE +
+""+NEW_LINE +
+"            <ul class=\"dropdown-menu\" role=\"menu\">"+NEW_LINE +
+"                <li>"+NEW_LINE +
+"                    <p:link outcome=\""+listPage + "\">"+NEW_LINE +
+"                        <span>List</span>"+NEW_LINE +
+"                        <i class=\"fa fa-th-list\"></i>"+NEW_LINE +
+"                    </p:link>"+NEW_LINE +
+"                </li>"+NEW_LINE +
+"                <li>"+NEW_LINE +
+"                    <p:link outcome=\"" + formPage + "\">"+NEW_LINE +
+"                        <span>New</span>"+NEW_LINE +
+"                        <i class=\"fa fa-plus-circle\"></i>"+NEW_LINE +
+"                    </p:link>"+NEW_LINE +
+"                </li>"+NEW_LINE +
+""+NEW_LINE +
+""+NEW_LINE +
+"            </ul>"+NEW_LINE +
+""+NEW_LINE +
+"        </li>");
+
+            String content = leftMenuDocument.body().toString();
+            int startIndex = content.indexOf("<ui:composition");
+            int endIndex = content.indexOf("</body");
+            topMenu.setContents(parser.parseInput("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+content.substring(startIndex, endIndex), "UTF-8").outputSettings(outputSettings).toString());
+            generatedResources.add(topMenu);
+        }
     }
 
     @Override

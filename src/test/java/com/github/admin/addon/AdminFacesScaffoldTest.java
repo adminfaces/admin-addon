@@ -1,5 +1,7 @@
 package com.github.admin.addon;
 
+import static com.github.adminfaces.addon.util.Constants.NEW_LINE;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.addon.javaee.faces.FacesFacet_2_0;
@@ -24,15 +26,17 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.github.adminfaces.addon.util.Constants;
+import java.io.File;
 
 import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.*;
+import org.jboss.forge.addon.projects.facets.WebResourcesFacet;
+import org.jboss.forge.addon.resource.FileResource;
+import static org.assertj.core.api.Assertions.contentOf;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 /**
  * Test class for
@@ -69,6 +73,7 @@ public class AdminFacesScaffoldTest {
         shellTest.execute("adminfaces-setup", 60, TimeUnit.SECONDS);
         shellTest.clearScreen();
     }
+    
 
     @Test
     public void shouldScaffoldFromEntities() throws Exception {
@@ -77,7 +82,6 @@ public class AdminFacesScaffoldTest {
         Result result = shellTest.execute("scaffold-setup --provider AdminFaces", 10, TimeUnit.MINUTES);
         assertThat(result).isInstanceOf(CompositeResult.class).extracting("message")
             .contains("***SUCCESS*** Scaffold was setup successfully.");
-        Assert.assertThat(result, is(instanceOf(CompositeResult.class)));
 
         JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
         String entityPackageName = sourceFacet.getBasePackage() + ".model";
@@ -87,7 +91,7 @@ public class AdminFacesScaffoldTest {
         if (scaffoldGenerate1 instanceof Failed) {
             ((Failed) scaffoldGenerate1).getException().printStackTrace();
         }
-        Assert.assertThat(scaffoldGenerate1, not(instanceOf(Failed.class)));
+        assertThat(scaffoldGenerate1).isNotInstanceOf(Failed.class);
 
         Resource<?> src = sourceFacet.getSourceDirectory();
 
@@ -95,23 +99,38 @@ public class AdminFacesScaffoldTest {
             .getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
             .getChild(Constants.Packages.REPOSITORY + "/CustomerRepository.java");
 
-        Assert.assertThat(repository.exists(), is(true));
+        assertThat(repository.exists()).isTrue();
 
         Resource<?> service = src
             .getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
             .getChild(Constants.Packages.SERVICE + "/CustomerService.java");
 
-        Assert.assertThat(service.exists(), is(true));
+        assertThat(service.exists()).isTrue();
 
         Resource<?> formMB = src
             .getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
             .getChild(Constants.Packages.BEAN + "/CustomerFormMB.java");
 
+        assertThat(formMB.exists()).isTrue();
+        
         Resource<?> listMB = src
             .getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
             .getChild(Constants.Packages.BEAN + "/CustomerListMB.java");
 
-        Assert.assertThat(listMB.exists(), is(true));
+        assertThat(listMB.exists()).isTrue();
+        
+        WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
+        FileResource<?> leftMenu = web.getWebResource(Constants.WebResources.LEFT_MENU);
+        
+        File leftMenuFile = new File(leftMenu.getFullyQualifiedName());
+        assertThat(leftMenuFile).exists();
+
+        assertThat(contentOf(leftMenuFile))
+            .contains("<p:link id=\"menuCustomer\" outcome=\"/customer/customer-list.xhtml\" title=\"Customers page\"> "+NEW_LINE +
+"                <i class=\"fa fa-circle-o\"></i> "+NEW_LINE +
+"                <span>Customers</span> "+NEW_LINE +
+"            </p:link>");
+        
     }
 
     /*

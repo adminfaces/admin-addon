@@ -130,7 +130,7 @@ public class AdminSetupCommandTest {
         WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
 
         File webXml = new File(web.getWebResource("WEB-INF/web.xml").getFullyQualifiedName());
-        assertThat(webXml).exists().exists();
+        assertThat(webXml).exists();
 
         assertThat(contentOf(webXml)).contains("/500.jsf").contains("/401.jsf").contains("/403.jsf")
             .contains("/404.jsf").contains("<exception-type>javax.persistence.OptimisticLockException</exception-type>")
