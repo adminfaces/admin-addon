@@ -118,7 +118,21 @@
                 <p:separator/>
 
                 <div class="ui-g ui-fluid">
-<!--      FAZER UM FOR nos fields              <div class="ui-g-12">
+                    
+<#list fields as field>
+    <#if field.getName() != "serialVersionUID" && field.getName() != "version">
+			<p:column headerText="${field.getName()?cap_first}" sortBy="${r"#{"}row.${field.getName()}}">
+			   <#if field.hasAnnotation("javax.persistence.Id")>
+				<p:link value="${r"#{"}row.id}" outcome="${ccEntity}-form.xhtml">
+					<f:param name="id" value="${r"#{"}row.id}"></f:param>
+				</p:link>
+			   <#else>
+			       ${r"#{"}row.${field.getName()}}
+			   </#if>
+			</p:column>
+	</#if>
+</#list>
+<!--<div class="ui-g-12">
                         <p:outputLabel for="model" value="${r"#{"}msg['label.model']}"/>
                     </div>
                     <div class="ui-g-12">

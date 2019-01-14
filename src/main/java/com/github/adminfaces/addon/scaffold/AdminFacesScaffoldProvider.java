@@ -6,7 +6,6 @@ import static org.jboss.forge.addon.scaffold.util.ScaffoldUtil.createOrOverwrite
 import static com.github.adminfaces.addon.util.Constants.NEW_LINE;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,6 +63,8 @@ import org.metawidget.util.simple.StringUtils;
 
 import com.github.adminfaces.addon.freemarker.FreemarkerTemplateProcessor;
 import com.github.adminfaces.addon.freemarker.TemplateFactory;
+import com.github.adminfaces.addon.freemarker.util.HasAutocompleteTagMethod;
+import com.github.adminfaces.addon.freemarker.util.HasRelationShipMethod;
 import com.github.adminfaces.addon.ui.AdminSetupCommand;
 import com.github.adminfaces.addon.util.Constants;
 import com.github.adminfaces.addon.util.DependencyUtil;
@@ -194,6 +195,8 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
                     context.put("entityPackage", entity.getPackage());
                     context.put("ccEntity", ccEntity);
                     context.put("fields", entity.getFields());
+                    context.put("hasRelationShip", new HasRelationShipMethod());
+                    context.put("hasAutoCompleteJavadocTag", new HasAutocompleteTagMethod());
                     setPrimaryKeyMetaData(context, entity);
                     generateRepository(context, java, generatedResources);
                     generateService(context, java, generatedResources);
