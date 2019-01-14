@@ -96,7 +96,7 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
     }
 
 <#list fields as field>
-	<#if !hasRelationShip(field) && hasAutoCompleteJavadocTag(field)>
+	<#if !hasRelationShip(field) && !hasSkipJavadocTag(field) && hasAutoCompleteJavadocTag(field)>
     public List<String> get${field.getName()?cap_first}s(String query) {
         return criteria()
                .select(String.class, attribute(${entity.getName()}_.${field.getName()}))

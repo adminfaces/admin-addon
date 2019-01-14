@@ -67,9 +67,9 @@ import static com.github.adminfaces.addon.util.Constants.WebResources.*;
  * @author <a href="mailto:rmpestano@gmail.com">Rafael Pestano</a>
  */
 @FacetConstraint({JavaEE7Facet.class, WebResourcesFacet.class})
-public class AdminSetupCommand extends AbstractProjectCommand {
+public class AdminFacesSetupCommand extends AbstractProjectCommand {
 
-    private static final Logger LOG = Logger.getLogger(AdminSetupCommand.class.getName());
+    private static final Logger LOG = Logger.getLogger(AdminFacesSetupCommand.class.getName());
 
     @Inject
     private FacetFactory facetFactory;
@@ -132,7 +132,7 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 
         MavenFacet m2 = project.getFacet(MavenFacet.class);
         MavenModelResource m2Model = m2.getModelResource();
-
+        
         Node node = XMLParser.parse(m2Model.getResourceInputStream());
         Node resourcesNode = node.getOrCreate("build").getOrCreate("resources");
         Optional<Node> resourcesFiltering = resourcesNode.get("resource").stream()
@@ -234,23 +234,23 @@ public class AdminSetupCommand extends AbstractProjectCommand {
         }
 
         // Static resources
-        result.add(createOrOverwrite(web.getWebResource("/resources/favicon/favicon.ico"),
-            getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon.ico")));
+        createOrOverwrite(web.getWebResource("/resources/favicon/favicon.ico"),
+            getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon.ico"));
 
-        result.add(createOrOverwrite(web.getWebResource("/resources/favicon/favicon-16x16.png"),
-            getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon-16x16.png")));
+        createOrOverwrite(web.getWebResource("/resources/favicon/favicon-16x16.png"),
+            getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon-16x16.png"));
 
-        result.add(createOrOverwrite(web.getWebResource("/resources/favicon/favicon-32x32.png"),
-            getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon-32x32.png")));
+        createOrOverwrite(web.getWebResource("/resources/favicon/favicon-32x32.png"),
+            getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon-32x32.png"));
 
-        result.add(createOrOverwrite(web.getWebResource("/resources/favicon/favicon-96x96.png"),
-            getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon-96x96.png")));
+        createOrOverwrite(web.getWebResource("/resources/favicon/favicon-96x96.png"),
+            getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon-96x96.png"));
 
-        result.add(createOrOverwrite(web.getWebResource("/resources/images/login-bg.jpg"),
-            getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/login-bg.jpg")));
+        createOrOverwrite(web.getWebResource("/resources/images/login-bg.jpg"),
+            getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/login-bg.jpg"));
 
-        result.add(createOrOverwrite(web.getWebResource("/resources/css/app.css"),
-            getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/css/app.css")));
+        createOrOverwrite(web.getWebResource("/resources/css/app.css"),
+            getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/css/app.css"));
 
         return result;
     }
