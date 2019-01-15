@@ -16,6 +16,13 @@ import static com.github.adminfaces.persistence.util.Messages.getMessage;
 import static com.github.adminfaces.template.util.Assert.has;
 
 import java.util.*;
+<#list fields as field>
+   <#if hasToManyAssociation(field)>
+import ${getArrayType(field).getQualifiedName()};   
+   <#elseif hasToOneAssociation(field)>
+import ${field.getType().getQualifiedName()};      
+   </#if> 
+</#list>
 
 
 @Named
@@ -49,16 +56,33 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
         ${entity.getName()} ${ccEntity}Filter = filter.getEntity();
 <#list fields as field>
     <#if field.getName() != "serialVersionUID" && field.getName() != "version">
-        ${field.getType().getSimpleName()} ${field.getName()} = null;
-        if(filter.hasParam("${field.getName()}")) {
-            ${field.getName()} = (${field.getType().getSimpleName()})filter.getParam("${field.getName()}");
-        } else if(has(${ccEntity}Filter.get${field.getName()?cap_first}())) {
+        <#if hasToManyAssociation(field)>
+         ${field.getType().getSimpleName()}<${getArrayType(field).getSimpleName()}> ${field.getName()} = null;
+         if(filter.hasParam("${field.getName()}")) {
+            ${field.getName()} = (${field.getType().getSimpleName()}<${getArrayType(field).getSimpleName()}>)filter.getParam("${field.getName()}");
+         } else if(has(${ccEntity}Filter.get${field.getName()?cap_first}())) {
             ${field.getName()} = ${ccEntity}Filter.get${field.getName()?cap_first}();
-        }
-        if(has(${field.getName()})) {
-	    <#assign s = "<b>${field.getName()}</b>:">
+         }
+         if(has(${field.getName()})) {
+	     <#assign s = "<b>${field.getName()}</b>:">
+	        sb.append("${s} ");
+	        for (${getArrayType(field).getSimpleName()} ${getArrayType(field).getSimpleName()?lower_case} : ${field.getName()}) {
+				sb.append(${getArrayType(field).getSimpleName()?lower_case}).append(", ");
+			}
+	     }
+		<#else>   
+		 ${field.getType().getSimpleName()} ${field.getName()} = null;
+         if(filter.hasParam("${field.getName()}")) {
+            ${field.getName()} = (${field.getType().getSimpleName()})filter.getParam("${field.getName()}");
+         } else if(has(${ccEntity}Filter.get${field.getName()?cap_first}())) {
+            ${field.getName()} = ${ccEntity}Filter.get${field.getName()?cap_first}();
+         }
+         if(has(${field.getName()})) {
+	     <#assign s = "<b>${field.getName()}</b>:">
 	        sb.append("${s} ").append(${ccEntity}Filter.get${field.getName()?cap_first}()).append(", ");
-	    }
+	     }
+        </#if>
+        
 	</#if>
 </#list>
         int commaIndex = sb.lastIndexOf(",");

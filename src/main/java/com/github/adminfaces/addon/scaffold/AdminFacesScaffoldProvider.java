@@ -75,8 +75,11 @@ import org.metawidget.util.simple.StringUtils;
 import com.github.adminfaces.addon.freemarker.FreemarkerTemplateProcessor;
 import com.github.adminfaces.addon.freemarker.TemplateFactory;
 import com.github.adminfaces.addon.freemarker.util.HasAutocompleteTagMethod;
-import com.github.adminfaces.addon.freemarker.util.HasRelationShipMethod;
+import com.github.adminfaces.addon.freemarker.util.GetArrayType;
+import com.github.adminfaces.addon.freemarker.util.HasAssociation;
 import com.github.adminfaces.addon.freemarker.util.HasSkipTagMethod;
+import com.github.adminfaces.addon.freemarker.util.HasToManyAssociation;
+import com.github.adminfaces.addon.freemarker.util.HasToOneAssociation;
 import com.github.adminfaces.addon.scaffold.metamodel.AdminFacesMetaModelProvider;
 import com.github.adminfaces.addon.ui.AdminFacesSetupCommand;
 import com.github.adminfaces.addon.util.Constants;
@@ -99,9 +102,6 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 
 	@Inject
 	private FacetFactory facetFactory;
-
-	@Inject
-	private Imported<PersistenceMetaModelFacet> metaModelFacets;
 
 	@Override
 	public String getName() {
@@ -234,7 +234,10 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 					context.put("entityPackage", entity.getPackage());
 					context.put("ccEntity", ccEntity);
 					context.put("fields", entity.getFields());
-					context.put("hasRelationShip", new HasRelationShipMethod());
+					context.put("hasAssociation", new HasAssociation());
+					context.put("getArrayType", new GetArrayType());
+					context.put("hasToOneAssociation", new HasToOneAssociation());
+					context.put("hasToManyAssociation", new HasToManyAssociation());
 					context.put("hasSkipJavadocTag", new HasSkipTagMethod());
 					context.put("hasAutoCompleteJavadocTag", new HasAutocompleteTagMethod());
 					setPrimaryKeyMetaData(context, entity);

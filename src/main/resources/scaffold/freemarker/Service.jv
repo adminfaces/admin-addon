@@ -7,11 +7,20 @@ import org.apache.deltaspike.data.api.criteria.Criteria;
 import ${entity.getQualifiedName()};
 import ${entity.getQualifiedName()}_;
 import ${repository.getQualifiedName()};
-
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.*;
+
+<#list fields as field>
+   <#if hasToManyAssociation(field)>
+import ${getArrayType(field).getQualifiedName()};   
+import ${getArrayType(field).getQualifiedName()}_;   
+   <#elseif hasToOneAssociation(field)>
+import ${field.getType().getQualifiedName()};      
+import ${field.getType().getQualifiedName()}_;   
+   </#if> 
+</#list>
 
 import static com.github.adminfaces.template.util.Assert.has;
 
@@ -35,7 +44,17 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
 <#list fields as field>
 	<#if field.getName() != "serialVersionUID" && field.getName() != "version">
 	    if(filter.hasParam("${field.getName()}")) {
-	        criteria.eq(${entity.getName()}_.${field.getName()}, (${field.getType().getSimpleName()})filter.getParam("${field.getName()}"));   
+	        <#if !hasAssociation(field)>
+              criteria.eq(${entity.getName()}_.${field.getName()}, (${field.getType().getSimpleName()})filter.getParam("${field.getName()}"));   
+            <#elseif hasToManyAssociation(field)>
+            <#assign t = getArrayType(field).getSimpleName() >
+             criteria.join(${entity.getName()}_.${field.getName()}, where(${t}.class)
+ 	  	            .in(${t}_.id, toListOfIds((${field.getType().getSimpleName()}<${getArrayType(field).getSimpleName()}>)filter.getParam("${field.getName()}"), new ${nullablePrimaryKeyType}[0])));   
+            <#elseif hasToOneAssociation(field)>
+             criteria().join(${entity.getName()}_.${field.getName()},
+                    where(${field.getType().getSimpleName()}.class)
+                    .eq(${field.getType().getSimpleName()}_.id, ((${field.getType().getSimpleName()})filter.getParam("${field.getName()}")).getId()));
+            </#if>
 	    }  
 	</#if>
 </#list>
@@ -52,14 +71,24 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
 <#list fields as field>
 	<#if field.getName() != "serialVersionUID" && field.getName() != "version" && !hasSkipJavadocTag(field)>
 	        if(has(filterEntity.get${field.getName()?cap_first}())) {
-	            criteria.eq(${entity.getName()}_.${field.getName()}, filterEntity.get${field.getName()?cap_first}());   
+            <#if !hasAssociation(field)>
+             criteria.eq(${entity.getName()}_.${field.getName()}, filterEntity.get${field.getName()?cap_first}());   
+            <#elseif hasToManyAssociation(field)>
+            <#assign t = getArrayType(field).getSimpleName() >
+             criteria.join(${entity.getName()}_.${field.getName()}, where(${t}.class)
+ 	  	            .in(${t}_.id, toListOfIds(filterEntity.get${field.getName()?cap_first}(), new ${nullablePrimaryKeyType}[0])));   
+            <#elseif hasToOneAssociation(field)>
+             criteria().join(${entity.getName()}_.${field.getName()},
+                    where(${field.getType().getSimpleName()}.class)
+                    .eq(${field.getType().getSimpleName()}_.id, filterEntity.get${field.getName()?cap_first}().getId()));
+            </#if>
 	        }  
 	</#if>
 </#list>
         }
         return criteria;
     }
-
+    
     public void beforeInsert(${entity.getName()} ${ccEntity}) {
         validate(${ccEntity});
     }
@@ -98,7 +127,7 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
     }
 
 <#list fields as field>
-	<#if !hasRelationShip(field) && !hasSkipJavadocTag(field) && hasAutoCompleteJavadocTag(field)>
+	<#if !hasAssociation(field) && !hasSkipJavadocTag(field) && hasAutoCompleteJavadocTag(field)>
     public List<String> get${field.getName()?cap_first}s(String query) {
         return criteria()
                .select(String.class, attribute(${entity.getName()}_.${field.getName()}))

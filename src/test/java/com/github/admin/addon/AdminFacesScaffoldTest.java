@@ -100,7 +100,9 @@ public class AdminFacesScaffoldTest {
         shellTest.execute("constraint-add --on-property firstname --constraint NotNull", 10, TimeUnit.SECONDS);
         shellTest.execute("constraint-add --on-property surname --constraint NotNull", 10, TimeUnit.SECONDS);
         shellTest.execute("constraint-add --on-property bio --constraint Size --max 2000", 10, TimeUnit.SECONDS);
-      
+        
+        shellTest.execute("cd ../Talk.java",15, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named speaker --type com.github.admin.addon.model.Speaker --relationship-type Many-to-One", 10, TimeUnit.SECONDS); 
         
         Result result = shellTest.execute("scaffold-setup --provider AdminFaces", 10, TimeUnit.MINUTES);
         assertThat(result).isInstanceOf(CompositeResult.class).extracting("message")

@@ -33,13 +33,12 @@ import org.jboss.forge.roaster.model.source.FieldSource;
  *
  * @author rmpestano
  */
-public class HasRelationShipMethod implements TemplateMethodModelEx {
+public class HasToOneAssociation implements TemplateMethodModelEx {
 
     @Override
     public Object exec(List list) throws TemplateModelException {
         FieldSource field = (FieldSource) ((StringModel)list.get(0)).getWrappedObject();
-        return field.hasAnnotation("javax.persistence.OneToMany") || field.hasAnnotation("javax.persistence.OneToOne") 
-            || field.hasAnnotation("javax.persistence.ManyToOne") || field.hasAnnotation("javax.persistence.ManyToMany");
+        return field.hasAnnotation("javax.persistence.OneToOne") || field.hasAnnotation("javax.persistence.ManyToOne");
     }
 
 }
