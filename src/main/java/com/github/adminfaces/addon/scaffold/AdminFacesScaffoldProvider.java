@@ -25,6 +25,7 @@ import javax.inject.Inject;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Id;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.model.Plugin;
 import org.jboss.forge.addon.dependencies.builder.DependencyBuilder;
@@ -41,6 +42,7 @@ import org.jboss.forge.addon.parser.java.resources.JavaResource;
 import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.ProjectFacet;
 import org.jboss.forge.addon.projects.facets.DependencyFacet;
+import org.jboss.forge.addon.projects.facets.MetadataFacet;
 import org.jboss.forge.addon.projects.facets.ResourcesFacet;
 import org.jboss.forge.addon.projects.facets.WebResourcesFacet;
 import org.jboss.forge.addon.resource.FileResource;
@@ -61,6 +63,7 @@ import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.Field;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
+import org.jboss.forge.roaster.model.source.JavaSource;
 import org.jboss.forge.roaster.model.source.MemberSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 import org.jboss.forge.roaster.model.util.Types;
@@ -80,6 +83,7 @@ import com.github.adminfaces.addon.freemarker.util.HasAssociation;
 import com.github.adminfaces.addon.freemarker.util.HasSkipTagMethod;
 import com.github.adminfaces.addon.freemarker.util.HasToManyAssociation;
 import com.github.adminfaces.addon.freemarker.util.HasToOneAssociation;
+import com.github.adminfaces.addon.freemarker.util.ResolveEntityUIField;
 import com.github.adminfaces.addon.scaffold.metamodel.AdminFacesMetaModelProvider;
 import com.github.adminfaces.addon.ui.AdminFacesSetupCommand;
 import com.github.adminfaces.addon.util.Constants;
@@ -117,8 +121,25 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 	public List<Resource<?>> setup(ScaffoldSetupContext setupContext) {
 		Project project = setupContext.getProject();
 		addAdminPersistence(project);
+		addEntityManagerProducer(project);
 		configJPAMetaModel(project);
 		return Collections.emptyList();
+	}
+
+	private void addEntityManagerProducer(Project project) {
+		MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
+		JavaSourceFacet javaSource = project.getFacet(JavaSourceFacet.class);
+		try (InputStream emProducerStream = Thread.currentThread().getContextClassLoader()
+				.getResourceAsStream("/infra/persistence/EntityManagerProducer.java")) {
+			JavaSource<?> entityManagerProducer = (JavaSource<?>) Roaster.parse(emProducerStream);
+			entityManagerProducer.setPackage(metadataFacet.getProjectGroupName() + ".infra");
+			javaSource.saveJavaSource(entityManagerProducer);
+			FileUtils.copyInputStreamToFile(emProducerStream, new File(project.getRoot().getFullyQualifiedName()
+					+ entityManagerProducer.getPackage().replaceAll("\\.", "/")));
+		} catch (Exception e) {
+			LOG.log(Level.SEVERE, "Could not add 'EntityManagerProducer'.", e);
+		}
+
 	}
 
 	private void configJPAMetaModel(Project project) {
@@ -137,7 +158,8 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 		}
 
 		if (!isMetaModelConfigured) {
-			Iterable<PersistenceMetaModelFacet> facets = facetFactory.createFacets(project, PersistenceMetaModelFacet.class);
+			Iterable<PersistenceMetaModelFacet> facets = facetFactory.createFacets(project,
+					PersistenceMetaModelFacet.class);
 			for (PersistenceMetaModelFacet metaModelFacet : facets) {
 				metaModelFacet.setMetaModelProvider(new AdminFacesMetaModelProvider());
 				if (facetFactory.install(project, metaModelFacet)) {
@@ -240,6 +262,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 					context.put("hasToManyAssociation", new HasToManyAssociation());
 					context.put("hasSkipJavadocTag", new HasSkipTagMethod());
 					context.put("hasAutoCompleteJavadocTag", new HasAutocompleteTagMethod());
+					context.put("entityUIField", new ResolveEntityUIField());
 					setPrimaryKeyMetaData(context, entity);
 					generateRepository(context, java, generatedResources);
 					generateService(context, java, generatedResources);

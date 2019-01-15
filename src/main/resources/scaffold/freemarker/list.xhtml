@@ -80,8 +80,10 @@
 				<p:link value="${r"#{"}row.id}" outcome="${ccEntity}-form.xhtml">
 					<f:param name="id" value="${r"#{"}row.id}"></f:param>
 				</p:link>
-			   <#else>
+			   <#elseif !hasAssociation(field)>
 			       ${r"#{"}row.${field.getName()}}
+			   <#elseif hasToManyAssociation(field)>
+			       
 			   </#if>
 			</p:column>
 	</#if>
