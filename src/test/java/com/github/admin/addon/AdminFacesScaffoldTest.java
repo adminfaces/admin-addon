@@ -191,6 +191,8 @@ public class AdminFacesScaffoldTest {
         Result projectBuildResult = shellTest
             .execute("build ", 1, TimeUnit.MINUTES);
         if (projectBuildResult instanceof Failed) {
+        	System.out.println("Message: "+((Failed) projectBuildResult).getException().getMessage());
+        	System.out.println("LocalizedMessage: "+((Failed) projectBuildResult).getException().getLocalizedMessage());
             ((Failed) projectBuildResult).getException().printStackTrace();
         }
         assertThat(projectBuildResult).isNotInstanceOf(Failed.class);
