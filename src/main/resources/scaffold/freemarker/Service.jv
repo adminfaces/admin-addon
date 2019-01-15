@@ -43,7 +43,7 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
         
 <#list fields as field>
 	<#if field.getName() != "serialVersionUID" && field.getName() != "version">
-	    if(filter.hasParam("${field.getName()}")) {
+	    if (filter.hasParam("${field.getName()}")) {
 	        <#if !hasAssociation(field)>
               criteria.eq(${entity.getName()}_.${field.getName()}, (${field.getType().getSimpleName()})filter.getParam("${field.getName()}"));   
             <#elseif hasToManyAssociation(field)>
@@ -70,7 +70,7 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
             
 <#list fields as field>
 	<#if field.getName() != "serialVersionUID" && field.getName() != "version" && !hasSkipJavadocTag(field)>
-	        if(has(filterEntity.get${field.getName()?cap_first}())) {
+	        if (has(filterEntity.get${field.getName()?cap_first}())) {
             <#if !hasAssociation(field)>
              criteria.eq(${entity.getName()}_.${field.getName()}, filterEntity.get${field.getName()?cap_first}());   
             <#elseif hasToManyAssociation(field)>
