@@ -38,7 +38,6 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
      * @return a criteria populated with given restrictions 
      */ 
     protected Criteria<${entity.getName()}, ${entity.getName()}> configRestrictions(Filter<${entity.getName()}> filter) {
-
         Criteria<${entity.getName()}, ${entity.getName()}> criteria = criteria();
         
 <#list fields as field>
@@ -49,11 +48,11 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
             <#elseif hasToManyAssociation(field)>
             <#assign t = getArrayType(field).getSimpleName() >
              criteria.join(${entity.getName()}_.${field.getName()}, where(${t}.class)
- 	  	            .in(${t}_.id, toListOfIds((${field.getType().getSimpleName()}<${getArrayType(field).getSimpleName()}>)filter.getParam("${field.getName()}"), new ${nullablePrimaryKeyType}[0])));   
+ 	  	            .in(${t}_.id, toListOfIds((${field.getType().getSimpleName()}<${getArrayType(field).getSimpleName()}>) filter.getParam("${field.getName()}"), new ${nullablePrimaryKeyType}[0])));   
             <#elseif hasToOneAssociation(field)>
              criteria.join(${entity.getName()}_.${field.getName()},
                     where(${field.getType().getSimpleName()}.class)
-                    .eq(${field.getType().getSimpleName()}_.id, ((${field.getType().getSimpleName()})filter.getParam("${field.getName()}")).getId()));
+                    .eq(${field.getType().getSimpleName()}_.id, ((${field.getType().getSimpleName()}) filter.getParam("${field.getName()}")).getId()));
             </#if>
 	    }  
 	</#if>
