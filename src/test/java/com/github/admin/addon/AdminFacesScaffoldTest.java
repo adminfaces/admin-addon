@@ -35,6 +35,7 @@ import java.util.concurrent.TimeoutException;
 import org.jboss.forge.addon.projects.facets.WebResourcesFacet;
 import org.jboss.forge.addon.resource.FileResource;
 import static org.assertj.core.api.Assertions.contentOf;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
@@ -184,6 +185,13 @@ public class AdminFacesScaffoldTest {
         assertThat(contentOf(topMenuFile))
             .contains("<li id=\"menuTalk\" class=\"dropdown\"> <a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">Talks <span class=\"caret\"></span> <i class=\"fa fa-circle-o\"></i> </a> ")
             .contains("<li id=\"menuSpeaker\" class=\"dropdown\"> <a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">Speakers <span class=\"caret\"></span> <i class=\"fa fa-circle-o\"></i> </a> ");
+        
+        Result projectBuildResult = shellTest
+            .execute("build ", 1, TimeUnit.MINUTES);
+        if (projectBuildResult instanceof Failed) {
+            ((Failed) projectBuildResult).getException().printStackTrace();
+        }
+        assertThat(projectBuildResult).isNotInstanceOf(Failed.class);
     }
 
     /*

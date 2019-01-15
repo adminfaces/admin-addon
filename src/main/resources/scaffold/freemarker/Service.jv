@@ -5,11 +5,13 @@ import com.github.adminfaces.persistence.service.CrudService;
 import com.github.adminfaces.template.exception.BusinessException;
 import org.apache.deltaspike.data.api.criteria.Criteria;
 import ${entity.getQualifiedName()};
+import ${entity.getQualifiedName()}_;
 import ${repository.getQualifiedName()};
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import java.io.Serializable;
+import java.util.*;
 
 import static com.github.adminfaces.template.util.Assert.has;
 
@@ -33,7 +35,7 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
 <#list fields as field>
 	<#if field.getName() != "serialVersionUID" && field.getName() != "version">
 	    if(filter.hasParam("${field.getName()}")) {
-	        criteria.eq(${entity.getName()}_.${field.getName()}, filter.getParam("${field.getName()}"));   
+	        criteria.eq(${entity.getName()}_.${field.getName()}, (${field.getType().getSimpleName()})filter.getParam("${field.getName()}"));   
 	    }  
 	</#if>
 </#list>
@@ -48,7 +50,7 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
             } */
             
 <#list fields as field>
-	<#if field.getName() != "serialVersionUID" && field.getName() != "version">
+	<#if field.getName() != "serialVersionUID" && field.getName() != "version" && !hasSkipJavadocTag(field)>
 	        if(has(filterEntity.get${field.getName()?cap_first}())) {
 	            criteria.eq(${entity.getName()}_.${field.getName()}, filterEntity.get${field.getName()?cap_first}());   
 	        }  

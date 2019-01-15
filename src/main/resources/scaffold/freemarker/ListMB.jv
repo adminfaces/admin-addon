@@ -7,7 +7,6 @@ import org.omnifaces.cdi.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
-import java.util.List;
 
 import ${entity.getQualifiedName()};
 import ${service.getQualifiedName()};
@@ -15,6 +14,8 @@ import ${service.getQualifiedName()};
 import static com.github.adminfaces.persistence.util.Messages.addDetailMessage;
 import static com.github.adminfaces.persistence.util.Messages.getMessage;
 import static com.github.adminfaces.template.util.Assert.has;
+
+import java.util.*;
 
 
 @Named
