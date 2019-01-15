@@ -51,7 +51,7 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
              criteria.join(${entity.getName()}_.${field.getName()}, where(${t}.class)
  	  	            .in(${t}_.id, toListOfIds((${field.getType().getSimpleName()}<${getArrayType(field).getSimpleName()}>)filter.getParam("${field.getName()}"), new ${nullablePrimaryKeyType}[0])));   
             <#elseif hasToOneAssociation(field)>
-             criteria().join(${entity.getName()}_.${field.getName()},
+             criteria.join(${entity.getName()}_.${field.getName()},
                     where(${field.getType().getSimpleName()}.class)
                     .eq(${field.getType().getSimpleName()}_.id, ((${field.getType().getSimpleName()})filter.getParam("${field.getName()}")).getId()));
             </#if>
@@ -78,7 +78,7 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
              criteria.join(${entity.getName()}_.${field.getName()}, where(${t}.class)
  	  	            .in(${t}_.id, toListOfIds(filterEntity.get${field.getName()?cap_first}(), new ${nullablePrimaryKeyType}[0])));   
             <#elseif hasToOneAssociation(field)>
-             criteria().join(${entity.getName()}_.${field.getName()},
+             criteria.join(${entity.getName()}_.${field.getName()},
                     where(${field.getType().getSimpleName()}.class)
                     .eq(${field.getType().getSimpleName()}_.id, filterEntity.get${field.getName()?cap_first}().getId()));
             </#if>
