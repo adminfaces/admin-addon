@@ -190,12 +190,16 @@ public class AdminFacesSetupCommand extends AbstractProjectCommand {
         addAdminConfig(project);
 
         // Basic pages
-        result.add(createOrOverwrite(web.getWebResource(INDEX_PAGE),
-            FreemarkerTemplateProcessor.processTemplate(context, templates.getIndexTemplate())));
-
-        result.add(createOrOverwrite(web.getWebResource(LOGIN_PAGE),
-            FreemarkerTemplateProcessor.processTemplate(context, templates.getLoginTemplate())));
-
+        if(!web.getWebResource(INDEX_PAGE).exists()) {
+        	result.add(createOrOverwrite(web.getWebResource(INDEX_PAGE),
+        			FreemarkerTemplateProcessor.processTemplate(context, templates.getIndexTemplate())));
+        }
+        
+        if(!web.getWebResource(LOGIN_PAGE).exists()) {
+        	result.add(createOrOverwrite(web.getWebResource(LOGIN_PAGE),
+        			FreemarkerTemplateProcessor.processTemplate(context, templates.getLoginTemplate())));
+        }
+        
         // page templates
         result.add(createOrOverwrite(web.getWebResource(TEMPLATE_DEFAULT),
             FreemarkerTemplateProcessor.processTemplate(context, templates.getTemplateDefault())));

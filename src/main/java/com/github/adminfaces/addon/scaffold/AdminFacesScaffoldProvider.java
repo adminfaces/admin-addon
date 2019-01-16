@@ -22,8 +22,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -37,6 +41,7 @@ import org.jboss.forge.addon.javaee.jpa.PersistenceMetaModelFacet;
 import org.jboss.forge.addon.javaee.jpa.ui.setup.JPASetupWizard;
 import org.jboss.forge.addon.javaee.servlet.ServletFacet;
 import org.jboss.forge.addon.maven.projects.MavenFacet;
+import org.jboss.forge.addon.maven.resources.MavenModelResource;
 import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.parser.java.resources.JavaResource;
 import org.jboss.forge.addon.projects.Project;
@@ -45,6 +50,7 @@ import org.jboss.forge.addon.projects.facets.DependencyFacet;
 import org.jboss.forge.addon.projects.facets.MetadataFacet;
 import org.jboss.forge.addon.projects.facets.ResourcesFacet;
 import org.jboss.forge.addon.projects.facets.WebResourcesFacet;
+import org.jboss.forge.addon.resource.DirectoryResource;
 import org.jboss.forge.addon.resource.FileResource;
 import org.jboss.forge.addon.resource.Resource;
 import org.jboss.forge.addon.scaffold.spi.AccessStrategy;
@@ -61,6 +67,7 @@ import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.Field;
+import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
@@ -74,6 +81,7 @@ import org.jsoup.parser.ParseSettings;
 import org.jsoup.parser.Parser;
 import org.metawidget.util.CollectionUtils;
 import org.metawidget.util.simple.StringUtils;
+import org.yaml.snakeyaml.Yaml;
 
 import com.github.adminfaces.addon.freemarker.FreemarkerTemplateProcessor;
 import com.github.adminfaces.addon.freemarker.TemplateFactory;
@@ -85,6 +93,7 @@ import com.github.adminfaces.addon.freemarker.util.HasToManyAssociation;
 import com.github.adminfaces.addon.freemarker.util.HasToOneAssociation;
 import com.github.adminfaces.addon.freemarker.util.ResolveEntityUIField;
 import com.github.adminfaces.addon.scaffold.metamodel.AdminFacesMetaModelProvider;
+import com.github.adminfaces.addon.scaffold.model.EntityConfig;
 import com.github.adminfaces.addon.ui.AdminFacesSetupCommand;
 import com.github.adminfaces.addon.util.Constants;
 import com.github.adminfaces.addon.util.DependencyUtil;
@@ -123,6 +132,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 		addAdminPersistence(project);
 		addEntityManagerProducer(project);
 		configJPAMetaModel(project);
+		createScaffoldConfig(project);
 		return Collections.emptyList();
 	}
 
@@ -202,7 +212,48 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 					.text("org.apache.deltaspike.jpa.impl.transaction.BeanManagedUserTransactionStrategy");
 			beansXml.setContents(XMLParser.toXMLInputStream(node));
 		}
+	}
 
+	/**
+	 * Just adds global scaffold config file to the project
+	 * 
+	 * @param project
+	 */
+	private void createScaffoldConfig(Project project) {
+		DirectoryResource resources = project.getFacet(ResourcesFacet.class).getResourceDirectory();
+		DirectoryResource scaffoldDir = resources.getOrCreateChildDirectory("scaffold");
+		if (!scaffoldDir.getChild("adminfaces.yaml").exists()) {
+			try (InputStream is = Thread.currentThread().getContextClassLoader()
+					.getResourceAsStream("/scaffold/adminfaces.yaml")) {
+				IOUtils.copy(is,
+						new FileOutputStream(new File(scaffoldDir.getFullyQualifiedName() + "/adminfaces.yaml")));
+			} catch (IOException e) {
+				LOG.log(Level.SEVERE, "Could not add 'adminfaces.yaml'.", e);
+			}
+		}
+
+		MavenFacet m2 = project.getFacet(MavenFacet.class);
+		MavenModelResource m2Model = m2.getModelResource();
+
+		Node node = XMLParser.parse(m2Model.getResourceInputStream());
+		Node resourcesNode = node.getOrCreate("build").getOrCreate("resources");
+		Optional<Node> resourcesDirectory = resourcesNode.get("resource").stream()
+		            .filter(r -> r.getName().equals("directory") && r.getText().equals("src/main/resources")).findFirst();
+
+		
+		Node resourcesExclusions = resourcesDirectory.get().getOrCreate("excludes");
+		
+		Optional<Node> scaffoldExclude = resourcesExclusions.getChildren().stream()
+			.filter(e -> e.getName().equals("exclude") && e.getText().contains("scaffold"))
+			.findFirst();
+
+		if (!scaffoldExclude.isPresent()) {
+			Node resource = resourcesExclusions.createChild("exclude");
+			resource.text("scaffold/**");
+			m2Model.setContents(XMLParser.toXMLInputStream(node));
+		}
+		
+		
 	}
 
 	@Override
@@ -251,7 +302,9 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 					entity.addImport("com.github.adminfaces.persistence.model.PersistenceEntity");
 					entity.addInterface("PersistenceEntity");
 					createOrOverwrite(java.getJavaResource(entity), entity.toString());
-					context.put("entity", entity);
+					EntityConfig entityConfig = createOrLoadEntityConfig(entity, project);
+					ScaffoldEntity scaffoldEntity = new ScaffoldEntity(entity, entityConfig);
+					context.put("entity", scaffoldEntity);
 					String ccEntity = StringUtils.decapitalize(entity.getName());
 					context.put("entityPackage", entity.getPackage());
 					context.put("ccEntity", ccEntity);
@@ -282,6 +335,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 		return generatedResources;
 	}
 
+	 
 	/**
 	 * Generates JSF bean for Create and update target entity
 	 *

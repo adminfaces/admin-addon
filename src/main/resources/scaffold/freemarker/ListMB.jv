@@ -55,7 +55,7 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
         StringBuilder sb = new StringBuilder(21);
         ${entity.getName()} ${ccEntity}Filter = filter.getEntity();
 <#list fields as field>
-    <#if field.getName() != "serialVersionUID" && field.getName() != "version">
+    <#if !entity.isHidden(field)>
         <#if hasToManyAssociation(field)>
         ${field.getType().getSimpleName()}<${getArrayType(field).getSimpleName()}> ${field.getName()} = null;
         if (filter.hasParam("${field.getName()}")) {

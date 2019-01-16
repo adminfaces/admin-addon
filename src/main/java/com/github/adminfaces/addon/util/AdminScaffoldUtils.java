@@ -7,7 +7,15 @@ import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+
 import org.jboss.forge.addon.scaffold.util.ScaffoldUtil;
+import org.jboss.forge.roaster.model.Type;
+import org.jboss.forge.roaster.model.source.FieldSource;
+import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,4 +50,23 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
             zipInputStream.close();
         }
     }
+    
+    public static boolean hasAssociation(FieldSource<JavaClassSource> field) {
+    	return field.hasAnnotation(OneToMany.class) || field.hasAnnotation(OneToOne.class)
+		|| field.hasAnnotation(ManyToOne.class) || field.hasAnnotation(ManyToMany.class);
+    }
+    
+    public static boolean hasToManyAssociation(FieldSource<JavaClassSource> field) {
+    	return field.hasAnnotation(OneToMany.class) || field.hasAnnotation(ManyToMany.class);
+    }
+    
+    public static boolean hasToOneAssociation(FieldSource<JavaClassSource> field) {
+    	return field.hasAnnotation(OneToOne.class) || field.hasAnnotation(ManyToOne.class);
+    }
+    
+    public static Type<JavaClassSource> getArrayType(FieldSource<JavaClassSource> field) { 
+		return field.getType().isParameterized() ? field.getType().getTypeArguments().get(0) : field.getType();
+	}
+
+    
 }
