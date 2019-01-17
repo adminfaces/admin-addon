@@ -38,12 +38,20 @@ public class FieldConfig {
 	public Boolean isRequired() {
 		return required;
 	}
+    
+    public Boolean getRequired() {
+		return required;
+	}
 
 	public void setRequired(Boolean required) {
 		this.required = required;
 	}
 
 	public Boolean isHidden() {
+		return hidden;
+	}
+    
+    public Boolean getHidden() {
 		return hidden;
 	}
 

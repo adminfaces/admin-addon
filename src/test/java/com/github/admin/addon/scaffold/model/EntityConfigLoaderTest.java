@@ -27,12 +27,12 @@ import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.*;
 import com.github.adminfaces.addon.scaffold.model.EntityConfig;
 import static org.mockito.Mockito.*;
 import com.github.adminfaces.addon.scaffold.model.EntityConfigLoader;
+import java.io.InputStream;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.facets.ResourcesFacet;
 import org.jboss.forge.addon.resource.DirectoryResource;
 import org.jboss.forge.addon.resource.FileResource;
-import org.jboss.forge.addon.resource.ResourceFacet;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.junit.Test;
@@ -45,7 +45,7 @@ import org.junit.runners.JUnit4;
  */
 @RunWith(JUnit4.class)
 public class EntityConfigLoaderTest {
-    
+
     @Test
     public void shouldCreateEntityConfig() {
         FileResource<?> entityConfigFile = mock(FileResource.class);
@@ -64,38 +64,92 @@ public class EntityConfigLoaderTest {
         assertThat(entityConfig).isNotNull()
             .extracting("mainField").contains("firstname");
         assertThat(entityConfig.getFields()).isNotNull().hasSize(7);
-        
+
         assertThat(entityConfig.getFieldConfigByName("id"))
-        .extracting("type", "length", "required", "hidden")
-        .contains(INPUT_NUMBER, 30, true, false);
-        
+            .extracting("type", "length", "required", "hidden")
+            .contains(INPUT_NUMBER, 30, true, false);
+
         assertThat(entityConfig.getFieldConfigByName("version"))
-        .extracting("type", "length", "required", "hidden")
-        .contains(INPUT_NUMBER, 30, false, false);
-        
+            .extracting("type", "length", "required", "hidden")
+            .contains(INPUT_NUMBER, 30, false, false);
+
         assertThat(entityConfig.getFieldConfigByName("firstname"))
-        .extracting("type", "length", "required", "hidden")
-        .contains(INPUT_TEXT, 30, true, false);
-        
+            .extracting("type", "length", "required", "hidden")
+            .contains(INPUT_TEXT, 30, true, false);
+
         assertThat(entityConfig.getFieldConfigByName("surname"))
-        .extracting("type", "length", "required", "hidden")
-        .contains(INPUT_TEXT, 30, true, false);
-        
+            .extracting("type", "length", "required", "hidden")
+            .contains(INPUT_TEXT, 30, true, false);
+
         assertThat(entityConfig.getFieldConfigByName("bio"))
-        .extracting("type", "length", "required", "hidden")
-        .contains(TEXT_AREA, 2000, false, false);
-        
+            .extracting("type", "length", "required", "hidden")
+            .contains(TEXT_AREA, 2000, false, false);
+
         assertThat(entityConfig.getFieldConfigByName("twitter"))
-        .extracting("type", "length", "required", "hidden")
-        .contains(INPUT_TEXT, 30, false, false);
-        
+            .extracting("type", "length", "required", "hidden")
+            .contains(INPUT_TEXT, 30, false, false);
+
         assertThat(entityConfig.getFieldConfigByName("talks"))
-        .extracting("type", "length", "required", "hidden")
-        .contains(CHECKBOXMENU, 30, false, false);
-        
+            .extracting("type", "length", "required", "hidden")
+            .contains(CHECKBOXMENU, 30, false, false);
+
         assertThat(entityConfig.getFieldConfigByName("id"))
-        .extracting("type", "length", "required", "hidden")
-        .contains(INPUT_NUMBER, 30, true, false);
+            .extracting("type", "length", "required", "hidden")
+            .contains(INPUT_NUMBER, 30, true, false);
     }
-    
+
+    @Test
+    public void shouldLoadEntityConfig() {
+        FileResource<?> entityConfigFile = mock(FileResource.class);
+        doReturn(true).when(entityConfigFile).exists();
+        doReturn(null).when(entityConfigFile).setContents(anyString());
+        InputStream is = getClass().getResourceAsStream("/scaffold/speaker.yml");
+        doReturn(is).when(entityConfigFile).getResourceInputStream();
+        DirectoryResource scaffoldDir = mock(DirectoryResource.class);
+        doReturn(entityConfigFile).when(scaffoldDir).getChild(anyString());
+        Project project = mock(Project.class);
+        ResourcesFacet resourcesFacet = mock(ResourcesFacet.class);
+        DirectoryResource directoryResource = mock(DirectoryResource.class);
+        doReturn(directoryResource).when(resourcesFacet).getResourceDirectory();
+        doReturn(scaffoldDir).when(directoryResource).getChildDirectory("scaffold");
+        doReturn(resourcesFacet).when(project).getFacet(anyObject());
+        JavaClassSource entity = Roaster.parse(JavaClassSource.class, EntityConfigLoaderTest.class.getResourceAsStream("/scaffold/Speaker.java"));
+        EntityConfig entityConfig = EntityConfigLoader.createOrLoadEntityConfig(entity, project);
+        assertThat(entityConfig).isNotNull();
+        assertThat(entityConfig).isNotNull()
+            .extracting("mainField").contains("firstname");
+        assertThat(entityConfig.getFields()).isNotNull().hasSize(7);
+
+        assertThat(entityConfig.getFieldConfigByName("id"))
+            .extracting("type", "length", "required", "hidden")
+            .contains(INPUT_NUMBER, 30, true, false);
+
+        assertThat(entityConfig.getFieldConfigByName("version"))
+            .extracting("type", "length", "required", "hidden")
+            .contains(INPUT_NUMBER, 30, false, false);
+
+        assertThat(entityConfig.getFieldConfigByName("firstname"))
+            .extracting("type", "length", "required", "hidden")
+            .contains(INPUT_TEXT, 30, true, false);
+
+        assertThat(entityConfig.getFieldConfigByName("surname"))
+            .extracting("type", "length", "required", "hidden")
+            .contains(INPUT_TEXT, 30, true, false);
+
+        assertThat(entityConfig.getFieldConfigByName("bio"))
+            .extracting("type", "length", "required", "hidden")
+            .contains(TEXT_AREA, 2000, false, false);
+
+        assertThat(entityConfig.getFieldConfigByName("twitter"))
+            .extracting("type", "length", "required", "hidden")
+            .contains(INPUT_TEXT, 30, false, false);
+
+        assertThat(entityConfig.getFieldConfigByName("talks"))
+            .extracting("type", "length", "required", "hidden")
+            .contains(CHECKBOXMENU, 30, false, false);
+
+        assertThat(entityConfig.getFieldConfigByName("id"))
+            .extracting("type", "length", "required", "hidden")
+            .contains(INPUT_NUMBER, 30, true, false);
+    }
 }

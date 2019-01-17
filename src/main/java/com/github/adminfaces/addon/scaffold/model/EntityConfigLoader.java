@@ -71,7 +71,7 @@ public class EntityConfigLoader {
                 entityConfig.setMainField(field.getName());
             }
         }
-        entityConfigFile.setContents(new Yaml().dump(entity));
+        entityConfigFile.setContents(new Yaml().dump(entityConfig));
         return entityConfig;
     }
 
