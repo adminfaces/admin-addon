@@ -64,8 +64,8 @@ public class EntityConfigLoader {
 
         for (FieldSource<JavaClassSource> field : entityFields) {
             boolean required = resolveRequiredAttribute(field);
-            ComponentTypeEnum type = resolveComponentType(field);
             Integer length = resolveLengthAttribute(field);
+            ComponentTypeEnum type = resolveComponentType(field, length);
             entityConfig.getFields().add(new FieldConfig(field.getName(), required, false, length, type));
             if(entityConfig.getMainField() == null && type.equals(INPUT_TEXT) && required) { //by default mainsField is the first non null inputText field
                 entityConfig.setMainField(field.getName());
@@ -76,15 +76,15 @@ public class EntityConfigLoader {
     }
 
     private static Integer resolveLengthAttribute(FieldSource<JavaClassSource> field) {
-        AnnotationSource<JavaClassSource> collumnAnnotation = field.getAnnotation(Column.class);
+        AnnotationSource<JavaClassSource> columnAnnotation = field.getAnnotation(Column.class);
         Integer length = 30;
-        if (collumnAnnotation != null && collumnAnnotation.getStringValue("length") != null) {
-            length = Integer.parseInt(collumnAnnotation.getStringValue("length"));
+        if (columnAnnotation != null && columnAnnotation.getStringValue("length") != null) {
+            length = Integer.parseInt(columnAnnotation.getStringValue("length"));
         }
         return length;
     }
 
-    private static ComponentTypeEnum resolveComponentType(FieldSource<JavaClassSource> field) {
+    private static ComponentTypeEnum resolveComponentType(FieldSource<JavaClassSource> field, Integer length) {
         if (field.hasAnnotation(Temporal.class)) {
             return ComponentTypeEnum.CALENDAR;
         }
@@ -97,12 +97,20 @@ public class EntityConfigLoader {
         }
         Type<JavaClassSource> type = field.getType();
         if (type.isType(String.class)) {
-            return INPUT_TEXT;
+        	if(field.getName().toLowerCase().contains("password")) {
+        		return PASSWORD;
+        	}
+        	if(length > 30) {
+        		return TEXT_AREA;
+        	} else {
+        		return INPUT_TEXT;
+        	}
         }
-        if (type.isType(Long.class) || type.isType(Integer.class) || type.isType(Double.class) || type.isType(BigDecimal.class)) {
+        if (type.isType(Long.class) || type.isType(Integer.class) || type.isType(Double.class) || type.isType(BigDecimal.class) ||
+        		type.isType("long") || type.isType("int") || type.isType("double")) {
             return INPUT_NUMBER;
         }
-        //TODO inspect other fields
+        //TODO inspect other fields types
 
         return INPUT_TEXT;
     }

@@ -28,27 +28,19 @@ public class ScaffoldEntity implements Serializable {
 	private JavaClassSource entity;
 	private List<FieldSource<JavaClassSource>> entityFields;
 	private EntityConfig entityConfig;
-	private Map<String, FieldConfig> fieldConfigMap;
 
 	public ScaffoldEntity(JavaClassSource entity, EntityConfig entityConfig) {
 		this.entity = entity;
 		this.entityConfig = entityConfig;
-		initializeFieldConfigMap();
 	}
 
-	private void initializeFieldConfigMap() {
-		fieldConfigMap = new HashMap<>();
-		for (FieldConfig fieldConfig : entityConfig.getFields()) {
-			fieldConfigMap.put(fieldConfig.getName(), fieldConfig);
-		}
-	}
 
 	public String getName() {
 		return entity.getName();
 	}
 
 	public boolean isHidden(FieldSource<JavaClassSource> field) {
-		return field.getName().equals("version") || fieldConfigMap.get(field.getName()).isHidden();
+		return field.getName().equals("version") || getFieldConfig(field.getName()).isHidden();
 	}
 
 	/**
@@ -56,7 +48,7 @@ public class ScaffoldEntity implements Serializable {
 	 * @return UI configuration for the given field
 	 */
 	public FieldConfig getFieldConfig(String fieldName) {
-		return fieldConfigMap.get(fieldName);
+		return entityConfig.getFieldConfigByName(fieldName);
 	}
 
 	/**

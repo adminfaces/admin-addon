@@ -23,6 +23,7 @@
  */
 package com.github.admin.addon.scaffold.model;
 
+import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.*;
 import com.github.adminfaces.addon.scaffold.model.EntityConfig;
 import static org.mockito.Mockito.*;
 import com.github.adminfaces.addon.scaffold.model.EntityConfigLoader;
@@ -63,6 +64,38 @@ public class EntityConfigLoaderTest {
         assertThat(entityConfig).isNotNull()
             .extracting("mainField").contains("firstname");
         assertThat(entityConfig.getFields()).isNotNull().hasSize(7);
+        
+        assertThat(entityConfig.getFieldConfigByName("id"))
+        .extracting("type", "length", "required", "hidden")
+        .contains(INPUT_NUMBER, 30, true, false);
+        
+        assertThat(entityConfig.getFieldConfigByName("version"))
+        .extracting("type", "length", "required", "hidden")
+        .contains(INPUT_NUMBER, 30, false, false);
+        
+        assertThat(entityConfig.getFieldConfigByName("firstname"))
+        .extracting("type", "length", "required", "hidden")
+        .contains(INPUT_TEXT, 30, true, false);
+        
+        assertThat(entityConfig.getFieldConfigByName("surname"))
+        .extracting("type", "length", "required", "hidden")
+        .contains(INPUT_TEXT, 30, true, false);
+        
+        assertThat(entityConfig.getFieldConfigByName("bio"))
+        .extracting("type", "length", "required", "hidden")
+        .contains(TEXT_AREA, 2000, false, false);
+        
+        assertThat(entityConfig.getFieldConfigByName("twitter"))
+        .extracting("type", "length", "required", "hidden")
+        .contains(INPUT_TEXT, 30, false, false);
+        
+        assertThat(entityConfig.getFieldConfigByName("talks"))
+        .extracting("type", "length", "required", "hidden")
+        .contains(CHECKBOXMENU, 30, false, false);
+        
+        assertThat(entityConfig.getFieldConfigByName("id"))
+        .extracting("type", "length", "required", "hidden")
+        .contains(INPUT_NUMBER, 30, true, false);
     }
     
 }

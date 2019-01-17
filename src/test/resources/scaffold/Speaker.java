@@ -39,9 +39,6 @@ public class Speaker implements Serializable, PersistenceEntity {
 	@Size(max = 2000)
 	private String bio;
 
-	/**
-	 * @ui-autocomplete
-	 */
 	@Column
 	private String twitter;
 
