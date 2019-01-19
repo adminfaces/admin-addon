@@ -2,9 +2,7 @@ package com.github.adminfaces.addon.scaffold;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -23,131 +21,134 @@ import com.github.adminfaces.addon.scaffold.model.FieldConfig;
 import com.github.adminfaces.addon.util.AdminScaffoldUtils;
 
 public class ScaffoldEntity implements Serializable {
-	private static final long serialVersionUID = 2357194690463276781L;
 
-	private JavaClassSource entity;
-	private List<FieldSource<JavaClassSource>> entityFields;
-	private EntityConfig entityConfig;
+    private static final long serialVersionUID = 2357194690463276781L;
 
-	public ScaffoldEntity(JavaClassSource entity, EntityConfig entityConfig) {
-		this.entity = entity;
-		this.entityConfig = entityConfig;
-	}
+    private JavaClassSource entity;
+    private List<FieldSource<JavaClassSource>> entityFields;
+    private EntityConfig entityConfig;
 
+    public ScaffoldEntity(JavaClassSource entity, EntityConfig entityConfig) {
+        this.entity = entity;
+        this.entityConfig = entityConfig;
+    }
 
-	public String getName() {
-		return entity.getName();
-	}
+    public String getName() {
+        return entity.getName();
+    }
 
-	public boolean isHidden(FieldSource<JavaClassSource> field) {
-		return field.getName().equals("version") || getFieldConfig(field.getName()).isHidden();
-	}
+    public boolean isHidden(FieldSource<JavaClassSource> field) {
+        return field.getName().equals("version") || getFieldConfig(field.getName()).isHidden();
+    }
 
-	/**
-	 * @param fieldName the entity field
-	 * @return UI configuration for the given field
-	 */
-	public FieldConfig getFieldConfig(String fieldName) {
-		return entityConfig.getFieldConfigByName(fieldName);
-	}
+    /**
+     * @param fieldName the entity field
+     * @return UI configuration for the given field
+     */
+    public FieldConfig getFieldConfig(String fieldName) {
+        return entityConfig.getFieldConfigByName(fieldName);
+    }
 
-	/**
-	 * Lists entity fields excluding fields that are not persisted
-	 * 
-	 * @return
-	 */
-	public List<FieldSource<JavaClassSource>> getFields() {
-		if (entityFields == null) {
-			entityFields = new ArrayList<>();
-			entity.getFields().stream()
-					.filter(f -> !f.hasAnnotation(Transient.class) && (f.hasAnnotation(Column.class)
-							|| hasAssociation(f) || f.hasAnnotation(Basic.class) || f.hasAnnotation(Embedded.class)
-							|| f.hasAnnotation(Id.class) || f.hasAnnotation(EmbeddedId.class)))
-					.forEach(entityFields::add);
-		}
-		return entityFields;
-	}
+    /**
+     * Lists entity fields excluding fields that are not persisted
+     *
+     * @return
+     */
+    public List<FieldSource<JavaClassSource>> getFields() {
+        if (entityFields == null) {
+            entityFields = new ArrayList<>();
+            entity.getFields().stream()
+                .filter(f -> !f.hasAnnotation(Transient.class) && (f.hasAnnotation(Column.class)
+                || hasAssociation(f) || f.hasAnnotation(Basic.class) || f.hasAnnotation(Embedded.class)
+                || f.hasAnnotation(Id.class) || f.hasAnnotation(EmbeddedId.class)))
+                .forEach(entityFields::add);
+        }
+        return entityFields;
+    }
 
-	public String getQualifiedName() {
-		return entity.getQualifiedName();
-	}
+    public String getQualifiedName() {
+        return entity.getQualifiedName();
+    }
 
-	public boolean isRequired(FieldSource<JavaClassSource> field) {
-		return getFieldConfig(field.getName()).isRequired();
-	}
+    public boolean isRequired(FieldSource<JavaClassSource> field) {
+        return getFieldConfig(field.getName()).isRequired();
+    }
+    
+    public int getSize(FieldSource<JavaClassSource> field) {
+        return getFieldConfig(field.getName()).getLength();
+    }
 
-	public boolean hasAssociation(FieldSource<JavaClassSource> field) {//just expose to freemarker
-		return AdminScaffoldUtils.hasAssociation(field);
-	}
+    public boolean hasAssociation(FieldSource<JavaClassSource> field) {//just expose to freemarker
+        return AdminScaffoldUtils.hasAssociation(field);
+    }
 
-	public boolean hasToManyAssociation(FieldSource<JavaClassSource> field) { //just expose to freemarker
-		return AdminScaffoldUtils.hasToManyAssociation(field);
-	}
+    public boolean hasToManyAssociation(FieldSource<JavaClassSource> field) { //just expose to freemarker
+        return AdminScaffoldUtils.hasToManyAssociation(field);
+    }
 
-	public boolean hasToOneAssociation(FieldSource<JavaClassSource> field) { //just expose to freemarker
-		return AdminScaffoldUtils.hasToOneAssociation(field);
-	}
+    public boolean hasToOneAssociation(FieldSource<JavaClassSource> field) { //just expose to freemarker
+        return AdminScaffoldUtils.hasToOneAssociation(field);
+    }
 
-	public Type<JavaClassSource> getArrayType(FieldSource<JavaClassSource> field) { //just expose to freemarker
-		return AdminScaffoldUtils.getArrayType(field);
-	}
+    public Type<JavaClassSource> getArrayType(FieldSource<JavaClassSource> field) { //just expose to freemarker
+        return AdminScaffoldUtils.getArrayType(field);
+    }
 
-	// supported field types
+    // supported field types
+    public FieldConfig getFieldConfig(FieldSource<JavaClassSource> field) {
+        return getFieldConfig(field.getName());
+    }
 
-	public FieldConfig getFieldConfig(FieldSource<JavaClassSource> field) {
-		return getFieldConfig(field.getName());
-	}
+    public boolean isAutoCompleteType(FieldSource<JavaClassSource> field) {
+        return getFieldConfig(field).getType().equals(ComponentTypeEnum.AUTOCOMPLETE);
+    }
 
-	public boolean isAutoCompleteType(FieldSource<JavaClassSource> field) {
-		return getFieldConfig(field).getType().equals(ComponentTypeEnum.AUTOCOMPLETE);
-	}
+    public boolean isInputTextType(FieldSource<JavaClassSource> field) {
+        return getFieldConfig(field).getType().equals(ComponentTypeEnum.INPUT_TEXT);
+    }
 
-	public boolean isInputTextType(FieldSource<JavaClassSource> field) {
-		return getFieldConfig(field).getType().equals(ComponentTypeEnum.INPUT_TEXT);
-	}
+    public boolean isInputNumberType(FieldSource<JavaClassSource> field) {
+        return getFieldConfig(field).getType().equals(ComponentTypeEnum.INPUT_NUMBER);
+    }
 
-	public boolean isInputNumberType(FieldSource<JavaClassSource> field) {
-		return getFieldConfig(field).getType().equals(ComponentTypeEnum.INPUT_NUMBER);
-	}
+    public boolean isSelectOneMenuType(FieldSource<JavaClassSource> field) {
+        return getFieldConfig(field).getType().equals(ComponentTypeEnum.SELECT_ONE_MENU);
+    }
 
-	public boolean isSelectOneMenuType(FieldSource<JavaClassSource> field) {
-		return getFieldConfig(field).getType().equals(ComponentTypeEnum.SELECT_ONE_MENU);
-	}
+    public boolean isSelectManyMenuType(FieldSource<JavaClassSource> field) {
+        return getFieldConfig(field).getType().equals(ComponentTypeEnum.SELECT_MANY_MENU);
+    }
 
-	public boolean isSelectManyMenuType(FieldSource<JavaClassSource> field) {
-		return getFieldConfig(field).getType().equals(ComponentTypeEnum.SELECT_MANY_MENU);
-	}
+    public boolean isSelectManyCheckboxType(FieldSource<JavaClassSource> field) {
+        return getFieldConfig(field).getType().equals(ComponentTypeEnum.SELECT_MANY_CHECKBOX);
+    }
 
-	public boolean isSelectManyCheckboxType(FieldSource<JavaClassSource> field) {
-		return getFieldConfig(field).getType().equals(ComponentTypeEnum.SELECT_MANY_CHECKBOX);
-	}
+    public boolean isSelectOneRadioType(FieldSource<JavaClassSource> field) {
+        return getFieldConfig(field).getType().equals(ComponentTypeEnum.SELECT_ONE_RADIO);
+    }
 
-	public boolean isSelectOneRadioType(FieldSource<JavaClassSource> field) {
-		return getFieldConfig(field).getType().equals(ComponentTypeEnum.SELECT_ONE_RADIO);
-	}
+    public boolean isCheckboxMenuType(FieldSource<JavaClassSource> field) {
+        return getFieldConfig(field).getType().equals(ComponentTypeEnum.CHECKBOXMENU);
+    }
 
-	public boolean isCheckboxMenuType(FieldSource<JavaClassSource> field) {
-		return getFieldConfig(field).getType().equals(ComponentTypeEnum.CHECKBOXMENU);
-	}
+    public boolean isPasswordType(FieldSource<JavaClassSource> field) {
+        return getFieldConfig(field).getType().equals(ComponentTypeEnum.PASSWORD);
+    }
 
-	public boolean isPasswordType(FieldSource<JavaClassSource> field) {
-		return getFieldConfig(field).getType().equals(ComponentTypeEnum.PASSWORD);
-	}
+    public boolean isInputSwitchType(FieldSource<JavaClassSource> field) {
+        return getFieldConfig(field).getType().equals(ComponentTypeEnum.INPUT_SWITCH);
+    }
 
-	public boolean isInputSwitchType(FieldSource<JavaClassSource> field) {
-		return getFieldConfig(field).getType().equals(ComponentTypeEnum.INPUT_SWITCH);
-	}
+    public boolean isCalendarType(FieldSource<JavaClassSource> field) {
+        return getFieldConfig(field).getType().equals(ComponentTypeEnum.CALENDAR);
+    }
 
-	public boolean isCalendarType(FieldSource<JavaClassSource> field) {
-		return getFieldConfig(field).getType().equals(ComponentTypeEnum.CALENDAR);
-	}
+    public boolean isTextAreaType(FieldSource<JavaClassSource> field) {
+        return getFieldConfig(field).getType().equals(ComponentTypeEnum.TEXT_AREA);
+    }
 
-	public boolean isTextAreaType(FieldSource<JavaClassSource> field) {
-		return getFieldConfig(field).getType().equals(ComponentTypeEnum.TEXT_AREA);
-	}
-
-	public boolean isSpinnerType(FieldSource<JavaClassSource> field) {
-		return getFieldConfig(field).getType().equals(ComponentTypeEnum.SPINNER);
-	}
+    public boolean isSpinnerType(FieldSource<JavaClassSource> field) {
+        return getFieldConfig(field).getType().equals(ComponentTypeEnum.SPINNER);
+    }
 
 }

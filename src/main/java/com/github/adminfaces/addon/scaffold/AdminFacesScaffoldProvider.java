@@ -87,477 +87,484 @@ import com.github.adminfaces.addon.util.DependencyUtil;
 
 public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 
-	private static final Logger LOG = Logger.getLogger(AdminFacesSetupCommand.class.getName());
+    private static final Logger LOG = Logger.getLogger(AdminFacesSetupCommand.class.getName());
 
-	private final Document.OutputSettings outputSettings = new Document.OutputSettings().prettyPrint(true)
-			.charset("UTF-8").indentAmount(4).syntax(Document.OutputSettings.Syntax.xml);
+    private final Document.OutputSettings outputSettings = new Document.OutputSettings().prettyPrint(true)
+        .charset("UTF-8").indentAmount(4).syntax(Document.OutputSettings.Syntax.xml);
 
-	private final Parser parser = Parser.xmlParser().settings(new ParseSettings(true, true));
+    private final Parser parser = Parser.xmlParser().settings(new ParseSettings(true, true));
 
-	@Inject
-	private TemplateFactory templates;
+    @Inject
+    private TemplateFactory templates;
 
-	@Inject
-	private DependencyUtil dependencyUtil;
+    @Inject
+    private DependencyUtil dependencyUtil;
 
-	@Inject
-	private FacetFactory facetFactory;
+    @Inject
+    private FacetFactory facetFactory;
 
-	@Override
-	public String getName() {
-		return "AdminFaces";
-	}
+    @Override
+    public String getName() {
+        return "AdminFaces";
+    }
 
-	@Override
-	public String getDescription() {
-		return "Enables Scaffold for AdminFaces projects using JPA entities";
-	}
+    @Override
+    public String getDescription() {
+        return "Enables Scaffold for AdminFaces projects using JPA entities";
+    }
 
-	@Override
-	public List<Resource<?>> setup(ScaffoldSetupContext setupContext) {
-		Project project = setupContext.getProject();
-		addAdminPersistence(project);
-		addEntityManagerProducer(project);
-		configJPAMetaModel(project);
-		createScaffoldConfig(project);
-		return Collections.emptyList();
-	}
+    @Override
+    public List<Resource<?>> setup(ScaffoldSetupContext setupContext) {
+        Project project = setupContext.getProject();
+        addAdminPersistence(project);
+        addEntityManagerProducer(project);
+        configJPAMetaModel(project);
+        createScaffoldConfig(project);
+        return Collections.emptyList();
+    }
 
-	private void addEntityManagerProducer(Project project) {
-		MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
-		JavaSourceFacet javaSource = project.getFacet(JavaSourceFacet.class);
-		try (InputStream emProducerStream = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream("/infra/persistence/EntityManagerProducer.java")) {
-			JavaSource<?> entityManagerProducer = (JavaSource<?>) Roaster.parse(emProducerStream);
-			entityManagerProducer.setPackage(metadataFacet.getProjectGroupName() + ".infra");
-			javaSource.saveJavaSource(entityManagerProducer);
-			FileUtils.copyInputStreamToFile(emProducerStream, new File(project.getRoot().getFullyQualifiedName()
-					+ entityManagerProducer.getPackage().replaceAll("\\.", "/")));
-		} catch (Exception e) {
-			LOG.log(Level.SEVERE, "Could not add 'EntityManagerProducer'.", e);
-		}
+    private void addEntityManagerProducer(Project project) {
+        MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
+        JavaSourceFacet javaSource = project.getFacet(JavaSourceFacet.class);
+        try (InputStream emProducerStream = Thread.currentThread().getContextClassLoader()
+            .getResourceAsStream("/infra/persistence/EntityManagerProducer.java")) {
+            JavaSource<?> entityManagerProducer = (JavaSource<?>) Roaster.parse(emProducerStream);
+            entityManagerProducer.setPackage(metadataFacet.getProjectGroupName() + ".infra");
+            javaSource.saveJavaSource(entityManagerProducer);
+            FileUtils.copyInputStreamToFile(emProducerStream, new File(project.getRoot().getFullyQualifiedName()
+                + entityManagerProducer.getPackage().replaceAll("\\.", "/")));
+        } catch (Exception e) {
+            LOG.log(Level.SEVERE, "Could not add 'EntityManagerProducer'.", e);
+        }
 
-	}
+    }
 
-	private void configJPAMetaModel(Project project) {
-		MavenFacet pom = project.getFacet(MavenFacet.class);
-		boolean isMetaModelConfigured = false;
-		if (pom.getModel().getBuild() == null || pom.getModel().getBuild().getPlugins().isEmpty()) {
-			isMetaModelConfigured = false;
-		} else {
-			Plugin metaModelPlugin = pom.getModel().getBuild().getPluginsAsMap()
-					.get("org.bsc.maven:maven-processor-plugin");
-			if (metaModelPlugin == null) {
-				isMetaModelConfigured = false;
-			} else {
-				isMetaModelConfigured = true;
-			}
-		}
+    private void configJPAMetaModel(Project project) {
+        MavenFacet pom = project.getFacet(MavenFacet.class);
+        boolean isMetaModelConfigured = false;
+        if (pom.getModel().getBuild() == null || pom.getModel().getBuild().getPlugins().isEmpty()) {
+            isMetaModelConfigured = false;
+        } else {
+            Plugin metaModelPlugin = pom.getModel().getBuild().getPluginsAsMap()
+                .get("org.bsc.maven:maven-processor-plugin");
+            if (metaModelPlugin == null) {
+                isMetaModelConfigured = false;
+            } else {
+                isMetaModelConfigured = true;
+            }
+        }
 
-		if (!isMetaModelConfigured) {
-			Iterable<PersistenceMetaModelFacet> facets = facetFactory.createFacets(project,
-					PersistenceMetaModelFacet.class);
-			for (PersistenceMetaModelFacet metaModelFacet : facets) {
-				metaModelFacet.setMetaModelProvider(new AdminFacesMetaModelProvider());
-				if (facetFactory.install(project, metaModelFacet)) {
-					break;
-				}
-			}
-		}
+        if (!isMetaModelConfigured) {
+            Iterable<PersistenceMetaModelFacet> facets = facetFactory.createFacets(project,
+                PersistenceMetaModelFacet.class);
+            for (PersistenceMetaModelFacet metaModelFacet : facets) {
+                metaModelFacet.setMetaModelProvider(new AdminFacesMetaModelProvider());
+                if (facetFactory.install(project, metaModelFacet)) {
+                    break;
+                }
+            }
+        }
 
-	}
+    }
 
-	private void addAdminPersistence(Project project) {
-		DependencyBuilder adminPersistenceDependency = DependencyBuilder.create()
-				.setCoordinate(dependencyUtil.getLatestVersion(ADMIN_PERSISTENCE_COORDINATE));
-		dependencyUtil.installDependency(project.getFacet(DependencyFacet.class), adminPersistenceDependency);
-		configDeltaSpike(project);
-	}
+    private void addAdminPersistence(Project project) {
+        DependencyBuilder adminPersistenceDependency = DependencyBuilder.create()
+            .setCoordinate(dependencyUtil.getLatestVersion(ADMIN_PERSISTENCE_COORDINATE));
+        dependencyUtil.installDependency(project.getFacet(DependencyFacet.class), adminPersistenceDependency);
+        configDeltaSpike(project);
+    }
 
-	private void configDeltaSpike(Project project) {
-		Resource<?> resources = project.getFacet(ResourcesFacet.class).getResourceDirectory();
+    private void configDeltaSpike(Project project) {
+        Resource<?> resources = project.getFacet(ResourcesFacet.class).getResourceDirectory();
 
-		if (!resources.getChild("apache-deltaspike.properties").exists()) {
-			try (InputStream is = Thread.currentThread().getContextClassLoader()
-					.getResourceAsStream("/apache-deltaspike.properties")) {
-				IOUtils.copy(is, new FileOutputStream(
-						new File(resources.getFullyQualifiedName() + "/apache-deltaspike.properties")));
-			} catch (IOException e) {
-				LOG.log(Level.SEVERE, "Could not add 'apache-deltaspike.properties'.", e);
-			}
-		}
-		CDIFacet cdi = project.getFacet(CDIFacet.class);
-		FileResource<?> beansXml = cdi.getConfigFile();
-		Node node = XMLParser.parse(beansXml.getResourceInputStream());
-		Node alternativesNode = node.getOrCreate("alternatives");
-		Optional<Node> deltaspikeTransactionStrategy = alternativesNode.getChildren().stream()
-				.filter(f -> f.getName().equals("class") && f.getText().contains("BeanManagedUserTransactionStrategy"))
-				.findFirst();
+        if (!resources.getChild("apache-deltaspike.properties").exists()) {
+            try (InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("/apache-deltaspike.properties")) {
+                IOUtils.copy(is, new FileOutputStream(
+                    new File(resources.getFullyQualifiedName() + "/apache-deltaspike.properties")));
+            } catch (IOException e) {
+                LOG.log(Level.SEVERE, "Could not add 'apache-deltaspike.properties'.", e);
+            }
+        }
+        CDIFacet cdi = project.getFacet(CDIFacet.class);
+        FileResource<?> beansXml = cdi.getConfigFile();
+        Node node = XMLParser.parse(beansXml.getResourceInputStream());
+        Node alternativesNode = node.getOrCreate("alternatives");
+        Optional<Node> deltaspikeTransactionStrategy = alternativesNode.getChildren().stream()
+            .filter(f -> f.getName().equals("class") && f.getText().contains("BeanManagedUserTransactionStrategy"))
+            .findFirst();
 
-		if (!deltaspikeTransactionStrategy.isPresent()) {
-			alternativesNode.createChild("class")
-					.text("org.apache.deltaspike.jpa.impl.transaction.BeanManagedUserTransactionStrategy");
-			beansXml.setContents(XMLParser.toXMLInputStream(node));
-		}
-	}
+        if (!deltaspikeTransactionStrategy.isPresent()) {
+            alternativesNode.createChild("class")
+                .text("org.apache.deltaspike.jpa.impl.transaction.BeanManagedUserTransactionStrategy");
+            beansXml.setContents(XMLParser.toXMLInputStream(node));
+        }
+    }
 
-	/**
-	 * Just adds global scaffold config file to the project
-	 * 
-	 * @param project
-	 */
-	private void createScaffoldConfig(Project project) {
-		DirectoryResource resources = project.getFacet(ResourcesFacet.class).getResourceDirectory();
-		DirectoryResource scaffoldDir = resources.getOrCreateChildDirectory("scaffold");
-		if (!scaffoldDir.getChild("adminfaces.yaml").exists()) {
-			try (InputStream is = Thread.currentThread().getContextClassLoader()
-					.getResourceAsStream("/scaffold/adminfaces.yaml")) {
-				IOUtils.copy(is,
-						new FileOutputStream(new File(scaffoldDir.getFullyQualifiedName() + "/adminfaces.yaml")));
-			} catch (IOException e) {
-				LOG.log(Level.SEVERE, "Could not add 'adminfaces.yaml'.", e);
-			}
-		}
+    /**
+     * Just adds global scaffold config file to the project
+     *
+     * @param project
+     */
+    private void createScaffoldConfig(Project project) {
+        DirectoryResource resources = project.getFacet(ResourcesFacet.class).getResourceDirectory();
+        DirectoryResource scaffoldDir = resources.getOrCreateChildDirectory("scaffold");
+        if (!scaffoldDir.getChild("adminfaces.yaml").exists()) {
+            try (InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("/scaffold/adminfaces.yaml")) {
+                IOUtils.copy(is,
+                    new FileOutputStream(new File(scaffoldDir.getFullyQualifiedName() + "/adminfaces.yaml")));
+            } catch (IOException e) {
+                LOG.log(Level.SEVERE, "Could not add 'adminfaces.yaml'.", e);
+            }
+        }
 
-		MavenFacet m2 = project.getFacet(MavenFacet.class);
-		MavenModelResource m2Model = m2.getModelResource();
+        MavenFacet m2 = project.getFacet(MavenFacet.class);
+        MavenModelResource m2Model = m2.getModelResource();
 
-		Node node = XMLParser.parse(m2Model.getResourceInputStream());
-		Node resourcesNode = node.getOrCreate("build").getOrCreate("resources");
-		Optional<Node> resourcesDirectory = resourcesNode.get("resource").stream()
-		            .filter(r -> r.getName().equals("directory") && r.getText().equals("src/main/resources")).findFirst();
+        Node node = XMLParser.parse(m2Model.getResourceInputStream());
+        Node resourcesNode = node.getOrCreate("build").getOrCreate("resources");
+        Optional<Node> resourcesDirectory = resourcesNode.get("resource").stream()
+            .filter(r -> r.getName().equals("directory") && r.getText().equals("src/main/resources")).findFirst();
 
-		
-		Node resourcesExclusions = resourcesDirectory.get().getOrCreate("excludes");
-		
-		Optional<Node> scaffoldExclude = resourcesExclusions.getChildren().stream()
-			.filter(e -> e.getName().equals("exclude") && e.getText().contains("scaffold"))
-			.findFirst();
+        Node resourceNode = resourcesNode.getOrCreate("resource");
+        if(!resourcesDirectory.isPresent()) {
+            resourceNode.getOrCreate("filtering").text("true");
+            resourcesDirectory = Optional.of(resourceNode.getOrCreate("directory"));
+            resourcesDirectory.get().text("src/main/resources");
+        }
+        Node resourcesExclusions = resourceNode.getOrCreate("excludes");
 
-		if (!scaffoldExclude.isPresent()) {
-			Node resource = resourcesExclusions.createChild("exclude");
-			resource.text("scaffold/**");
-			m2Model.setContents(XMLParser.toXMLInputStream(node));
-		}
-		
-		
-	}
+        Optional<Node> scaffoldExclude = resourcesExclusions.getChildren().stream()
+            .filter(e -> e.getName().equals("exclude") && e.getText().contains("scaffold"))
+            .findFirst();
 
-	@Override
-	public boolean isSetup(ScaffoldSetupContext setupContext) {
-		Project project = setupContext.getProject();
-		DependencyFacet facet = project.getFacet(DependencyFacet.class);
-		boolean hasAdminFacesDependencies = facet
-				.hasDirectDependency(DependencyBuilder.create().setArtifactId(ADMIN_TEMPLATE_COORDINATE.getArtifactId())
-						.setGroupId(ADMIN_TEMPLATE_COORDINATE.getGroupId()));
+        if (!scaffoldExclude.isPresent()) {
+            Node resource = resourcesExclusions.createChild("exclude");
+            resource.text("scaffold/**");
+            m2Model.setContents(XMLParser.toXMLInputStream(node));
+        }
 
-		WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
+    }
 
-		boolean areResourcesInstalled = web.getWebResource(Constants.WebResources.INDEX_PAGE).exists()
-				&& web.getWebResource(Constants.WebResources.TEMPLATE_DEFAULT).exists()
-				&& web.getWebResource(Constants.WebResources.TEMPLATE_TOP).exists();
+    @Override
+    public boolean isSetup(ScaffoldSetupContext setupContext) {
+        Project project = setupContext.getProject();
+        DependencyFacet facet = project.getFacet(DependencyFacet.class);
+        boolean hasAdminFacesDependencies = facet
+            .hasDirectDependency(DependencyBuilder.create().setArtifactId(ADMIN_TEMPLATE_COORDINATE.getArtifactId())
+                .setGroupId(ADMIN_TEMPLATE_COORDINATE.getGroupId()));
 
-		Resource<?> resources = project.getFacet(ResourcesFacet.class).getResourceDirectory();
+        WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
 
-		boolean hasAdminConfig = resources.getChild("admin-config.properties").exists();
+        boolean areResourcesInstalled = web.getWebResource(Constants.WebResources.INDEX_PAGE).exists()
+            && web.getWebResource(Constants.WebResources.TEMPLATE_DEFAULT).exists()
+            && web.getWebResource(Constants.WebResources.TEMPLATE_TOP).exists();
 
-		List<Class<? extends ProjectFacet>> requiredFacetsLists = Arrays.asList(WebResourcesFacet.class,
-				DependencyFacet.class, JPAFacet.class, CDIFacet.class, ServletFacet.class, FacesFacet.class);
+        Resource<?> resources = project.getFacet(ResourcesFacet.class).getResourceDirectory();
 
-		boolean areRequiredFacetsInstalled = project.hasAllFacets(requiredFacetsLists);
-		if (!areRequiredFacetsInstalled) {
-			LOG.warning("AdminFaces scaffold provided not enabled because required facets "
-					+ "(CDI, JPA, JSF and Servlet) are not installed. Use AdminFaces setup command to install required facets.");
-		}
+        boolean hasAdminConfig = resources.getChild("admin-config.properties").exists();
 
-		return hasAdminFacesDependencies && areResourcesInstalled && hasAdminConfig && areRequiredFacetsInstalled;
-	}
+        List<Class<? extends ProjectFacet>> requiredFacetsLists = Arrays.asList(WebResourcesFacet.class,
+            DependencyFacet.class, JPAFacet.class, CDIFacet.class, ServletFacet.class, FacesFacet.class);
 
-	@Override
-	public List<Resource<?>> generateFrom(ScaffoldGenerationContext scaffoldGenerationContext) {
-		Project project = scaffoldGenerationContext.getProject();
-		Collection<Resource<?>> entities = scaffoldGenerationContext.getResources();
-		List<Resource<?>> generatedResources = new ArrayList<>();
-		Map<Object, Object> context = CollectionUtils.newHashMap();
-		JavaSourceFacet java = project.getFacet(JavaSourceFacet.class);
-		WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
-		for (Resource<?> resource : entities) {
-			if (resource instanceof JavaResource) {
-				JavaResource javaResource = (JavaResource) resource;
-				try {
-					JavaClassSource entity = (JavaClassSource) javaResource.getJavaType();
-					entity.addImport("com.github.adminfaces.persistence.model.PersistenceEntity");
-					entity.addInterface("PersistenceEntity");
-					createOrOverwrite(java.getJavaResource(entity), entity.toString());
-					EntityConfig entityConfig = EntityConfigLoader.createOrLoadEntityConfig(entity, project);
-					ScaffoldEntity scaffoldEntity = new ScaffoldEntity(entity, entityConfig);
-					context.put("entity", scaffoldEntity);
-					String ccEntity = StringUtils.decapitalize(entity.getName());
-					context.put("entityPackage", entity.getPackage());
-					context.put("ccEntity", ccEntity);
-					context.put("fields", entity.getFields());
-					setPrimaryKeyMetaData(context, entity);
-					generateRepository(context, java, generatedResources);
-					generateService(context, java, generatedResources);
-					generateListMBean(context, java, generatedResources);
-					generateFormMBean(context, java, generatedResources);
-					addLeftMenuEntry(project, entity, generatedResources);
-					addToptMenuEntry(project, entity, generatedResources);
-					generateListPage(context, web, generatedResources);
-				} catch (Exception e) {
-					LOG.log(Level.SEVERE, "Problems during AdminFaces scaffold execution.", e);
-					throw new RuntimeException(e);
-				} finally {
-					context.clear();
-				}
-			}
-		}
-		return generatedResources;
-	}
+        boolean areRequiredFacetsInstalled = project.hasAllFacets(requiredFacetsLists);
+        if (!areRequiredFacetsInstalled) {
+            LOG.warning("AdminFaces scaffold provided not enabled because required facets "
+                + "(CDI, JPA, JSF and Servlet) are not installed. Use AdminFaces setup command to install required facets.");
+        }
 
-	 
-	/**
-	 * Generates JSF bean for Create and update target entity
-	 *
-	 * @param context            generation context containing entity
-	 * @param java               Forge Java facet used to access java files
-	 * @param generatedResources generated resources on current scaffold execution
-	 */
-	private void generateFormMBean(Map<Object, Object> context, JavaSourceFacet java,
-			List<Resource<?>> generatedResources) {
-		JavaClassSource formMB = Roaster.parse(JavaClassSource.class,
-				FreemarkerTemplateProcessor.processTemplate(context, templates.getFormMBTemplate()));
-		formMB.setPackage(java.getBasePackage() + "." + Constants.Packages.BEAN);
-		JavaResource javaResource = java.getJavaResource(formMB);
-		if (!javaResource.exists()) {
-			generatedResources.add(createOrOverwrite(javaResource, formMB.toUnformattedString()));
-		}
-	}
+        return hasAdminFacesDependencies && areResourcesInstalled && hasAdminConfig && areRequiredFacetsInstalled;
+    }
 
-	/**
-	 * Generates JSF bean for list and search target entity
-	 *
-	 * @param context            generation context containing entity
-	 * @param java               Forge Java facet used to access java files
-	 * @param generatedResources generated resources on current scaffold execution
-	 */
-	private void generateListMBean(Map<Object, Object> context, JavaSourceFacet java,
-			List<Resource<?>> generatedResources) {
-		JavaClassSource listMB = Roaster.parse(JavaClassSource.class,
-				FreemarkerTemplateProcessor.processTemplate(context, templates.getListMBTemplate()));
-		listMB.setPackage(java.getBasePackage() + "." + Constants.Packages.BEAN);
-		JavaResource javaResource = java.getJavaResource(listMB);
-		if (!javaResource.exists()) {
-			generatedResources.add(createOrOverwrite(javaResource, listMB.toUnformattedString()));
-		}
-	}
+    @Override
+    public List<Resource<?>> generateFrom(ScaffoldGenerationContext scaffoldGenerationContext) {
+        Project project = scaffoldGenerationContext.getProject();
+        Collection<Resource<?>> entities = scaffoldGenerationContext.getResources();
+        List<Resource<?>> generatedResources = new ArrayList<>();
+        Map<Object, Object> context = CollectionUtils.newHashMap();
+        JavaSourceFacet java = project.getFacet(JavaSourceFacet.class);
+        WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
+        for (Resource<?> resource : entities) {
+            if (resource instanceof JavaResource) {
+                JavaResource javaResource = (JavaResource) resource;
+                try {
+                    JavaClassSource entity = (JavaClassSource) javaResource.getJavaType();
+                    entity.addImport("com.github.adminfaces.persistence.model.PersistenceEntity");
+                    entity.addInterface("PersistenceEntity");
+                    createOrOverwrite(java.getJavaResource(entity), entity.toString());
+                    EntityConfig entityConfig = EntityConfigLoader.createOrLoadEntityConfig(entity, project);
+                    ScaffoldEntity scaffoldEntity = new ScaffoldEntity(entity, entityConfig);
+                    context.put("entity", scaffoldEntity);
+                    String ccEntity = StringUtils.decapitalize(entity.getName());
+                    context.put("entityPackage", entity.getPackage());
+                    context.put("ccEntity", ccEntity);
+                    context.put("fields", entity.getFields());
+                    setPrimaryKeyMetaData(context, entity);
+                    generateRepository(context, java, generatedResources);
+                    generateService(context, java, generatedResources);
+                    generateListMBean(context, java, generatedResources);
+                    generateFormMBean(context, java, generatedResources);
+                    addLeftMenuEntry(project, entity, generatedResources);
+                    addToptMenuEntry(project, entity, generatedResources);
+                    generateListPage(context, web, generatedResources);
+                } catch (Exception e) {
+                    LOG.log(Level.SEVERE, "Problems during AdminFaces scaffold execution.", e);
+                    throw new RuntimeException(e);
+                } finally {
+                    context.clear();
+                }
+            }
+        }
+        return generatedResources;
+    }
 
-	/**
-	 * Generates JPA repository for target entity
-	 *
-	 * @param context            generation context containing entity
-	 * @param java               Forge Java facet used to access java files
-	 * @param generatedResources generated resources on current scaffold execution
-	 */
-	private void generateRepository(Map<Object, Object> context, JavaSourceFacet java,
-			List<Resource<?>> generatedResources) {
-		JavaInterfaceSource repository = Roaster.parse(JavaInterfaceSource.class,
-				FreemarkerTemplateProcessor.processTemplate(context, templates.getRepositoryTemplate()));
-		repository.setPackage(java.getBasePackage() + "." + Constants.Packages.REPOSITORY);
-		context.put("repository", repository);
-		JavaResource javaResource = java.getJavaResource(repository);
-		if (!javaResource.exists()) {
-			generatedResources.add(createOrOverwrite(javaResource, repository.toUnformattedString()));
-		}
-	}
+    /**
+     * Generates JSF bean for Create and update target entity
+     *
+     * @param context generation context containing entity
+     * @param java Forge Java facet used to access java files
+     * @param generatedResources generated resources on current scaffold
+     * execution
+     */
+    private void generateFormMBean(Map<Object, Object> context, JavaSourceFacet java,
+        List<Resource<?>> generatedResources) {
+        JavaClassSource formMB = Roaster.parse(JavaClassSource.class,
+            FreemarkerTemplateProcessor.processTemplate(context, templates.getFormMBTemplate()));
+        formMB.setPackage(java.getBasePackage() + "." + Constants.Packages.BEAN);
+        JavaResource javaResource = java.getJavaResource(formMB);
+        if (!javaResource.exists()) {
+            generatedResources.add(createOrOverwrite(javaResource, formMB.toUnformattedString()));
+        }
+    }
 
-	/**
-	 * Generates service for target entity
-	 *
-	 * @param context            generation context containing entity
-	 * @param java               Forge Java facet used to access java files
-	 * @param generatedResources generated resources on current scaffold execution
-	 * 
-	 */
-	private void generateService(Map<Object, Object> context, JavaSourceFacet java,
-			List<Resource<?>> generatedResources) {
-		JavaClassSource service = Roaster.parse(JavaClassSource.class,
-				FreemarkerTemplateProcessor.processTemplate(context, templates.getServiceTemplate()));
-		service.setPackage(java.getBasePackage() + "." + Constants.Packages.SERVICE);
-		context.put("service", service);
-		JavaResource javaResource = java.getJavaResource(service);
-		if (!javaResource.exists()) {
-			generatedResources.add(createOrOverwrite(javaResource, service.toUnformattedString()));
-		}
-	}
+    /**
+     * Generates JSF bean for list and search target entity
+     *
+     * @param context generation context containing entity
+     * @param java Forge Java facet used to access java files
+     * @param generatedResources generated resources on current scaffold
+     * execution
+     */
+    private void generateListMBean(Map<Object, Object> context, JavaSourceFacet java,
+        List<Resource<?>> generatedResources) {
+        JavaClassSource listMB = Roaster.parse(JavaClassSource.class,
+            FreemarkerTemplateProcessor.processTemplate(context, templates.getListMBTemplate()));
+        listMB.setPackage(java.getBasePackage() + "." + Constants.Packages.BEAN);
+        JavaResource javaResource = java.getJavaResource(listMB);
+        if (!javaResource.exists()) {
+            generatedResources.add(createOrOverwrite(javaResource, listMB.toUnformattedString()));
+        }
+    }
 
-	/**
-	 * Generates entity list page
-	 * 
-	 * @param context            generation context containing entity
-	 * @param web                Forge web facet used to access web resources
-	 * @param generatedResources
-	 */
-	private void generateListPage(Map<Object, Object> context, WebResourcesFacet web,
-			List<Resource<?>> generatedResources) {
-		String listPage = FreemarkerTemplateProcessor.processTemplate(context, templates.getListPageTemplate());
-		JavaClassSource entity = (JavaClassSource) context.get("entity");
-		String entityName = entity.getName().toLowerCase();
-		FileResource<?> listPageFile = web.getWebResource("/" + entityName + "/" + entityName + "-list.xhtml");
-		if (!listPageFile.exists()) {
-			generatedResources.add(createOrOverwrite(listPageFile,
-					parser.parseInput(listPage, "UTF-8").outputSettings(outputSettings).toString()));
-		}
-	}
+    /**
+     * Generates JPA repository for target entity
+     *
+     * @param context generation context containing entity
+     * @param java Forge Java facet used to access java files
+     * @param generatedResources generated resources on current scaffold
+     * execution
+     */
+    private void generateRepository(Map<Object, Object> context, JavaSourceFacet java,
+        List<Resource<?>> generatedResources) {
+        JavaInterfaceSource repository = Roaster.parse(JavaInterfaceSource.class,
+            FreemarkerTemplateProcessor.processTemplate(context, templates.getRepositoryTemplate()));
+        repository.setPackage(java.getBasePackage() + "." + Constants.Packages.REPOSITORY);
+        context.put("repository", repository);
+        JavaResource javaResource = java.getJavaResource(repository);
+        if (!javaResource.exists()) {
+            generatedResources.add(createOrOverwrite(javaResource, repository.toUnformattedString()));
+        }
+    }
 
-	void addLeftMenuEntry(Project project, JavaClassSource entity, List<Resource<?>> generatedResources) {
-		WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
-		FileResource<?> leftMenu = web.getWebResource(Constants.WebResources.LEFT_MENU);
-		Document leftMenuDocument = Jsoup.parse(leftMenu.getContents(Charset.forName("UTF-8")));
-		Element menuContent = leftMenuDocument.getElementsByClass("sidebar-menu").get(0);
+    /**
+     * Generates service for target entity
+     *
+     * @param context generation context containing entity
+     * @param java Forge Java facet used to access java files
+     * @param generatedResources generated resources on current scaffold
+     * execution
+     *
+     */
+    private void generateService(Map<Object, Object> context, JavaSourceFacet java,
+        List<Resource<?>> generatedResources) {
+        JavaClassSource service = Roaster.parse(JavaClassSource.class,
+            FreemarkerTemplateProcessor.processTemplate(context, templates.getServiceTemplate()));
+        service.setPackage(java.getBasePackage() + "." + Constants.Packages.SERVICE);
+        context.put("service", service);
+        JavaResource javaResource = java.getJavaResource(service);
+        if (!javaResource.exists()) {
+            generatedResources.add(createOrOverwrite(javaResource, service.toUnformattedString()));
+        }
+    }
 
-		String entityName = entity.getName();
-		boolean menuEntryExists = menuContent.getElementById("menu" + entityName) != null;
-		if (!menuEntryExists) {
-			String pageFolder = "/" + entityName.toLowerCase() + "/";
-			String listPage = pageFolder + entityName.toLowerCase() + "-list.xhtml";
-			menuContent.append("<li>" + NEW_LINE + "                    <p:link id=\"menu" + entityName
-					+ "\" outcome=\"" + listPage + "\" title=\"" + entityName + "s page\">" + NEW_LINE
-					+ "                        <i class=\"fa fa-circle-o\"></i>" + NEW_LINE
-					+ "                        <span>" + entityName + "s</span>" + NEW_LINE
-					+ "                    </p:link>" + NEW_LINE + "                </li>");
+    /**
+     * Generates entity list page
+     *
+     * @param context generation context containing entity
+     * @param web Forge web facet used to access web resources
+     * @param generatedResources
+     */
+    private void generateListPage(Map<Object, Object> context, WebResourcesFacet web,
+        List<Resource<?>> generatedResources) {
+        String listPage = FreemarkerTemplateProcessor.processTemplate(context, templates.getListPageTemplate());
+        JavaClassSource entity = (JavaClassSource) context.get("entity");
+        String entityName = entity.getName().toLowerCase();
+        FileResource<?> listPageFile = web.getWebResource("/" + entityName + "/" + entityName + "-list.xhtml");
+        if (!listPageFile.exists()) {
+            generatedResources.add(createOrOverwrite(listPageFile,
+                parser.parseInput(listPage, "UTF-8").outputSettings(outputSettings).toString()));
+        }
+    }
 
-			String content = leftMenuDocument.body().toString();
-			int startIndex = content.indexOf("<ui:composition");
-			int endIndex = content.indexOf("</body");
-			leftMenu.setContents(parser
-					.parseInput("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + content.substring(startIndex, endIndex),
-							"UTF-8")
-					.outputSettings(outputSettings).toString());
-			generatedResources.add(leftMenu);
-		}
-	}
+    void addLeftMenuEntry(Project project, JavaClassSource entity, List<Resource<?>> generatedResources) {
+        WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
+        FileResource<?> leftMenu = web.getWebResource(Constants.WebResources.LEFT_MENU);
+        Document leftMenuDocument = Jsoup.parse(leftMenu.getContents(Charset.forName("UTF-8")));
+        Element menuContent = leftMenuDocument.getElementsByClass("sidebar-menu").get(0);
 
-	void addToptMenuEntry(Project project, JavaClassSource entity, List<Resource<?>> generatedResources) {
-		WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
-		FileResource<?> topMenu = web.getWebResource(Constants.WebResources.TOP_MENU);
-		Document leftMenuDocument = Jsoup.parse(topMenu.getContents(Charset.forName("UTF-8")));
-		Element menuContent = leftMenuDocument.getElementsByClass("navbar-nav").get(0);
+        String entityName = entity.getName();
+        boolean menuEntryExists = menuContent.getElementById("menu" + entityName) != null;
+        if (!menuEntryExists) {
+            String pageFolder = "/" + entityName.toLowerCase() + "/";
+            String listPage = pageFolder + entityName.toLowerCase() + "-list.xhtml";
+            menuContent.append("<li>" + NEW_LINE + "                    <p:link id=\"menu" + entityName
+                + "\" outcome=\"" + listPage + "\" title=\"" + entityName + "s page\">" + NEW_LINE
+                + "                        <i class=\"fa fa-circle-o\"></i>" + NEW_LINE
+                + "                        <span>" + entityName + "s</span>" + NEW_LINE
+                + "                    </p:link>" + NEW_LINE + "                </li>");
 
-		String entityName = entity.getName();
-		boolean menuEntryExists = menuContent.getElementById("menu" + entityName) != null;
-		if (!menuEntryExists) {
-			String pageFolder = "/" + entityName.toLowerCase() + "/";
-			String listPage = pageFolder + entityName.toLowerCase() + "-list.xhtml";
-			String formPage = pageFolder + entityName.toLowerCase() + "-form.xhtml";
-			menuContent.append("<li id=\"" + "menu" + entityName + "\" class=\"dropdown\">" + NEW_LINE + NEW_LINE
-					+ "            <a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">" + entityName
-					+ "s <span" + NEW_LINE + "                    class=\"caret\"></span>" + NEW_LINE
-					+ "                <i class=\"fa fa-circle-o\"></i>" + NEW_LINE + "            </a>" + NEW_LINE + ""
-					+ NEW_LINE + "" + NEW_LINE + "            <ul class=\"dropdown-menu\" role=\"menu\">" + NEW_LINE
-					+ "                <li>" + NEW_LINE + "                    <p:link outcome=\"" + listPage + "\">"
-					+ NEW_LINE + "                        <span>List</span>" + NEW_LINE
-					+ "                        <i class=\"fa fa-th-list\"></i>" + NEW_LINE
-					+ "                    </p:link>" + NEW_LINE + "                </li>" + NEW_LINE
-					+ "                <li>" + NEW_LINE + "                    <p:link outcome=\"" + formPage + "\">"
-					+ NEW_LINE + "                        <span>New</span>" + NEW_LINE
-					+ "                        <i class=\"fa fa-plus-circle\"></i>" + NEW_LINE
-					+ "                    </p:link>" + NEW_LINE + "                </li>" + NEW_LINE + "" + NEW_LINE
-					+ "" + NEW_LINE + "            </ul>" + NEW_LINE + "" + NEW_LINE + "        </li>");
+            String content = leftMenuDocument.body().toString();
+            int startIndex = content.indexOf("<ui:composition");
+            int endIndex = content.indexOf("</body");
+            leftMenu.setContents(parser
+                .parseInput("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + content.substring(startIndex, endIndex),
+                    "UTF-8")
+                .outputSettings(outputSettings).toString());
+            generatedResources.add(leftMenu);
+        }
+    }
 
-			String content = leftMenuDocument.body().toString();
-			int startIndex = content.indexOf("<ui:composition");
-			int endIndex = content.indexOf("</body");
-			topMenu.setContents(parser
-					.parseInput("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + content.substring(startIndex, endIndex),
-							"UTF-8")
-					.outputSettings(outputSettings).toString());
-			generatedResources.add(topMenu);
-		}
-	}
+    void addToptMenuEntry(Project project, JavaClassSource entity, List<Resource<?>> generatedResources) {
+        WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
+        FileResource<?> topMenu = web.getWebResource(Constants.WebResources.TOP_MENU);
+        Document leftMenuDocument = Jsoup.parse(topMenu.getContents(Charset.forName("UTF-8")));
+        Element menuContent = leftMenuDocument.getElementsByClass("navbar-nav").get(0);
 
-	@Override
-	public NavigationResult getSetupFlow(ScaffoldSetupContext setupContext) {
-		Project project = setupContext.getProject();
-		NavigationResultBuilder builder = NavigationResultBuilder.create();
-		List<Class<? extends UICommand>> setupCommands = new ArrayList<>();
-		if (!project.hasFacet(JPAFacet.class)) {
-			builder.add(JPASetupWizard.class);
-		}
-		Metadata compositeSetupMetadata = Metadata.forCommand(ScaffoldSetupWizard.class).name("Setup AdminFacets")
-				.description("Setup all dependent facets for the AdminFaces scaffold.");
-		builder.add(compositeSetupMetadata, setupCommands);
-		return builder.build();
-	}
+        String entityName = entity.getName();
+        boolean menuEntryExists = menuContent.getElementById("menu" + entityName) != null;
+        if (!menuEntryExists) {
+            String pageFolder = "/" + entityName.toLowerCase() + "/";
+            String listPage = pageFolder + entityName.toLowerCase() + "-list.xhtml";
+            String formPage = pageFolder + entityName.toLowerCase() + "-form.xhtml";
+            menuContent.append("<li id=\"" + "menu" + entityName + "\" class=\"dropdown\">" + NEW_LINE + NEW_LINE
+                + "            <a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">" + entityName
+                + "s <span" + NEW_LINE + "                    class=\"caret\"></span>" + NEW_LINE
+                + "                <i class=\"fa fa-circle-o\"></i>" + NEW_LINE + "            </a>" + NEW_LINE + ""
+                + NEW_LINE + "" + NEW_LINE + "            <ul class=\"dropdown-menu\" role=\"menu\">" + NEW_LINE
+                + "                <li>" + NEW_LINE + "                    <p:link outcome=\"" + listPage + "\">"
+                + NEW_LINE + "                        <span>List</span>" + NEW_LINE
+                + "                        <i class=\"fa fa-th-list\"></i>" + NEW_LINE
+                + "                    </p:link>" + NEW_LINE + "                </li>" + NEW_LINE
+                + "                <li>" + NEW_LINE + "                    <p:link outcome=\"" + formPage + "\">"
+                + NEW_LINE + "                        <span>New</span>" + NEW_LINE
+                + "                        <i class=\"fa fa-plus-circle\"></i>" + NEW_LINE
+                + "                    </p:link>" + NEW_LINE + "                </li>" + NEW_LINE + "" + NEW_LINE
+                + "" + NEW_LINE + "            </ul>" + NEW_LINE + "" + NEW_LINE + "        </li>");
 
-	@Override
-	public NavigationResult getGenerationFlow(ScaffoldGenerationContext generationContext) {
-		NavigationResultBuilder builder = NavigationResultBuilder.create();
-		builder.add(AdminFacesEntitySelectionWizard.class);
-		return builder.build();
-	}
+            String content = leftMenuDocument.body().toString();
+            int startIndex = content.indexOf("<ui:composition");
+            int endIndex = content.indexOf("</body");
+            topMenu.setContents(parser
+                .parseInput("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + content.substring(startIndex, endIndex),
+                    "UTF-8")
+                .outputSettings(outputSettings).toString());
+            generatedResources.add(topMenu);
+        }
+    }
 
-	@Override
-	public AccessStrategy getAccessStrategy() {
-		return null;
-	}
+    @Override
+    public NavigationResult getSetupFlow(ScaffoldSetupContext setupContext) {
+        Project project = setupContext.getProject();
+        NavigationResultBuilder builder = NavigationResultBuilder.create();
+        List<Class<? extends UICommand>> setupCommands = new ArrayList<>();
+        if (!project.hasFacet(JPAFacet.class)) {
+            builder.add(JPASetupWizard.class);
+        }
+        Metadata compositeSetupMetadata = Metadata.forCommand(ScaffoldSetupWizard.class).name("Setup AdminFacets")
+            .description("Setup all dependent facets for the AdminFaces scaffold.");
+        builder.add(compositeSetupMetadata, setupCommands);
+        return builder.build();
+    }
 
-	protected HashMap<Object, Object> getTemplateContext(String targetDir, final Resource<?> template) {
-		HashMap<Object, Object> context = new HashMap<>();
-		context.put("template", template);
-		context.put("templatePath", Constants.WebResources.PAGE_TEMPLATE);
-		context.put("targetDir", targetDir);
-		return context;
-	}
+    @Override
+    public NavigationResult getGenerationFlow(ScaffoldGenerationContext generationContext) {
+        NavigationResultBuilder builder = NavigationResultBuilder.create();
+        builder.add(AdminFacesEntitySelectionWizard.class);
+        return builder.build();
+    }
 
-	/**
-	 * Copied from forge-core/javaee/scafold-faces/FacesScaffoldProvider.java
-	 *
-	 * @param context
-	 * @param entity
-	 */
-	private void setPrimaryKeyMetaData(Map<Object, Object> context, final JavaClassSource entity) {
-		String pkName = "id";
-		String pkType = "Long";
-		String nullablePkType = "Long";
-		for (MemberSource<JavaClassSource, ?> m : entity.getMembers()) {
-			if (m.hasAnnotation(Id.class) || m.hasAnnotation(EmbeddedId.class)) {
-				if (m instanceof Field) {
-					Field<?> field = (Field<?>) m;
-					pkName = field.getName();
-					pkType = field.getType().getQualifiedName();
-					nullablePkType = pkType;
-					break;
-				}
+    @Override
+    public AccessStrategy getAccessStrategy() {
+        return null;
+    }
 
-				MethodSource<?> method = (MethodSource<?>) m;
-				pkName = method.getName().substring(3);
-				if (method.getName().startsWith("get")) {
-					pkType = method.getReturnType().getQualifiedName();
-				} else {
-					pkType = method.getParameters().get(0).getType().getQualifiedName();
-				}
-				nullablePkType = pkType;
-				break;
-			}
-		}
+    protected HashMap<Object, Object> getTemplateContext(String targetDir, final Resource<?> template) {
+        HashMap<Object, Object> context = new HashMap<>();
+        context.put("template", template);
+        context.put("templatePath", Constants.WebResources.PAGE_TEMPLATE);
+        context.put("targetDir", targetDir);
+        return context;
+    }
 
-		if (Types.isJavaLang(pkType)) {
-			nullablePkType = Types.toSimpleName(pkType);
-		} else if ("int".equals(pkType)) {
-			nullablePkType = Integer.class.getSimpleName();
-		} else if ("short".equals(pkType)) {
-			nullablePkType = Short.class.getSimpleName();
-		} else if ("byte".equals(pkType)) {
-			nullablePkType = Byte.class.getSimpleName();
-		} else if ("long".equals(pkType)) {
-			nullablePkType = Long.class.getSimpleName();
-		}
+    /**
+     * Copied from forge-core/javaee/scafold-faces/FacesScaffoldProvider.java
+     *
+     * @param context
+     * @param entity
+     */
+    private void setPrimaryKeyMetaData(Map<Object, Object> context, final JavaClassSource entity) {
+        String pkName = "id";
+        String pkType = "Long";
+        String nullablePkType = "Long";
+        for (MemberSource<JavaClassSource, ?> m : entity.getMembers()) {
+            if (m.hasAnnotation(Id.class) || m.hasAnnotation(EmbeddedId.class)) {
+                if (m instanceof Field) {
+                    Field<?> field = (Field<?>) m;
+                    pkName = field.getName();
+                    pkType = field.getType().getQualifiedName();
+                    nullablePkType = pkType;
+                    break;
+                }
 
-		context.put("primaryKey", pkName);
-		context.put("primaryKeyCC", StringUtils.capitalize(pkName));
-		context.put("primaryKeyType", pkType);
-		context.put("nullablePrimaryKeyType", nullablePkType);
-	}
+                MethodSource<?> method = (MethodSource<?>) m;
+                pkName = method.getName().substring(3);
+                if (method.getName().startsWith("get")) {
+                    pkType = method.getReturnType().getQualifiedName();
+                } else {
+                    pkType = method.getParameters().get(0).getType().getQualifiedName();
+                }
+                nullablePkType = pkType;
+                break;
+            }
+        }
+
+        if (Types.isJavaLang(pkType)) {
+            nullablePkType = Types.toSimpleName(pkType);
+        } else if ("int".equals(pkType)) {
+            nullablePkType = Integer.class.getSimpleName();
+        } else if ("short".equals(pkType)) {
+            nullablePkType = Short.class.getSimpleName();
+        } else if ("byte".equals(pkType)) {
+            nullablePkType = Byte.class.getSimpleName();
+        } else if ("long".equals(pkType)) {
+            nullablePkType = Long.class.getSimpleName();
+        }
+
+        context.put("primaryKey", pkName);
+        context.put("primaryKeyCC", StringUtils.capitalize(pkName));
+        context.put("primaryKeyType", pkType);
+        context.put("nullablePrimaryKeyType", nullablePkType);
+    }
 
 }

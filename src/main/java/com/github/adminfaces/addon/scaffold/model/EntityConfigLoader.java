@@ -67,7 +67,7 @@ public class EntityConfigLoader {
             Integer length = resolveLengthAttribute(field);
             ComponentTypeEnum type = resolveComponentType(field, length);
             entityConfig.getFields().add(new FieldConfig(field.getName(), required, false, length, type));
-            if(entityConfig.getMainField() == null && type.equals(INPUT_TEXT) && required) { //by default mainsField is the first non null inputText field
+            if (entityConfig.getMainField() == null && type.equals(INPUT_TEXT) && required) { //by default mainsField is the first non null inputText field
                 entityConfig.setMainField(field.getName());
             }
         }
@@ -97,17 +97,17 @@ public class EntityConfigLoader {
         }
         Type<JavaClassSource> type = field.getType();
         if (type.isType(String.class)) {
-        	if(field.getName().toLowerCase().contains("password")) {
-        		return PASSWORD;
-        	}
-        	if(length > 30) {
-        		return TEXT_AREA;
-        	} else {
-        		return INPUT_TEXT;
-        	}
+            if (field.getName().toLowerCase().contains("password")) {
+                return PASSWORD;
+            }
+            if (length > 30) {
+                return TEXT_AREA;
+            } else {
+                return INPUT_TEXT;
+            }
         }
-        if (type.isType(Long.class) || type.isType(Integer.class) || type.isType(Double.class) || type.isType(BigDecimal.class) ||
-        		type.isType("long") || type.isType("int") || type.isType("double")) {
+        if (type.isType(Long.class) || type.isType(Integer.class) || type.isType(Double.class) || type.isType(BigDecimal.class)
+            || type.isType("long") || type.isType("int") || type.isType("double")) {
             return INPUT_NUMBER;
         }
         //TODO inspect other fields types
