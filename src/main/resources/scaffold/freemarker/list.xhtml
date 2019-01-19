@@ -126,7 +126,7 @@
 					</div>	
 
 	<#list fields as field>
-		<#if field.getName() != "serialVersionUID" && field.getName() != "version">
+		<#if !entity.isHidden(field)>
 				<p:column headerText="${field.getName()?cap_first}" sortBy="${r"#{"}row.${field.getName()}}">
 				   <#if field.hasAnnotation("javax.persistence.Id")>
 					<p:link value="${r"#{"}row.id}" outcome="${ccEntity}-form.xhtml">

@@ -14,8 +14,8 @@ import java.util.*;
 
 <#list fields as field>
    <#if entity.hasToManyAssociation(field)>
-import ${getArrayType(field).getQualifiedName()};   
-import ${getArrayType(field).getQualifiedName()}_;   
+import ${entity.getArrayType(field).getQualifiedName()};   
+import ${entity.getArrayType(field).getQualifiedName()}_;   
    <#elseif entity.hasToOneAssociation(field)>
 import ${field.getType().getQualifiedName()};      
 import ${field.getType().getQualifiedName()}_;   
@@ -46,9 +46,9 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
 	        <#if !entity.hasAssociation(field)>
               criteria.eq(${entity.getName()}_.${field.getName()}, (${field.getType().getSimpleName()})filter.getParam("${field.getName()}"));   
             <#elseif entity.hasToManyAssociation(field)>
-            <#assign t = getArrayType(field).getSimpleName() >
+            <#assign t = entity.getArrayType(field).getSimpleName() >
              criteria.join(${entity.getName()}_.${field.getName()}, where(${t}.class)
- 	  	            .in(${t}_.id, toListOfIds((${field.getType().getSimpleName()}<${getArrayType(field).getSimpleName()}>) filter.getParam("${field.getName()}"), new ${nullablePrimaryKeyType}[0])));   
+ 	  	            .in(${t}_.id, toListOfIds((${field.getType().getSimpleName()}<${entity.getArrayType(field).getSimpleName()}>) filter.getParam("${field.getName()}"), new ${nullablePrimaryKeyType}[0])));   
             <#elseif entity.hasToOneAssociation(field)>
              criteria.join(${entity.getName()}_.${field.getName()},
                     where(${field.getType().getSimpleName()}.class)
@@ -73,7 +73,7 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
             <#if !entity.hasAssociation(field)>
              criteria.eq(${entity.getName()}_.${field.getName()}, filterEntity.get${field.getName()?cap_first}());   
             <#elseif entity.hasToManyAssociation(field)>
-            <#assign t = getArrayType(field).getSimpleName() >
+            <#assign t = entity.getArrayType(field).getSimpleName() >
              criteria.join(${entity.getName()}_.${field.getName()}, where(${t}.class)
  	  	            .in(${t}_.id, toListOfIds(filterEntity.get${field.getName()?cap_first}(), new ${nullablePrimaryKeyType}[0])));   
             <#elseif entity.hasToOneAssociation(field)>

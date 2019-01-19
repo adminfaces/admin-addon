@@ -17,9 +17,9 @@ import static com.github.adminfaces.template.util.Assert.has;
 
 import java.util.*;
 <#list fields as field>
-   <#if hasToManyAssociation(field)>
-import ${getArrayType(field).getQualifiedName()};   
-   <#elseif hasToOneAssociation(field)>
+   <#if entity.hasToManyAssociation(field)>
+import ${entity.getArrayType(field).getQualifiedName()};   
+   <#elseif entity.hasToOneAssociation(field)>
 import ${field.getType().getQualifiedName()};      
    </#if> 
 </#list>
@@ -56,18 +56,18 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
         ${entity.getName()} ${ccEntity}Filter = filter.getEntity();
 <#list fields as field>
     <#if !entity.isHidden(field)>
-        <#if hasToManyAssociation(field)>
-        ${field.getType().getSimpleName()}<${getArrayType(field).getSimpleName()}> ${field.getName()} = null;
+        <#if entity.hasToManyAssociation(field)>
+        ${field.getType().getSimpleName()}<${entity.getArrayType(field).getSimpleName()}> ${field.getName()} = null;
         if (filter.hasParam("${field.getName()}")) {
-            ${field.getName()} = (${field.getType().getSimpleName()}<${getArrayType(field).getSimpleName()}>) filter.getParam("${field.getName()}");
+            ${field.getName()} = (${field.getType().getSimpleName()}<${entity.getArrayType(field).getSimpleName()}>) filter.getParam("${field.getName()}");
         } else if (has(${ccEntity}Filter.get${field.getName()?cap_first}())) {
             ${field.getName()} = ${ccEntity}Filter.get${field.getName()?cap_first}();
         }
         if (has(${field.getName()})) {
 	    <#assign s = "<b>${field.getName()}</b>:">
 	        sb.append("${s} ");
-	        for (${getArrayType(field).getSimpleName()} ${getArrayType(field).getSimpleName()?lower_case} : ${field.getName()}) {
-                sb.append(${getArrayType(field).getSimpleName()?lower_case}).append(", ");
+	        for (${entity.getArrayType(field).getSimpleName()} ${entity.getArrayType(field).getSimpleName()?lower_case} : ${field.getName()}) {
+                sb.append(${entity.getArrayType(field).getSimpleName()?lower_case}).append(", ");
 		    }
 	     }
 		<#else>   

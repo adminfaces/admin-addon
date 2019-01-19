@@ -55,22 +55,20 @@ public class EntityConfigLoader {
 
     private static EntityConfig createEntityConfig(JavaClassSource entity, FileResource<?> entityConfigFile) {
         EntityConfig entityConfig = new EntityConfig();
-        List<FieldSource<JavaClassSource>> entityFields = new ArrayList<>();
         entity.getFields().stream()
-            .filter(f -> f.hasAnnotation(Column.class) || AdminScaffoldUtils.hasAssociation(f) || f.hasAnnotation(Basic.class)
-            || f.hasAnnotation(Transient.class) || f.hasAnnotation(Embedded.class)
-            || f.hasAnnotation(Id.class) || f.hasAnnotation(EmbeddedId.class))
-            .forEach(entityFields::add);
-
-        for (FieldSource<JavaClassSource> field : entityFields) {
-            boolean required = resolveRequiredAttribute(field);
-            Integer length = resolveLengthAttribute(field);
-            ComponentTypeEnum type = resolveComponentType(field, length);
-            entityConfig.getFields().add(new FieldConfig(field.getName(), required, false, length, type));
-            if (entityConfig.getMainField() == null && type.equals(INPUT_TEXT) && required) { //by default mainsField is the first non null inputText field
-                entityConfig.setMainField(field.getName());
-            }
-        }
+            .filter(f -> f.hasAnnotation(Column.class) || AdminScaffoldUtils.hasAssociation(f) 
+                || f.hasAnnotation(Basic.class) || f.hasAnnotation(Transient.class) 
+                || f.hasAnnotation(Embedded.class) || f.hasAnnotation(Id.class) 
+                || f.hasAnnotation(EmbeddedId.class))
+            .forEach(f -> {
+                boolean required = resolveRequiredAttribute(f);
+                Integer length = resolveLengthAttribute(f);
+                ComponentTypeEnum type = resolveComponentType(f, length);
+                entityConfig.getFields().add(new FieldConfig(f.getName(), required, false, length, type));
+                if (entityConfig.getMainField() == null && type.equals(INPUT_TEXT) && required) { //by default mainField is the first non null inputText field
+                    entityConfig.setMainField(f.getName());
+                }
+            });
         entityConfigFile.setContents(new Yaml().dump(entityConfig));
         return entityConfig;
     }

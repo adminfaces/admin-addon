@@ -299,7 +299,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
                     String ccEntity = StringUtils.decapitalize(entity.getName());
                     context.put("entityPackage", entity.getPackage());
                     context.put("ccEntity", ccEntity);
-                    context.put("fields", entity.getFields());
+                    context.put("fields", scaffoldEntity.getFields());
                     setPrimaryKeyMetaData(context, entity);
                     generateRepository(context, java, generatedResources);
                     generateService(context, java, generatedResources);
@@ -408,7 +408,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
     private void generateListPage(Map<Object, Object> context, WebResourcesFacet web,
         List<Resource<?>> generatedResources) {
         String listPage = FreemarkerTemplateProcessor.processTemplate(context, templates.getListPageTemplate());
-        JavaClassSource entity = (JavaClassSource) context.get("entity");
+        ScaffoldEntity entity = (ScaffoldEntity) context.get("entity");
         String entityName = entity.getName().toLowerCase();
         FileResource<?> listPageFile = web.getWebResource("/" + entityName + "/" + entityName + "-list.xhtml");
         if (!listPageFile.exists()) {
