@@ -8,23 +8,23 @@ import java.util.Map;
 public class EntityConfig {
 
 	private List<FieldConfig> fields = new ArrayList<>();
-	private String mainField;// field used in pages where this entity needs to be printed
+	private String displayField;// field used in pages where this entity needs to be printed
 	private transient Map<String, FieldConfig> fieldConfigMap;
 
 	public List<FieldConfig> getFields() {
 		return fields;
 	}
 
-	public String getMainField() {
-		return mainField;
+	public String getDisplayField() {
+		return displayField;
 	}
 
 	public void setFields(List<FieldConfig> fields) {
 		this.fields = fields;
 	}
 
-	public void setMainField(String mainField) {
-		this.mainField = mainField;
+	public void setDisplayField(String mainField) {
+		this.displayField = mainField;
 	}
 	
 	public FieldConfig getFieldConfigByName(String name) {

@@ -86,7 +86,7 @@ public class EntityConfigLoaderTest {
 
     private void assertEntityConfig(EntityConfig entityConfig) {
         assertThat(entityConfig).isNotNull()
-            .extracting("mainField").contains("firstname");
+            .extracting("displayField").contains("firstname");
         assertThat(entityConfig.getFields()).isNotNull().hasSize(7);
 
         assertThat(entityConfig.getFieldConfigByName("id"))

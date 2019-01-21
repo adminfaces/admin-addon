@@ -1,11 +1,14 @@
 package com.github.adminfaces.addon.scaffold.model;
 
-import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.*;
+import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.INPUT_NUMBER;
+import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.INPUT_TEXT;
+import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.PASSWORD;
+import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.SELECT_ONE_MENU;
+import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.TEXT_AREA;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -65,10 +68,13 @@ public class EntityConfigLoader {
                 Integer length = resolveLengthAttribute(f);
                 ComponentTypeEnum type = resolveComponentType(f, length);
                 entityConfig.getFields().add(new FieldConfig(f.getName(), required, false, length, type));
-                if (entityConfig.getMainField() == null && type.equals(INPUT_TEXT) && required) { //by default mainField is the first non null inputText field
-                    entityConfig.setMainField(f.getName());
+                if (entityConfig.getDisplayField() == null && type.equals(INPUT_TEXT) && required) { //by default displayField is the first non null inputText field
+                    entityConfig.setDisplayField(f.getName());
                 }
             });
+        if(entityConfig.getDisplayField() == null) {
+        	entityConfig.setDisplayField("");//this means we'll use entity's toString() method to display entity on pages
+        }
         entityConfigFile.setContents(new Yaml().dump(entityConfig));
         return entityConfig;
     }
