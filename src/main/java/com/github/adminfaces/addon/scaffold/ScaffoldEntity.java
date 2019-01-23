@@ -49,6 +49,11 @@ public class ScaffoldEntity implements Serializable {
         return entityConfig.getFieldConfigByName(fieldName);
     }
 
+    public EntityConfig getEntityConfig() {
+        return entityConfig;
+    }
+    
+
     /**
      * Lists entity fields excluding fields that are not persisted
      *

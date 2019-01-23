@@ -75,6 +75,7 @@ public class EntityConfigLoader {
         if(entityConfig.getDisplayField() == null) {
         	entityConfig.setDisplayField("");//this means we'll use entity's toString() method to display entity on pages
         }
+        entityConfig.setMenuIcon("fa fa-circle-o");
         entityConfigFile.setContents(new Yaml().dump(entityConfig));
         return entityConfig;
     }

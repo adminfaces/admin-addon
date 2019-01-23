@@ -8,3 +8,4 @@ fields:
 - {hidden: false, length: 30, name: twitter, required: false, type: INPUT_TEXT}
 - {hidden: false, length: 30, name: talks, required: false, type: CHECKBOXMENU}
 displayField: firstname
+menuIcon: "fa fa-circle-o"

@@ -82,8 +82,10 @@
 				</p:link>
 			   <#elseif !entity.hasAssociation(field)>
 			       ${r"#{"}row.${field.getName()}}
-			   <#elseif entity.hasToManyAssociation(field)>
+			   <#elseif entity.hasToOneAssociation(field)>
 			       TODO
+                           <#elseif entity.hasToManyAssociation(field)>   
+                           
 			   </#if>
 			   
 			</p:column>

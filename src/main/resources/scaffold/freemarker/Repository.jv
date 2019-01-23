@@ -4,7 +4,6 @@ import org.apache.deltaspike.data.api.EntityRepository;
 import org.apache.deltaspike.data.api.Repository;
 import ${entity.getQualifiedName()};
 
-
 @Repository
 public interface ${entity.getName()}Repository extends EntityRepository<${entity.getName()},${nullablePrimaryKeyType}> {
 

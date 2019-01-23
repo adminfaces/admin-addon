@@ -305,8 +305,8 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
                     generateService(context, java, generatedResources);
                     generateListMBean(context, java, generatedResources);
                     generateFormMBean(context, java, generatedResources);
-                    addLeftMenuEntry(project, entity, generatedResources);
-                    addToptMenuEntry(project, entity, generatedResources);
+                    addLeftMenuEntry(project, scaffoldEntity, generatedResources);
+                    addToptMenuEntry(project, scaffoldEntity, generatedResources);
                     generateListPage(context, web, generatedResources);
                 } catch (Exception e) {
                     LOG.log(Level.SEVERE, "Problems during AdminFaces scaffold execution.", e);
@@ -417,7 +417,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
         }
     }
 
-    void addLeftMenuEntry(Project project, JavaClassSource entity, List<Resource<?>> generatedResources) {
+    void addLeftMenuEntry(Project project, ScaffoldEntity entity, List<Resource<?>> generatedResources) {
         WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
         FileResource<?> leftMenu = web.getWebResource(Constants.WebResources.LEFT_MENU);
         Document leftMenuDocument = Jsoup.parse(leftMenu.getContents(Charset.forName("UTF-8")));
@@ -430,7 +430,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
             String listPage = pageFolder + entityName.toLowerCase() + "-list.xhtml";
             menuContent.append("<li>" + NEW_LINE + "                    <p:link id=\"menu" + entityName
                 + "\" outcome=\"" + listPage + "\" title=\"" + entityName + "s page\">" + NEW_LINE
-                + "                        <i class=\"fa fa-circle-o\"></i>" + NEW_LINE
+                + "                        <i class=\""+ entity.getEntityConfig().getMenuIcon() + "\"></i>" + NEW_LINE
                 + "                        <span>" + entityName + "s</span>" + NEW_LINE
                 + "                    </p:link>" + NEW_LINE + "                </li>");
 
@@ -445,7 +445,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
         }
     }
 
-    void addToptMenuEntry(Project project, JavaClassSource entity, List<Resource<?>> generatedResources) {
+    void addToptMenuEntry(Project project, ScaffoldEntity entity, List<Resource<?>> generatedResources) {
         WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
         FileResource<?> topMenu = web.getWebResource(Constants.WebResources.TOP_MENU);
         Document leftMenuDocument = Jsoup.parse(topMenu.getContents(Charset.forName("UTF-8")));
@@ -460,7 +460,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
             menuContent.append("<li id=\"" + "menu" + entityName + "\" class=\"dropdown\">" + NEW_LINE + NEW_LINE
                 + "            <a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">" + entityName
                 + "s <span" + NEW_LINE + "                    class=\"caret\"></span>" + NEW_LINE
-                + "                <i class=\"fa fa-circle-o\"></i>" + NEW_LINE + "            </a>" + NEW_LINE + ""
+                + "                <i class=\"" + entity.getEntityConfig().getMenuIcon() + "\"></i>" + NEW_LINE + "            </a>" + NEW_LINE + ""
                 + NEW_LINE + "" + NEW_LINE + "            <ul class=\"dropdown-menu\" role=\"menu\">" + NEW_LINE
                 + "                <li>" + NEW_LINE + "                    <p:link outcome=\"" + listPage + "\">"
                 + NEW_LINE + "                        <span>List</span>" + NEW_LINE

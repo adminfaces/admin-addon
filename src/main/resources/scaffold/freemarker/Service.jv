@@ -33,7 +33,9 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
 
 
     /** 
-     * This method is used for (real) pagination and is called by lazy PrimeFaces datatable on list page
+     * This method is used for (real) pagination and is called by lazy 
+     * PrimeFaces datatable on list page
+     *
      * @param filter holds restrictions populated on the list page
      * @return a criteria populated with given restrictions 
      */ 
@@ -41,20 +43,20 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
         Criteria<${entity.getName()}, ${entity.getName()}> criteria = criteria();
         
 <#list fields as field>
-	<#if !entity.isHidden(field)>
-	    if (filter.hasParam("${field.getName()}")) {
-	        <#if !entity.hasAssociation(field)>
-              criteria.eq(${entity.getName()}_.${field.getName()}, (${field.getType().getSimpleName()})filter.getParam("${field.getName()}"));   
+    <#if !entity.isHidden(field)>
+        if (filter.hasParam("${field.getName()}")) {
+        <#if !entity.hasAssociation(field)>
+            criteria.eq(${entity.getName()}_.${field.getName()}, (${field.getType().getSimpleName()})filter.getParam("${field.getName()}"));   
             <#elseif entity.hasToManyAssociation(field)>
             <#assign t = entity.getArrayType(field).getSimpleName() >
-             criteria.join(${entity.getName()}_.${field.getName()}, where(${t}.class)
- 	  	            .in(${t}_.id, toListOfIds((${field.getType().getSimpleName()}<${entity.getArrayType(field).getSimpleName()}>) filter.getParam("${field.getName()}"), new ${nullablePrimaryKeyType}[0])));   
+            criteria.join(${entity.getName()}_.${field.getName()}, where(${t}.class)
+                .in(${t}_.id, toListOfIds((${field.getType().getSimpleName()}<${entity.getArrayType(field).getSimpleName()}>) filter.getParam("${field.getName()}"), new ${nullablePrimaryKeyType}[0])));   
             <#elseif entity.hasToOneAssociation(field)>
-             criteria.join(${entity.getName()}_.${field.getName()},
-                    where(${field.getType().getSimpleName()}.class)
-                    .eq(${field.getType().getSimpleName()}_.id, ((${field.getType().getSimpleName()}) filter.getParam("${field.getName()}")).getId()));
+            criteria.join(${entity.getName()}_.${field.getName()},
+                where(${field.getType().getSimpleName()}.class)
+               .eq(${field.getType().getSimpleName()}_.id, ((${field.getType().getSimpleName()}) filter.getParam("${field.getName()}")).getId()));
             </#if>
-	    }  
+        }  
 	</#if>
 </#list>
 
@@ -62,26 +64,21 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
         if (has(filter.getEntity())) {
             ${entity.getName()} filterEntity = filter.getEntity();
             
-            /** just an example of restriction by entity
-            if (has(filterEntity.getNamel())) {
-                criteria.likeIgnoreCase(${entity.getName()}_.name, "%" + filterEntity.getName());
-            } */
-            
 <#list fields as field>
 	<#if !entity.isHidden(field)>
-	        if (has(filterEntity.get${field.getName()?cap_first}())) {
+	    if (has(filterEntity.get${field.getName()?cap_first}())) {
             <#if !entity.hasAssociation(field)>
-             criteria.eq(${entity.getName()}_.${field.getName()}, filterEntity.get${field.getName()?cap_first}());   
+                 criteria.eq(${entity.getName()}_.${field.getName()}, filterEntity.get${field.getName()?cap_first}());   
             <#elseif entity.hasToManyAssociation(field)>
             <#assign t = entity.getArrayType(field).getSimpleName() >
-             criteria.join(${entity.getName()}_.${field.getName()}, where(${t}.class)
- 	  	            .in(${t}_.id, toListOfIds(filterEntity.get${field.getName()?cap_first}(), new ${nullablePrimaryKeyType}[0])));   
+                 criteria.join(${entity.getName()}_.${field.getName()}, where(${t}.class)
+ 	  	    .in(${t}_.id, toListOfIds(filterEntity.get${field.getName()?cap_first}(), new ${nullablePrimaryKeyType}[0])));   
             <#elseif entity.hasToOneAssociation(field)>
-             criteria.join(${entity.getName()}_.${field.getName()},
+                 criteria.join(${entity.getName()}_.${field.getName()},
                     where(${field.getType().getSimpleName()}.class)
                     .eq(${field.getType().getSimpleName()}_.id, filterEntity.get${field.getName()?cap_first}().getId()));
             </#if>
-	        }  
+	    }  
 	</#if>
 </#list>
         }
