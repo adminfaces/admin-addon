@@ -57,20 +57,20 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
 <#list fields as field>
     <#if !entity.isHidden(field)>
         <#if entity.hasToManyAssociation(field)>
-        ${field.getType().getSimpleName()}<${entity.getArrayType(field).getSimpleName()}> ${field.getName()} = null;
-        if (filter.hasParam("${field.getName()}")) {
-            ${field.getName()} = (${field.getType().getSimpleName()}<${entity.getArrayType(field).getSimpleName()}>) filter.getParam("${field.getName()}");
-        } else if (has(${ccEntity}Filter.get${field.getName()?cap_first}())) {
-            ${field.getName()} = ${ccEntity}Filter.get${field.getName()?cap_first}();
-        }
-        if (has(${field.getName()})) {
-	    <#assign s = "<b>${field.getName()}</b>:">
-	        sb.append("${s} ");
-	        for (${entity.getArrayType(field).getSimpleName()} ${entity.getArrayType(field).getSimpleName()?lower_case} : ${field.getName()}) {
-                sb.append(${entity.getArrayType(field).getSimpleName()?lower_case}).append(", ");
-		    }
-	     }
-		<#else>   
+            ${field.getType().getSimpleName()}<${entity.getArrayType(field).getSimpleName()}> ${field.getName()} = null;
+            if (filter.hasParam("${field.getName()}")) {
+                ${field.getName()} = (${field.getType().getSimpleName()}<${entity.getArrayType(field).getSimpleName()}>) filter.getParam("${field.getName()}");
+            } else if (has(${ccEntity}Filter.get${field.getName()?cap_first}())) {
+                ${field.getName()} = ${ccEntity}Filter.get${field.getName()?cap_first}();
+            }
+            if (has(${field.getName()})) {
+                <#assign s = "<b>${field.getName()}</b>:">
+                    sb.append("${s} ");
+                    for (${entity.getArrayType(field).getSimpleName()} ${entity.getArrayType(field).getSimpleName()?lower_case} : ${field.getName()}) {
+                    sb.append(${entity.getArrayType(field).getSimpleName()?lower_case}).append(", ");
+                    }
+            }
+	<#else>   
 		${field.getType().getSimpleName()} ${field.getName()} = null;
         if (filter.hasParam("${field.getName()}")) {
             ${field.getName()} = (${field.getType().getSimpleName()}) filter.getParam("${field.getName()}");

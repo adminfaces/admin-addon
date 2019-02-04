@@ -58,7 +58,7 @@
                     <p:separator/>
                     <p:dataTable widgetVar="${ccEntity}sTable" var="row" value="${r"#{"}${ccEntity}ListMB.list}" rows="10"
                                  rowKey="${r"#{"}row.id}" lazy="true" paginator="true" sortBy="${r"#{"}row.id}"
-                                 filteredValue="${r"#{"}${ccEntity}ListMB.filteredValue}"
+                                 filteredValue="${r"#{"}${ccEntity}ListMB.filteredValue}" styleClass="no-border"
                                  paginatorPosition="bottom" selection="${r"#{"}${ccEntity}ListMB.selectionList}"
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} {JumpToPageDropdown}"
                                  currentPageReportTemplate="[ {startRecord} to {endRecord} of {totalRecords} ]"
@@ -83,7 +83,7 @@
 			   <#elseif !entity.hasAssociation(field)>
 			       ${r"#{"}row.${field.getName()}}
 			   <#elseif entity.hasToOneAssociation(field)>
-			       TODO
+			       ${r"#{"}row.${field.getName()}}
                            <#elseif entity.hasToManyAssociation(field)>   
                            
 			   </#if>
@@ -179,7 +179,8 @@
             </h:form>
         </p:dialog>
 
-        <p:outputPanel autoUpdate="true">
+        <p:outputPanel>
+            <p:autoUpdate/>
             <p:tooltip for="@(div[id$=footer])" escape="false" position="top"
                        showEvent="mouseover" hideEvent="mouseleave"
                        value="${r"#{"}${ccEntity}ListMB.searchCriteria}"/>
