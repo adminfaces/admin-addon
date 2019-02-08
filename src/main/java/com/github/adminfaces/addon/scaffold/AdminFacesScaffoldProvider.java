@@ -81,6 +81,7 @@ import com.github.adminfaces.addon.freemarker.TemplateFactory;
 import com.github.adminfaces.addon.scaffold.metamodel.AdminFacesMetaModelProvider;
 import com.github.adminfaces.addon.scaffold.model.EntityConfig;
 import com.github.adminfaces.addon.scaffold.model.EntityConfigLoader;
+import com.github.adminfaces.addon.scaffold.model.ScaffoldEntity;
 import com.github.adminfaces.addon.ui.AdminFacesSetupCommand;
 import com.github.adminfaces.addon.util.Constants;
 import com.github.adminfaces.addon.util.DependencyUtil;

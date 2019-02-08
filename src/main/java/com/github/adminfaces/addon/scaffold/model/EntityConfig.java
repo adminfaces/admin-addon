@@ -4,14 +4,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.jboss.forge.roaster.model.source.FieldSource;
+import org.jboss.forge.roaster.model.source.JavaClassSource;
 
 public class EntityConfig {
 
     private List<FieldConfig> fields = new ArrayList<>();
     private String displayField;// field used in pages where this entity needs to be printed
     private String menuIcon;//font awesome icon to be used on the menu entry for this entity
-
     private transient Map<String, FieldConfig> fieldConfigMap;
+    
+    // key is a entity field which is an (JPA) association, value is the association field name to be used as a display field
+    private transient Map<FieldSource<JavaClassSource>, String> associationDisplayFieldMap = new HashMap<>();
 
     public List<FieldConfig> getFields() {
         return fields;
@@ -52,5 +56,11 @@ public class EntityConfig {
         }
         return fieldConfigMap;
     }
+
+    public Map<FieldSource<JavaClassSource>, String> getAssociationDisplayFieldMap() {
+        return associationDisplayFieldMap;
+    }
+    
+    
 
 }

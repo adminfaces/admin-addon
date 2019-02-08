@@ -1,11 +1,11 @@
 !!com.github.adminfaces.addon.scaffold.model.EntityConfig
 fields:
-- {hidden: false, length: 30, name: id, required: true, type: INPUT_NUMBER}
-- {hidden: false, length: 30, name: version, required: false, type: INPUT_NUMBER}
-- {hidden: false, length: 30, name: firstname, required: true, type: INPUT_TEXT}
-- {hidden: false, length: 30, name: surname, required: true, type: INPUT_TEXT}
+- {hidden: false, length: 50, name: id, required: true, type: INPUT_NUMBER}
+- {hidden: false, length: 50, name: version, required: false, type: INPUT_NUMBER}
+- {hidden: false, length: 50, name: firstname, required: true, type: INPUT_TEXT}
+- {hidden: false, length: 50, name: surname, required: true, type: INPUT_TEXT}
 - {hidden: false, length: 2000, name: bio, required: false, type: TEXT_AREA}
-- {hidden: false, length: 30, name: twitter, required: false, type: INPUT_TEXT}
-- {hidden: false, length: 30, name: talks, required: false, type: CHECKBOXMENU}
+- {hidden: false, length: 50, name: twitter, required: false, type: INPUT_TEXT}
+- {hidden: false, length: 50, name: talks, required: false, type: CHECKBOXMENU}
 displayField: firstname
 menuIcon: "fa fa-circle-o"

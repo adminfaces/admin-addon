@@ -76,7 +76,6 @@ public class AdminFacesScaffoldTest {
         shellTest.clearScreen();
     }
     
-
     @Test
     public void shouldScaffoldFromEntities() throws Exception {
         shellTest.execute("jpa-new-entity --named Talk", 10, TimeUnit.SECONDS);
@@ -124,7 +123,6 @@ public class AdminFacesScaffoldTest {
             ((Failed) scaffoldGenerate1).getException().printStackTrace();
         }
         assertThat(scaffoldGenerate1).isNotInstanceOf(Failed.class);
-
 
         Resource<?> repository = src
             .getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))

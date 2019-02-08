@@ -1,4 +1,4 @@
-package com.github.adminfaces.addon.scaffold;
+package com.github.adminfaces.addon.scaffold.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -15,18 +15,15 @@ import org.jboss.forge.roaster.model.Type;
 import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 
-import com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum;
-import com.github.adminfaces.addon.scaffold.model.EntityConfig;
-import com.github.adminfaces.addon.scaffold.model.FieldConfig;
 import com.github.adminfaces.addon.util.AdminScaffoldUtils;
 
 public class ScaffoldEntity implements Serializable {
 
     private static final long serialVersionUID = 2357194690463276781L;
 
-    private JavaClassSource entity;
+    private final JavaClassSource entity;
     private List<FieldSource<JavaClassSource>> entityFields;
-    private EntityConfig entityConfig;
+    private final EntityConfig entityConfig;
 
     public ScaffoldEntity(JavaClassSource entity, EntityConfig entityConfig) {
         this.entity = entity;
@@ -69,6 +66,18 @@ public class ScaffoldEntity implements Serializable {
                 .forEach(entityFields::add);
         }
         return entityFields;
+    }
+    
+    /**
+     * retrieves the field name of given association
+     * 
+     * This methods traverse association fields looking for a non nullable String field
+     * 
+     * @param associationField a entity field that represents an (JPA) association
+     * @return field name to be used as display field
+     */
+    public String getAssociationDisplayField(FieldSource<JavaClassSource> field) {
+        return AdminScaffoldUtils.resolveDisplayField(field.getType().isParameterized() ? field.getType().getTypeArguments().get(0).getOrigin() : field.getType().getOrigin());
     }
 
     public String getQualifiedName() {

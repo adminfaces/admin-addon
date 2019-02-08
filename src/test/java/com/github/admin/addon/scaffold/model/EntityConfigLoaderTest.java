@@ -91,19 +91,19 @@ public class EntityConfigLoaderTest {
 
         assertThat(entityConfig.getFieldConfigByName("id"))
             .extracting("type", "length", "required", "hidden")
-            .contains(INPUT_NUMBER, 30, true, false);
+            .contains(INPUT_NUMBER, 50, true, false);
 
         assertThat(entityConfig.getFieldConfigByName("version"))
             .extracting("type", "length", "required", "hidden")
-            .contains(INPUT_NUMBER, 30, false, false);
+            .contains(INPUT_NUMBER, 50, false, false);
 
         assertThat(entityConfig.getFieldConfigByName("firstname"))
             .extracting("type", "length", "required", "hidden")
-            .contains(INPUT_TEXT, 30, true, false);
+            .contains(INPUT_TEXT, 50, true, false);
 
         assertThat(entityConfig.getFieldConfigByName("surname"))
             .extracting("type", "length", "required", "hidden")
-            .contains(INPUT_TEXT, 30, true, false);
+            .contains(INPUT_TEXT, 50, true, false);
 
         assertThat(entityConfig.getFieldConfigByName("bio"))
             .extracting("type", "length", "required", "hidden")
@@ -111,14 +111,14 @@ public class EntityConfigLoaderTest {
 
         assertThat(entityConfig.getFieldConfigByName("twitter"))
             .extracting("type", "length", "required", "hidden")
-            .contains(INPUT_TEXT, 30, false, false);
+            .contains(INPUT_TEXT, 50, false, false);
 
         assertThat(entityConfig.getFieldConfigByName("talks"))
             .extracting("type", "length", "required", "hidden")
-            .contains(CHECKBOXMENU, 30, false, false);
+            .contains(CHECKBOXMENU, 50, false, false);
 
         assertThat(entityConfig.getFieldConfigByName("id"))
             .extracting("type", "length", "required", "hidden")
-            .contains(INPUT_NUMBER, 30, true, false);
+            .contains(INPUT_NUMBER, 50, true, false);
     }
 }

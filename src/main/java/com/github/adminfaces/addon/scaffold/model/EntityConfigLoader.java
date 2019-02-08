@@ -15,10 +15,8 @@ import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Id;
-import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
-import javax.validation.constraints.NotNull;
 
 import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.facets.ResourcesFacet;
@@ -64,7 +62,7 @@ public class EntityConfigLoader {
                 || f.hasAnnotation(Embedded.class) || f.hasAnnotation(Id.class) 
                 || f.hasAnnotation(EmbeddedId.class))
             .forEach(f -> {
-                boolean required = resolveRequiredAttribute(f);
+                boolean required = AdminScaffoldUtils.resolveRequiredAttribute(f);
                 Integer length = resolveLengthAttribute(f);
                 ComponentTypeEnum type = resolveComponentType(f, length);
                 entityConfig.getFields().add(new FieldConfig(f.getName(), required, false, length, type));
@@ -82,7 +80,7 @@ public class EntityConfigLoader {
 
     private static Integer resolveLengthAttribute(FieldSource<JavaClassSource> field) {
         AnnotationSource<JavaClassSource> columnAnnotation = field.getAnnotation(Column.class);
-        Integer length = 30;
+        Integer length = 50;
         if (columnAnnotation != null && columnAnnotation.getStringValue("length") != null) {
             length = Integer.parseInt(columnAnnotation.getStringValue("length"));
         }
@@ -105,7 +103,7 @@ public class EntityConfigLoader {
             if (field.getName().toLowerCase().contains("password")) {
                 return PASSWORD;
             }
-            if (length > 30) {
+            if (length > 50) {
                 return TEXT_AREA;
             } else {
                 return INPUT_TEXT;
@@ -120,18 +118,6 @@ public class EntityConfigLoader {
         return INPUT_TEXT;
     }
 
-    private static boolean resolveRequiredAttribute(FieldSource<JavaClassSource> field) {
-        boolean required = false;
-        AnnotationSource<JavaClassSource> collumnAnnotation = field.getAnnotation(Column.class);
-        if (field.hasAnnotation(NotNull.class) || (collumnAnnotation != null && "false".equals(collumnAnnotation.getStringValue("nullable")))) {
-            required = true;
-        } else if (AdminScaffoldUtils.hasAssociation(field)) {
-            if (field.hasAnnotation(OneToOne.class) && "false".equals(field.getAnnotation(OneToOne.class).getStringValue("optional"))) {
-                required = true;
-            }
-        }
-
-        return required;
-    }
+    
 
 }

@@ -83,8 +83,8 @@
 			   <#elseif !entity.hasAssociation(field)>
 			       ${r"#{"}row.${field.getName()}}
 			   <#elseif entity.hasToOneAssociation(field)>
-			       ${r"#{"}row.${field.getName()}}
-                           <#elseif entity.hasToManyAssociation(field)>   
+			       ${r"#{"}row.${entity.getAssociationDisplayField(field)}}   
+               <#elseif entity.hasToManyAssociation(field)>   
                            
 			   </#if>
 			   
