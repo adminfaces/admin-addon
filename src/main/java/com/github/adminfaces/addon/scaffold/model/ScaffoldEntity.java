@@ -16,6 +16,12 @@ import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 
 import com.github.adminfaces.addon.util.AdminScaffoldUtils;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.jboss.forge.addon.projects.Project;
+import org.jboss.forge.roaster.Roaster;
 
 public class ScaffoldEntity implements Serializable {
 
@@ -24,10 +30,12 @@ public class ScaffoldEntity implements Serializable {
     private final JavaClassSource entity;
     private List<FieldSource<JavaClassSource>> entityFields;
     private final EntityConfig entityConfig;
+    private final Project project;
 
-    public ScaffoldEntity(JavaClassSource entity, EntityConfig entityConfig) {
+    public ScaffoldEntity(JavaClassSource entity, EntityConfig entityConfig, Project project) {
         this.entity = entity;
         this.entityConfig = entityConfig;
+        this.project = project;
     }
 
     public String getName() {
@@ -77,7 +85,18 @@ public class ScaffoldEntity implements Serializable {
      * @return field name to be used as display field
      */
     public String getAssociationDisplayField(FieldSource<JavaClassSource> field) {
-        return AdminScaffoldUtils.resolveDisplayField(field.getType().isParameterized() ? field.getType().getTypeArguments().get(0).getOrigin() : field.getType().getOrigin());
+        JavaClassSource associationClassSource = null;
+        if(field.getType().isParameterized()) {
+            String qualifiedName = field.getType().getTypeArguments().get(0).getQualifiedName();
+            try {
+                associationClassSource = Roaster.parse(JavaClassSource.class, new File(project.getRoot().getFullyQualifiedName()+qualifiedName.replace(".", "/")+ ".java"));
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(ScaffoldEntity.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            associationClassSource = field.getType().getOrigin();
+        }
+        return AdminScaffoldUtils.resolveDisplayField(associationClassSource);
     }
 
     public String getQualifiedName() {

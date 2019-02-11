@@ -295,7 +295,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
                     entity.addInterface("PersistenceEntity");
                     createOrOverwrite(java.getJavaResource(entity), entity.toString());
                     EntityConfig entityConfig = EntityConfigLoader.createOrLoadEntityConfig(entity, project);
-                    ScaffoldEntity scaffoldEntity = new ScaffoldEntity(entity, entityConfig);
+                    ScaffoldEntity scaffoldEntity = new ScaffoldEntity(entity, entityConfig, project);
                     context.put("entity", scaffoldEntity);
                     String ccEntity = StringUtils.decapitalize(entity.getName());
                     context.put("entityPackage", entity.getPackage());

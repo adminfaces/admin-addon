@@ -24,13 +24,17 @@
 package com.github.admin.addon.scaffold.model;
 
 import com.github.adminfaces.addon.scaffold.model.ScaffoldEntity;
+import java.nio.file.Paths;
 import static org.assertj.core.api.Assertions.assertThat;
+import org.jboss.forge.addon.projects.Project;
+import org.jboss.forge.addon.resource.DirectoryResource;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 /**
  *
@@ -40,10 +44,13 @@ import org.junit.runners.JUnit4;
 public class ScaffoldEntityTest {
     
     @Test
-    @Ignore
     public void shouldGetAssociationDisplayFieldFromToMany() {
         JavaClassSource entity = Roaster.parse(JavaClassSource.class, EntityConfigLoaderTest.class.getResourceAsStream("/com/github/admin/addon/model/Speaker.java"));
-        ScaffoldEntity scaffoldEntity = new ScaffoldEntity(entity, null);
+        DirectoryResource projectRoot = mock(DirectoryResource.class);
+        doReturn(Paths.get("").toAbsolutePath() +"/target/test-classes/").when(projectRoot).getFullyQualifiedName();
+        Project project = mock(Project.class);
+        doReturn(projectRoot).when(project).getRoot();
+        ScaffoldEntity scaffoldEntity = new ScaffoldEntity(entity, null, project);
         String associationDisplayField = scaffoldEntity.getAssociationDisplayField(entity.getField("talks"));
         assertThat(associationDisplayField).isNotEmpty().isNotBlank();
         assertThat(associationDisplayField).isEqualTo("title");
@@ -52,7 +59,7 @@ public class ScaffoldEntityTest {
      @Test
     public void shouldGetAssociationDisplayFieldFromToOne() {
         JavaClassSource entity = Roaster.parse(JavaClassSource.class, EntityConfigLoaderTest.class.getResourceAsStream("/com/github/admin/addon/model/Talk.java"));
-        ScaffoldEntity scaffoldEntity = new ScaffoldEntity(entity, null);
+        ScaffoldEntity scaffoldEntity = new ScaffoldEntity(entity, null, null);
         String associationDisplayField = scaffoldEntity.getAssociationDisplayField(entity.getField("speaker"));
         assertThat(associationDisplayField).isNotEmpty().isNotBlank();
         assertThat(associationDisplayField).isEqualTo("firstname");
