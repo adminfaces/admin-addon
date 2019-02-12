@@ -35,7 +35,6 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
     List<${entity.getArrayType(field).getSimpleName()}> ${ccEntity}${field.getName()?cap_first};
 </#list>
 
-
 <#list toManyFields as field>
     Map<${nullablePrimaryKeyType},Boolean> show${field.getName()?cap_first}DetailMap = new HashMap<>();//used to show details in datatable rows    
 </#list>
