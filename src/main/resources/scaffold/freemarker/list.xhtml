@@ -75,7 +75,7 @@
 
  <#list fields as field>
     <#if !entity.isHidden(field)>
-			<p:column headerText="${field.getName()?cap_first}" sortBy="${r"#{"}row.${field.getName()}}">
+			<p:column headerText="${field.getName()?cap_first}"  <#if !entity.hasToManyAssociation(field)>sortBy="${r"#{"}row.${field.getName()}}"</#if>>
 			   <#if field.hasAnnotation("javax.persistence.Id")>
 				<p:link value="${r"#{"}row.id}" outcome="${ccEntity}/${ccEntity}-form.xhtml">
 					<f:param name="id" value="${r"#{"}row.id}"></f:param>
