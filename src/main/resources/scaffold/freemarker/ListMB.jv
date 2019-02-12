@@ -24,13 +24,20 @@ import ${field.getType().getQualifiedName()};
    </#if> 
 </#list>
 
-
 @Named
 @ViewScoped
 public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> implements Serializable {
 
     @Inject
     ${entity.getName()}Service ${ccEntity}Service;
+<#list toManyFields as field>
+    List<entity.getArrayType(field).getSimpleName()> ${ccEntity}${field.getName()?cap_first};
+</#list>
+
+
+<#list toManyFields as field>
+    Map<${nullablePrimaryKeyType},Boolean> show${field.getName()?cap_first}DetailMap = new HashMap<>();//used to show details in datatable rows    
+</#list>
 
     @Inject
     public void initService() {
@@ -96,5 +103,17 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
 
         return sb.toString();
     }
+
+<#list toManyFields as field>
+    public void show${field.getName()?cap_first}Detail(${nullablePrimaryKeyType} id) {
+        this.show${field.getName()?cap_first}DetailMap.clear();//show details of one row at a time
+        this.show${field.getName()?cap_first}DetailMap.put(id,true);
+        ${ccEntity}${field.getName()?cap_first} = ${ccEntity}Service.get${field.getName()?cap_first}ById(id);  
+    }
+    
+    public List<entity.getArrayType(field).getSimpleName()> get${entity.getName()}${field.getName()?cap_first}() {
+        return ${ccEntity}${field.getName()?cap_first};             
+    } 
+</#list>
 
 }

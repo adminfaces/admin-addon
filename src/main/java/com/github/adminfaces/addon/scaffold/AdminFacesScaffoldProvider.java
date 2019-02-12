@@ -83,8 +83,10 @@ import com.github.adminfaces.addon.scaffold.model.EntityConfig;
 import com.github.adminfaces.addon.scaffold.model.EntityConfigLoader;
 import com.github.adminfaces.addon.scaffold.model.ScaffoldEntity;
 import com.github.adminfaces.addon.ui.AdminFacesSetupCommand;
+import com.github.adminfaces.addon.util.AdminScaffoldUtils;
 import com.github.adminfaces.addon.util.Constants;
 import com.github.adminfaces.addon.util.DependencyUtil;
+import org.jboss.forge.roaster.model.source.FieldSource;
 
 public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 
@@ -301,6 +303,8 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
                     context.put("entityPackage", entity.getPackage());
                     context.put("ccEntity", ccEntity);
                     context.put("fields", scaffoldEntity.getFields());
+                    context.put("toManyFields", resolveToManyAssociationFields(scaffoldEntity.getFields()));
+                    context.put("toOneFields", resolveToOneAssociationFields(scaffoldEntity.getFields()));
                     setPrimaryKeyMetaData(context, entity);
                     generateRepository(context, java, generatedResources);
                     generateService(context, java, generatedResources);
@@ -566,6 +570,26 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
         context.put("primaryKeyCC", StringUtils.capitalize(pkName));
         context.put("primaryKeyType", pkType);
         context.put("nullablePrimaryKeyType", nullablePkType);
+    }
+
+    private List<FieldSource<JavaClassSource>> resolveToManyAssociationFields(List<FieldSource<JavaClassSource>> fields) {
+        List<FieldSource<JavaClassSource>> toManyFields = new ArrayList<>();
+        for (FieldSource<JavaClassSource> field : fields) {
+            if(AdminScaffoldUtils.hasToManyAssociation(field)) {
+                toManyFields.add(field);
+            }
+        }
+        return toManyFields;
+    }
+    
+      private List<FieldSource<JavaClassSource>> resolveToOneAssociationFields(List<FieldSource<JavaClassSource>> fields) {
+        List<FieldSource<JavaClassSource>> toOneFields = new ArrayList<>();
+        for (FieldSource<JavaClassSource> field : fields) {
+            if(AdminScaffoldUtils.hasToOneAssociation(field)) {
+                toOneFields.add(field);
+            }
+        }
+        return toOneFields;
     }
 
 }

@@ -85,7 +85,17 @@
 			   <#elseif entity.hasToOneAssociation(field)>
 			       ${r"#{"}row.${entity.getAssociationDisplayField(field)}}   
                <#elseif entity.hasToManyAssociation(field)>   
-                           
+                <h:panelGroup rendered="${r"#{"}not ${ccEntity}ListMB.show${field.getName()?cap_first}DetailMap[row.id]}" style="text-align: center">
+                      <p:commandLink action="${r"#{"}not ${ccEntity}ListMB.show${field.getName()?cap_first}Detail(row.id)}" process="@this"
+                                           update="@(.ui-datatable)" styleClass="fa fa-search-plus"
+                                           style="font-size: 20px"/>
+                </h:panelGroup>
+                <p:dataList rendered="${r"#{"}not ${ccEntity}ListMB.show${field.getName()?cap_first}DetailMap[row.id]}"
+                                    value="${r"#{"}${ccEntity}ListMB.${ccEntity}${field.getName()?cap_first}}" var="d">
+                    <p:link value="${r"#{"}d.${entity.getAssociationDisplayField(field)}}" outcome="${field.getType()?lower_case}-form.xhtml">
+                        <f:param name="id" value="${r"#{"}d.id}"></f:param>
+                    </p:link>                 
+                 </p:dataList>   
 			   </#if>
 			   
 			</p:column>
