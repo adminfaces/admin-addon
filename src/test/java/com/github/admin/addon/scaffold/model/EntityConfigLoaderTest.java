@@ -59,7 +59,7 @@ public class EntityConfigLoaderTest {
         doReturn(directoryResource).when(resourcesFacet).getResourceDirectory();
         doReturn(scaffoldDir).when(directoryResource).getChildDirectory("scaffold");
         doReturn(resourcesFacet).when(project).getFacet(anyObject());
-        JavaClassSource entity = Roaster.parse(JavaClassSource.class, EntityConfigLoaderTest.class.getResourceAsStream("/scaffold/Speaker.java"));
+        JavaClassSource entity = Roaster.parse(JavaClassSource.class, EntityConfigLoaderTest.class.getResourceAsStream("/com/github/admin/addon/model/Speaker.java"));
         EntityConfig entityConfig = EntityConfigLoader.createOrLoadEntityConfig(entity, project);
         assertEntityConfig(entityConfig);
     }
@@ -79,7 +79,7 @@ public class EntityConfigLoaderTest {
         doReturn(directoryResource).when(resourcesFacet).getResourceDirectory();
         doReturn(scaffoldDir).when(directoryResource).getChildDirectory("scaffold");
         doReturn(resourcesFacet).when(project).getFacet(anyObject());
-        JavaClassSource entity = Roaster.parse(JavaClassSource.class, EntityConfigLoaderTest.class.getResourceAsStream("/scaffold/Speaker.java"));
+        JavaClassSource entity = Roaster.parse(JavaClassSource.class, EntityConfigLoaderTest.class.getResourceAsStream("/com/github/admin/addon/model/Speaker.java"));
         EntityConfig entityConfig = EntityConfigLoader.createOrLoadEntityConfig(entity, project);
         assertEntityConfig(entityConfig);
     }

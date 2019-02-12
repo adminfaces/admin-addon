@@ -57,7 +57,6 @@ public class ScaffoldEntity implements Serializable {
     public EntityConfig getEntityConfig() {
         return entityConfig;
     }
-    
 
     /**
      * Lists entity fields excluding fields that are not persisted
@@ -75,26 +74,27 @@ public class ScaffoldEntity implements Serializable {
         }
         return entityFields;
     }
-    
+
     /**
      * retrieves the field name of given association
-     * 
+     *
      * This methods traverse association fields looking for a non nullable String field
-     * 
+     *
      * @param associationField a entity field that represents an (JPA) association
      * @return field name to be used as display field
      */
     public String getAssociationDisplayField(FieldSource<JavaClassSource> field) {
         JavaClassSource associationClassSource = null;
-        if(field.getType().isParameterized()) {
-            String qualifiedName = field.getType().getTypeArguments().get(0).getQualifiedName();
-            try {
-                associationClassSource = Roaster.parse(JavaClassSource.class, new File(project.getRoot().getFullyQualifiedName()+qualifiedName.replace(".", "/")+ ".java"));
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger(ScaffoldEntity.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        String qualifiedName = null;
+        if (field.getType().isParameterized()) {
+            qualifiedName = field.getType().getTypeArguments().get(0).getQualifiedName();
         } else {
-            associationClassSource = field.getType().getOrigin();
+            qualifiedName = field.getType().getQualifiedName();
+        }
+        try {
+            associationClassSource = Roaster.parse(JavaClassSource.class, new File(project.getRoot().getFullyQualifiedName() + qualifiedName.replace(".", "/") + ".java"));
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(ScaffoldEntity.class.getName()).log(Level.SEVERE, null, ex);
         }
         return AdminScaffoldUtils.resolveDisplayField(associationClassSource);
     }
@@ -106,7 +106,7 @@ public class ScaffoldEntity implements Serializable {
     public boolean isRequired(FieldSource<JavaClassSource> field) {
         return getFieldConfig(field.getName()).isRequired();
     }
-    
+
     public int getSize(FieldSource<JavaClassSource> field) {
         return getFieldConfig(field.getName()).getLength();
     }

@@ -59,7 +59,11 @@ public class ScaffoldEntityTest {
      @Test
     public void shouldGetAssociationDisplayFieldFromToOne() {
         JavaClassSource entity = Roaster.parse(JavaClassSource.class, EntityConfigLoaderTest.class.getResourceAsStream("/com/github/admin/addon/model/Talk.java"));
-        ScaffoldEntity scaffoldEntity = new ScaffoldEntity(entity, null, null);
+        DirectoryResource projectRoot = mock(DirectoryResource.class);
+        doReturn(Paths.get("").toAbsolutePath() +"/target/test-classes/").when(projectRoot).getFullyQualifiedName();
+        Project project = mock(Project.class);
+        doReturn(projectRoot).when(project).getRoot();
+        ScaffoldEntity scaffoldEntity = new ScaffoldEntity(entity, null, project);
         String associationDisplayField = scaffoldEntity.getAssociationDisplayField(entity.getField("speaker"));
         assertThat(associationDisplayField).isNotEmpty().isNotBlank();
         assertThat(associationDisplayField).isEqualTo("firstname");
