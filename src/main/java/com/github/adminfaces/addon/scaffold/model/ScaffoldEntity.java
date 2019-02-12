@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.roaster.Roaster;
 
@@ -92,7 +93,8 @@ public class ScaffoldEntity implements Serializable {
             qualifiedName = field.getType().getQualifiedName();
         }
         try {
-            associationClassSource = Roaster.parse(JavaClassSource.class, new File(project.getRoot().getFullyQualifiedName() +"/"+ qualifiedName.replace(".", "/") + ".java"));
+            String sourceFolder = resolveSourceFolder();
+            associationClassSource = Roaster.parse(JavaClassSource.class, new File(sourceFolder+"/"+ qualifiedName.replace(".", "/") + ".java"));
         } catch (FileNotFoundException ex) {
             Logger.getLogger(ScaffoldEntity.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -182,6 +184,11 @@ public class ScaffoldEntity implements Serializable {
 
     public boolean isSpinnerType(FieldSource<JavaClassSource> field) {
         return getFieldConfig(field).getType().equals(ComponentTypeEnum.SPINNER);
+    }
+
+    private String resolveSourceFolder() {
+        JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
+        return sourceFacet.getSourceDirectory().getFullyQualifiedName();
     }
 
 }
