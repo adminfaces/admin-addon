@@ -92,7 +92,7 @@ public class ScaffoldEntity implements Serializable {
             qualifiedName = field.getType().getQualifiedName();
         }
         try {
-            associationClassSource = Roaster.parse(JavaClassSource.class, new File(project.getRoot().getFullyQualifiedName() + qualifiedName.replace(".", "/") + ".java"));
+            associationClassSource = Roaster.parse(JavaClassSource.class, new File(project.getRoot().getFullyQualifiedName() +"/"+ qualifiedName.replace(".", "/") + ".java"));
         } catch (FileNotFoundException ex) {
             Logger.getLogger(ScaffoldEntity.class.getName()).log(Level.SEVERE, null, ex);
         }

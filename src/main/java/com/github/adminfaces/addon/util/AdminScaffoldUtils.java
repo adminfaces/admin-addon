@@ -35,8 +35,7 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
     public static final Logger log = LoggerFactory.getLogger(AdminScaffoldUtils.class.getName());
 
     public static void unzip(InputStream zipFile, String targetDir) throws IOException {
-        ZipInputStream zipInputStream = new ZipInputStream(zipFile);
-        try {
+        try (ZipInputStream zipInputStream = new ZipInputStream(zipFile)) {
             ZipEntry zipEntry = zipInputStream.getNextEntry();
             while (zipEntry != null) {
                 File destPath = new File(targetDir, zipEntry.getName());
@@ -54,8 +53,6 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
                 }
                 zipEntry = zipInputStream.getNextEntry();
             }
-        } finally {
-            zipInputStream.close();
         }
     }
 
@@ -95,7 +92,6 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
         Optional<FieldSource<JavaClassSource>> displayField = entity.getFields().stream()
             .filter((f -> isValidDisplayField(f) && f.getType().isType(String.class) && AdminScaffoldUtils.resolveRequiredAttribute(f)))
             .findFirst();
-
         if (displayField.isPresent()) {
             return displayField.get().getName();
         } else {
