@@ -15,7 +15,7 @@ public class EntityConfig {
     private transient Map<String, FieldConfig> fieldConfigMap;
     
     // key is a entity field which is an (JPA) association, value is the association field name to be used as a display field
-    private transient Map<FieldSource<JavaClassSource>, String> associationDisplayFieldMap = new HashMap<>();
+    private final transient Map<FieldSource<JavaClassSource>, String> associationDisplayFieldMap = new HashMap<>();
 
     public List<FieldConfig> getFields() {
         return fields;

@@ -104,6 +104,15 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
         return sb.toString();
     }
 
+<#list toOneFields as field>
+    /**
+     * Used by search dialog in list page
+     */ 
+    public List<field.getType().getSimpleName()> complete${field.getName()?cap_first}(String query) {
+        return ${ccEntity}Service.get${field.getName()?cap_first}sBy${entity.getAssociationDisplayField(field)}(String query);
+    }
+</#list>
+
 <#list toManyFields as field>
     public void show${field.getName()?cap_first}Detail(${nullablePrimaryKeyType} id) {
         this.show${field.getName()?cap_first}DetailMap.clear();//show details of one row at a time

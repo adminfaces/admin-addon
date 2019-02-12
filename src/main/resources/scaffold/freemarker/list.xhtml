@@ -75,7 +75,7 @@
 
  <#list fields as field>
     <#if !entity.isHidden(field)>
-			<p:column headerText="${field.getName()?cap_first}"  <#if !entity.hasToManyAssociation(field)>sortBy="${r"#{"}row.${field.getName()}}"</#if>>
+			<p:column headerText="${field.getName()?cap_first}" <#if field.hasAnnotation("javax.persistence.Id")> filterBy="${r"#{"}row.id}" </#if> <#if !entity.hasToManyAssociation(field)>sortBy="${r"#{"}row.${field.getName()}}"</#if>>
 			   <#if field.hasAnnotation("javax.persistence.Id")>
 				<p:link value="${r"#{"}row.id}" outcome="${ccEntity}/${ccEntity}-form.xhtml">
 					<f:param name="id" value="${r"#{"}row.id}"></f:param>
@@ -119,37 +119,57 @@
 
 
         <p:dialog header="${r"#{"}msg['label.search']} ${ccEntity}s" widgetVar="searchDialog" height="400" modal="true" appendTo="@(body)"
-                  width="500" responsive="true" draggable="false" styleClass="box-success">
+                  width="500" responsive="true" draggable="false" styleClass="box-primary">
 
             <h:form>
-				<f:validateBean disabled="true">
-					<p:commandButton value="${r"#{"}msg['label.ok']}" update="@form @(.ui-datatable, .ui-tooltip)" icon="fa fa-check"
-									 ignoreAutoUpdate="true" styleClass="btn-primary"/>
-					<p:spacer height="5"/>
-					<p:commandButton value="${r"#{"}msg['label.clear']}" action="${r"#{"}${ccEntity}ListMB.clear}" process="@this"
-									 update="@form @(.ui-datatable, .ui-tooltip)" styleClass="btn-success"
-									 icon="fa fa-refresh"/>
-					<p:spacer height="5"/>
-					<p:commandButton value="${r"#{"}msg['label.close']}" icon="fa fa-close" oncomplete="PF('searchDialog').hide()"/>
-					<p:separator/>
+                <f:validateBean disabled="true">
+                <p:commandButton value="${r"#{"}msg['label.ok']}" update="@form @(.ui-datatable, .ui-tooltip)" icon="fa fa-check"
+                                 ignoreAutoUpdate="true" styleClass="btn-primary"/>
+                <p:spacer height="5"/>
+                <p:commandButton value="${r"#{"}msg['label.clear']}" action="${r"#{"}${ccEntity}ListMB.clear}" process="@this"
+                                 update="@form @(.ui-datatable, .ui-tooltip)" styleClass="btn-success"
+                                 icon="fa fa-refresh"/>
+                <p:spacer height="5"/>
+                <p:commandButton value="${r"#{"}msg['label.close']}" icon="fa fa-close" oncomplete="PF('searchDialog').hide()"/>
+                <p:separator/>
 
-					<div class="ui-g ui-fluid">
-						
-					</div>	
+                <div class="ui-g ui-fluid">
+<#list fields as field>
+    <#if !entity.isHidden(field) && !field.hasAnnotation("javax.persistence.Id")>
+                    <div class="ui-g-12">
+                        <p:outputLabel for="${field.getName()}" value="${field.getName()?cap_first}"/>
+					</div>
+					<div class="ui-g-12">
+                    <#if !entity.hasAssociation(field) && !entity.isTextAreaType(field)>    
+                        <#if entity.isInputTextType(field)>
+                        <p:inputText id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}"/>    
+                        <#elseif entity.isInputNumberType(field)>
+                        <p:inputNumber id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}"/>   
+                        <#elseif entity.isCalendarType(field)>
+                        <p:calendar id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}"/>
+                        <#elseif entity.isSpinnerType(field)>
+                        <p:spinner id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}"/>
+                        <#elseif entity.isInputSwitchType(field)>
+                        <p:inputSwitch id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}"/>
+                        </#if>
+                    </#if>
+                    
+                    <#if entity.hasToOneAssociation(field)>
+                        <p:autoComplete id="${field.getName()}" completeMethod="${r"#{"}${ccEntity}ListMB.complete${field.getName()?cap_first}}" minQueryLength="2" dropdown="true"
+                                        var="${field.getName()}" itemLabel="#{${field.getName()}.${entity.getAssociationDisplayField(field)}}" itemValue="#{${field.getName()}}" converter="entityConverter"/> 
+                    <#elseif entity.hasToManyAssociation(field)>   
+					    <p:selectOneMenu id="${field.getName()}" value="${r"#{"}carListMB.filter.entity.model}">
+                            <f:selectItem itemLabel="${r"#{"}msg['label.empty-select']}" itemValue=""/>
+                            <f:selectItems value="${r"#{"}models}" var="item" itemLabel="${r"#{"}item}"
+											   itemValue="${r"#{"}item}"/>
+                        </p:selectOneMenu>
+                    </#if>
+		  </div>
+    </#if>
+</#list>
+				</div>	
 
-	<#list fields as field>
-		<#if !entity.isHidden(field)>
-				<p:column headerText="${field.getName()?cap_first}" sortBy="${r"#{"}row.${field.getName()}}">
-				   <#if field.hasAnnotation("javax.persistence.Id")>
-					<p:link value="${r"#{"}row.id}" outcome="${ccEntity}-form.xhtml">
-						<f:param name="id" value="${r"#{"}row.id}"></f:param>
-					</p:link>
-				   <#else>
-					   ${r"#{"}row.${field.getName()}}
-				   </#if>
-				</p:column>
-		</#if>
-	</#list>
+
 	<!--<div class="ui-g-12">
 							<p:outputLabel for="model" value="${r"#{"}msg['label.model']}"/>
 						</div>

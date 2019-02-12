@@ -1,10 +1,6 @@
 package com.github.adminfaces.addon.scaffold.model;
 
-import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.INPUT_NUMBER;
-import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.INPUT_TEXT;
-import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.PASSWORD;
-import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.SELECT_ONE_MENU;
-import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.TEXT_AREA;
+import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -113,6 +109,9 @@ public class EntityConfigLoader {
             || type.isType("long") || type.isType("int") || type.isType("double")) {
             return INPUT_NUMBER;
         }
+        if (type.isType(Boolean.class) || type.isType("double")) {
+             return INPUT_SWITCH;
+        }     
         //TODO inspect other fields types
 
         return INPUT_TEXT;
