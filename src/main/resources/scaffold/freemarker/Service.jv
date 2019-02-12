@@ -24,7 +24,7 @@ import ${field.getType().getQualifiedName()}_;
 
 <#if toManyFields?size != 0>
 import javax.persistence.TypedQuery;
-</if>
+</#if>
 
 
 import static com.github.adminfaces.template.util.Assert.has;
@@ -140,12 +140,11 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
 </#list>
      
 <#list toManyFields as field>
-    List<entity.getArrayType(field).getSimpleName()> get${field.getName()?cap_first}ById(${nullablePrimaryKeyType} ${ccEntity}id) {
+    public List<${entity.getArrayType(field).getSimpleName()}> get${field.getName()?cap_first}ById(${nullablePrimaryKeyType} ${ccEntity}id) {
          return getEntityManager().createNamedQuery("select r from ${entity.getArrayType(field).getSimpleName()} where r.${ccEntity}.id =:id",${entity.getArrayType(field).getSimpleName()}.class)
                 .setParameter("id",${ccEntity}id)
                 .getResultList(); 
     }
-
 </#list>
 
 }

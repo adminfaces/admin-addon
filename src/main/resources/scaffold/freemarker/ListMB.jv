@@ -30,8 +30,9 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
 
     @Inject
     ${entity.getName()}Service ${ccEntity}Service;
+
 <#list toManyFields as field>
-    List<entity.getArrayType(field).getSimpleName()> ${ccEntity}${field.getName()?cap_first};
+    List<${entity.getArrayType(field).getSimpleName()}> ${ccEntity}${field.getName()?cap_first};
 </#list>
 
 
@@ -111,7 +112,7 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
         ${ccEntity}${field.getName()?cap_first} = ${ccEntity}Service.get${field.getName()?cap_first}ById(id);  
     }
     
-    public List<entity.getArrayType(field).getSimpleName()> get${entity.getName()}${field.getName()?cap_first}() {
+    public List<${entity.getArrayType(field).getSimpleName()}> get${entity.getName()}${field.getName()?cap_first}() {
         return ${ccEntity}${field.getName()?cap_first};             
     } 
 </#list>
