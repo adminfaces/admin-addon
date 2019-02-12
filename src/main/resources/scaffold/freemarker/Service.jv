@@ -130,7 +130,6 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
 <#list toOneFields as field>
     public List<field.getType().getSimpleName()> get${field.getName()?cap_first}sBy${entity.getAssociationDisplayField(field)}(String query) {
         return criteria(${field.getType().getSimpleName()}.class)
-                attribute(${entity.getName()}_.${field.getName()}))
                .likeIgnoreCase(${field.getType().getSimpleName()}_.${entity.getAssociationDisplayField(field)}, "%" + query + "%")
                .getResultList();
     }
