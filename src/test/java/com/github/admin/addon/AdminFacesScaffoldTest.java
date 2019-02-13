@@ -35,6 +35,7 @@ import java.util.concurrent.TimeoutException;
 import org.jboss.forge.addon.projects.facets.WebResourcesFacet;
 import org.jboss.forge.addon.resource.FileResource;
 import static org.assertj.core.api.Assertions.contentOf;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
@@ -160,6 +161,38 @@ public class AdminFacesScaffoldTest {
         
         JavaClassSource listMBSource = Roaster.parse(JavaClassSource.class, new File(listMB.getFullyQualifiedName()));
         assertThat(listMBSource.hasSyntaxErrors()).isFalse();
+        assertThat(listMBSource.hasMethodSignature("showTalksDetail", Long.class)).isTrue();
+        assertThat(listMBSource.hasMethodSignature("getSpeakerTalks")).isTrue();
+        assertThat(listMBSource.hasMethodSignature("getShowTalksDetailMap")).isTrue();
+        
+        repository = src
+            .getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
+            .getChild(Constants.Packages.REPOSITORY + "/TalkRepository.java");
+        
+        assertThat(repository.exists()).isTrue();
+        
+        repositorySource = Roaster.parse(JavaInterfaceSource.class, new File(repository.getFullyQualifiedName()));
+        assertThat(repositorySource.hasSyntaxErrors()).isFalse();
+        
+        service = src
+            .getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
+            .getChild(Constants.Packages.SERVICE + "/TalkService.java");
+
+        assertThat(service.exists()).isTrue();
+        
+        serviceSource = Roaster.parse(JavaClassSource.class, new File(service.getFullyQualifiedName()));
+        assertThat(serviceSource.hasSyntaxErrors()).isFalse();
+        
+        assertThat(serviceSource.hasMethodSignature("getSpeakersByFirstname", String.class)).isTrue();  
+        
+        listMB = src.getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
+            .getChild(Constants.Packages.BEAN + "/TalkListMB.java");
+
+        assertThat(listMB.exists()).isTrue();
+        
+        listMBSource = Roaster.parse(JavaClassSource.class, new File(listMB.getFullyQualifiedName()));
+        assertThat(listMBSource.hasSyntaxErrors()).isFalse();
+        assertThat(listMBSource.hasMethodSignature("completeSpeaker", String.class)).isTrue();  
         
         WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
         FileResource<?> leftMenu = web.getWebResource(Constants.WebResources.LEFT_MENU);

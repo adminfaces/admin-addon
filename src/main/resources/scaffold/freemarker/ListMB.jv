@@ -106,11 +106,11 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
 
 <#list toOneFields as field>
     <#if entity.isAutoCompleteType(field)>
-    public List<field.getType().getSimpleName()> complete${field.getName()?cap_first}(String query) {
-        return ${ccEntity}Service.get${field.getName()?cap_first}sBy${entity.getAssociationDisplayField(field)}(String query);
+    public List<${field.getType().getSimpleName()}> complete${field.getName()?cap_first}(String query) {
+        return ${ccEntity}Service.get${field.getName()?cap_first}sBy${entity.getAssociationDisplayField(field)?cap_first}(String query);
     }
    <#elseif entity.isSelectOneMenuType(field)>
-    public List<field.getType().getSimpleName()> get${field.getName()?cap_first}s() {
+    public List<${field.getType().getSimpleName()}> get${field.getName()?cap_first}s() {
         return ${ccEntity}Service.get${field.getName()?cap_first}s();
     }
    </#if>
