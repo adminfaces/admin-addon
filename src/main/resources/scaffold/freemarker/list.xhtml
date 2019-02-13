@@ -62,43 +62,41 @@
                                  paginatorPosition="bottom" selection="${r"#{"}${ccEntity}ListMB.selectionList}"
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} {JumpToPageDropdown}"
                                  currentPageReportTemplate="[ {startRecord} to {endRecord} of {totalRecords} ]"
-                                 rowsPerPageTemplate="5,10,15,20,30"
-                    >
+                                 rowsPerPageTemplate="5,10,15,20,30">
 
                         <p:ajax event="rowSelectCheckbox" update="@(.ui-button, .ui-confirm-dialog)"/>
                         <p:ajax event="rowUnselectCheckbox" update="@(.ui-button, .ui-confirm-dialog)"/>
                         <p:ajax event="rowSelect" update="@(.ui-button, .ui-confirm-dialog)"/>
                         <p:ajax event="rowUnselect" update="@(.ui-button, .ui-confirm-dialog)"/>
 
-
                         <p:column selectionMode="multiple" width="5%" styleClass="align-center"/>
 
  <#list fields as field>
     <#if !entity.isHidden(field)>
-			<p:column headerText="${field.getName()?cap_first}" <#if field.hasAnnotation("javax.persistence.Id")> filterBy="${r"#{"}row.id}" </#if> <#if !entity.hasToManyAssociation(field)>sortBy="${r"#{"}row.${field.getName()}}"</#if>>
+			            <p:column headerText="${field.getName()?cap_first}" <#if field.hasAnnotation("javax.persistence.Id")> filterBy="${r"#{"}row.id}" </#if> <#if !entity.hasToManyAssociation(field)>sortBy="${r"#{"}row.${field.getName()}}"</#if>>
 			   <#if field.hasAnnotation("javax.persistence.Id")>
-				<p:link value="${r"#{"}row.id}" outcome="${ccEntity}/${ccEntity}-form.xhtml">
-					<f:param name="id" value="${r"#{"}row.id}"></f:param>
-				</p:link>
+				            <p:link value="${r"#{"}row.id}" outcome="${ccEntity}/${ccEntity}-form.xhtml">
+					            <f:param name="id" value="${r"#{"}row.id}"></f:param>
+				            </p:link>
 			   <#elseif !entity.hasAssociation(field)>
 			       ${r"#{"}row.${field.getName()}}
 			   <#elseif entity.hasToOneAssociation(field)>
 			       ${r"#{"}row.${entity.getAssociationDisplayField(field)}}   
                <#elseif entity.hasToManyAssociation(field)>   
-                <h:panelGroup rendered="${r"#{"}not ${ccEntity}ListMB.show${field.getName()?cap_first}DetailMap[row.id]}" style="text-align: center">
-                      <p:commandLink action="${r"#{"}${ccEntity}ListMB.show${field.getName()?cap_first}Detail(row.id)}" process="@this"
+                            <h:panelGroup rendered="${r"#{"}not ${ccEntity}ListMB.show${field.getName()?cap_first}DetailMap[row.id]}" style="text-align: center">
+                                <p:commandLink action="${r"#{"}${ccEntity}ListMB.show${field.getName()?cap_first}Detail(row.id)}" process="@this"
                                            update="@(.ui-datatable)" styleClass="fa fa-search-plus"
                                            style="font-size: 20px"/>
-                </h:panelGroup>
-                <p:dataList rendered="${r"#{"}${ccEntity}ListMB.show${field.getName()?cap_first}DetailMap[row.id]}"
+                            </h:panelGroup>
+                            <p:dataList rendered="${r"#{"}${ccEntity}ListMB.show${field.getName()?cap_first}DetailMap[row.id]}"
                                     value="${r"#{"}${ccEntity}ListMB.${ccEntity}${field.getName()?cap_first}}" var="d">
-                    <p:link value="${r"#{"}d.${entity.getAssociationDisplayField(field)}}" outcome="${entity.getArrayType(field).getSimpleName()?lower_case}/${entity.getArrayType(field).getSimpleName()?lower_case}-form.xhtml">
-                        <f:param name="id" value="${r"#{"}d.id}"></f:param>
-                    </p:link>                 
-                 </p:dataList>   
+                                <p:link value="${r"#{"}d.${entity.getAssociationDisplayField(field)}}" outcome="${entity.getArrayType(field).getSimpleName()?lower_case}/${entity.getArrayType(field).getSimpleName()?lower_case}-form.xhtml">
+                                    <f:param name="id" value="${r"#{"}d.id}"></f:param>
+                                </p:link>                 
+                            </p:dataList>   
 			   </#if>
 			   
-			</p:column>
+			            </p:column>
 	</#if>
 </#list>
                         <f:facet name="footer">
@@ -140,71 +138,34 @@
                         <p:outputLabel for="${field.getName()}" value="${field.getName()?cap_first}"/>
 					</div>
 					<div class="ui-g-12">
-                    <#if !entity.hasAssociation(field) && !entity.isTextAreaType(field)>    
+                    <#if !entity.isHidden(field)>    
                         <#if entity.isInputTextType(field)>
                         <p:inputText id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}"/>    
                         <#elseif entity.isInputNumberType(field)>
                         <p:inputNumber id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}"/>   
                         <#elseif entity.isCalendarType(field)>
                         <p:calendar id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}"/>
+                        <#elseif entity.isDatePickerType(field)>
+                        <p:datePicker id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}"/>
                         <#elseif entity.isSpinnerType(field)>
                         <p:spinner id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}"/>
                         <#elseif entity.isInputSwitchType(field)>
                         <p:inputSwitch id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}"/>
-                        </#if>
-                    </#if>
-                    
-                    <#if entity.hasToOneAssociation(field)>
+                        <#elseif entity.isAutoCompleteType(field)>
                         <p:autoComplete id="${field.getName()}" completeMethod="${r"#{"}${ccEntity}ListMB.complete${field.getName()?cap_first}}" minQueryLength="2" dropdown="true"
-                                        var="${field.getName()}" itemLabel="#{${field.getName()}.${entity.getAssociationDisplayField(field)}}" itemValue="#{${field.getName()}}" converter="entityConverter"/> 
-                    <#elseif entity.hasToManyAssociation(field)>   
-					    <p:selectOneMenu id="${field.getName()}" value="${r"#{"}carListMB.filter.entity.model}">
+                                        var="${field.getName()}" itemLabel="${r"#{"}${field.getName()}.${entity.getAssociationDisplayField(field)}}" itemValue="${r"#{"}${field.getName()}}" converter="entityConverter"/> 
+                        <#elseif entity.isSelectOneMenuType(field)>
+                        <p:selectOneMenu id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}">
                             <f:selectItem itemLabel="${r"#{"}msg['label.empty-select']}" itemValue=""/>
                             <f:selectItems value="${r"#{"}models}" var="item" itemLabel="${r"#{"}item}"
-											   itemValue="${r"#{"}item}"/>
+										   itemValue="${r"#{"}item}"/>
                         </p:selectOneMenu>
+                        </#if>
                     </#if>
-		  </div>
+                    </div>
     </#if>
 </#list>
 				</div>	
-
-
-	<!--<div class="ui-g-12">
-							<p:outputLabel for="model" value="${r"#{"}msg['label.model']}"/>
-						</div>
-						<div class="ui-g-12">
-							<p:selectOneMenu id="model" value="${r"#{"}carListMB.filter.entity.model}">
-								<f:selectItem itemLabel="Chose a model" itemValue=""/>
-								<f:selectItems value="${r"#{"}models}" var="m" itemLabel="${r"#{"}m}"
-											   itemValue="${r"#{"}m}"/>
-							</p:selectOneMenu>
-						</div>
-						<div class="ui-g-12">
-							<p:outputLabel for="name" value="${r"#{"}msg['label.name']}"/>
-						</div>
-						<div class="ui-g-12">
-							<p:inputText id="name" value="${r"#{"}carListMB.filter.entity.name}"/>
-						</div>
-
-						<div class="ui-g-6 ui-sm-12 ui-g-nopad">
-							<div class="ui-g-12">
-								<p:outputLabel for="min" value="${r"#{"}msg['label.minPrice']}"/>
-							</div>
-							<div class="ui-g-12">
-								<p:inputNumber id="min" value="${r"#{"}carListMB.filter.params.minPrice}"/>
-							</div>
-						</div>
-
-						<div class="ui-g-6 ui-sm-12 ui-g-nopad">
-							<div class="ui-g-12">
-								<p:outputLabel for="max" value="${r"#{"}msg['label.maxPrice']}"/>
-							</div>
-							<div class="ui-g-12">
-								<p:inputNumber id="max" value="${r"#{"}carListMB.filter.params.maxPrice}"/>
-							</div>
-						</div>-->
-					</div>
 				</f:validateBean>
             </h:form>
         </p:dialog>

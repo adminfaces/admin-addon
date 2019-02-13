@@ -92,7 +92,7 @@ public class EntityConfigLoader {
         }
 
         if (AdminScaffoldUtils.hasToOneAssociation(field)) {
-            return SELECT_ONE_MENU;
+            return AUTOCOMPLETE;
         }
         Type<JavaClassSource> type = field.getType();
         if (type.isType(String.class)) {

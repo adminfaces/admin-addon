@@ -177,6 +177,10 @@ public class ScaffoldEntity implements Serializable {
     public boolean isCalendarType(FieldSource<JavaClassSource> field) {
         return getFieldConfig(field).getType().equals(ComponentTypeEnum.CALENDAR);
     }
+    
+    public boolean isDatePickerType(FieldSource<JavaClassSource> field) {
+        return getFieldConfig(field).getType().equals(ComponentTypeEnum.DATEPICKER);
+    }
 
     public boolean isTextAreaType(FieldSource<JavaClassSource> field) {
         return getFieldConfig(field).getType().equals(ComponentTypeEnum.TEXT_AREA);

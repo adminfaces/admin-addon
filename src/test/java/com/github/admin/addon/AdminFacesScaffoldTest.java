@@ -114,7 +114,6 @@ public class AdminFacesScaffoldTest {
             .getChild(Constants.Packages.MODEL + "/Speaker.java");
         JavaSourceFacet javaSource = project.getFacet(JavaSourceFacet.class);
         JavaClassSource speakerSource = Roaster.parse(JavaClassSource.class, new File(speakerResource.getFullyQualifiedName()));
-        speakerSource.getField("twitter").getJavaDoc().addTagValue("@ui-autocomplete", "");
         javaSource.saveJavaSource(speakerSource);
         Result scaffoldGenerate1 = shellTest
             .execute(("scaffold-generate --entities " + entityPackageName + ".*"), 10, TimeUnit.MINUTES);
@@ -142,7 +141,7 @@ public class AdminFacesScaffoldTest {
         JavaClassSource serviceSource = Roaster.parse(JavaClassSource.class, new File(service.getFullyQualifiedName()));
         assertThat(serviceSource.hasSyntaxErrors()).isFalse();
         
-        //assertThat(serviceSource.hasMethodSignature("getTwitters", String.class)).isTrue(); TODO test autocomplete component in a separed test
+        assertThat(serviceSource.hasMethodSignature("getTalksById", Long.class)).isTrue();  
 
         Resource<?> formMB = src
             .getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))

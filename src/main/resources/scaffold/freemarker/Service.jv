@@ -128,19 +128,27 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
     }
 
 <#list toOneFields as field>
-    public List<field.getType().getSimpleName()> get${field.getName()?cap_first}sBy${entity.getAssociationDisplayField(field)}(String query) {
+    <#if entity.isAutoCompleteType(field)>
+    public List<${field.getType().getSimpleName()}> get${field.getName()?cap_first}sBy${entity.getAssociationDisplayField(field)}(String query) {
         return criteria(${field.getType().getSimpleName()}.class)
                .likeIgnoreCase(${field.getType().getSimpleName()}_.${entity.getAssociationDisplayField(field)}, "%" + query + "%")
                .getResultList();
     }
-
+    <#elseif entity.isSelectOneMenuType(field)>
+    public List<${field.getType().getSimpleName()}> get${field.getName()?cap_first}s() {
+        return criteria(${field.getType().getSimpleName()}.class)  
+                .getResultList();      
+    }
+   </#if>  
 </#list>    
 <#list toManyFields as field>
+    <#if entity.isCheckboxMenuType(field) || entity.isSelectManyMenuType(field)>
     public List<${entity.getArrayType(field).getSimpleName()}> get${field.getName()?cap_first}ById(${nullablePrimaryKeyType} ${ccEntity}id) {
          return getEntityManager().createNamedQuery("select r from ${entity.getArrayType(field).getSimpleName()} where r.${ccEntity}.id =:id",${entity.getArrayType(field).getSimpleName()}.class)
                 .setParameter("id",${ccEntity}id)
                 .getResultList(); 
     }
+    </#if>
 </#list>
 
 }
