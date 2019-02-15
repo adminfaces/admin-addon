@@ -60,7 +60,7 @@ public class ScaffoldEntityTest {
      
     @Test
     public void shouldGetAssociationDisplayFieldFromToMany() {
-        JavaClassSource entity = Roaster.parse(JavaClassSource.class, EntityConfigLoaderTest.class.getResourceAsStream("/com/github/admin/addon/model/Speaker.java"));
+        JavaClassSource entity = Roaster.parse(JavaClassSource.class, ScaffoldConfigLoaderTest.class.getResourceAsStream("/com/github/admin/addon/model/Speaker.java"));
         ScaffoldEntity scaffoldEntity = new ScaffoldEntity(entity, null, project);
         String associationDisplayField = scaffoldEntity.getAssociationDisplayField(entity.getField("talks"));
         assertThat(associationDisplayField).isNotEmpty().isNotBlank();
@@ -69,7 +69,7 @@ public class ScaffoldEntityTest {
     
      @Test
     public void shouldGetAssociationDisplayFieldFromToOne() {
-        JavaClassSource entity = Roaster.parse(JavaClassSource.class, EntityConfigLoaderTest.class.getResourceAsStream("/com/github/admin/addon/model/Talk.java"));
+        JavaClassSource entity = Roaster.parse(JavaClassSource.class, ScaffoldConfigLoaderTest.class.getResourceAsStream("/com/github/admin/addon/model/Talk.java"));
         ScaffoldEntity scaffoldEntity = new ScaffoldEntity(entity, null, project);
         String associationDisplayField = scaffoldEntity.getAssociationDisplayField(entity.getField("speaker"));
         assertThat(associationDisplayField).isNotEmpty().isNotBlank();

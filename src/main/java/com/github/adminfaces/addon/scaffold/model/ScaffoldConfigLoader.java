@@ -26,7 +26,18 @@ import org.yaml.snakeyaml.Yaml;
 
 import com.github.adminfaces.addon.util.AdminScaffoldUtils;
 
-public class EntityConfigLoader {
+public class ScaffoldConfigLoader {
+
+    public static GlobalConfig loadGlobalConfig(Project project) {
+        DirectoryResource scaffoldDir = project.getFacet(ResourcesFacet.class).getResourceDirectory()
+            .getChildDirectory("scaffold");
+        FileResource<?> globalConfigFile = (FileResource<?>) scaffoldDir.getChild("global-config.yml");
+        try (InputStream entityConfigStream = globalConfigFile.getResourceInputStream()) {
+            return new Yaml().loadAs(entityConfigStream, GlobalConfig.class);
+        } catch (IOException e) {
+            throw new RuntimeException("Could not load  scaffold config from:" + globalConfigFile.getFullyQualifiedName(), e);
+        }
+    }
 
     public static EntityConfig createOrLoadEntityConfig(JavaClassSource entity, Project project) {
         DirectoryResource scaffoldDir = project.getFacet(ResourcesFacet.class).getResourceDirectory()
@@ -53,10 +64,10 @@ public class EntityConfigLoader {
     private static EntityConfig createEntityConfig(JavaClassSource entity, FileResource<?> entityConfigFile) {
         EntityConfig entityConfig = new EntityConfig();
         entity.getFields().stream()
-            .filter(f -> f.hasAnnotation(Column.class) || AdminScaffoldUtils.hasAssociation(f) 
-                || f.hasAnnotation(Basic.class) || f.hasAnnotation(Transient.class) 
-                || f.hasAnnotation(Embedded.class) || f.hasAnnotation(Id.class) 
-                || f.hasAnnotation(EmbeddedId.class))
+            .filter(f -> f.hasAnnotation(Column.class) || AdminScaffoldUtils.hasAssociation(f)
+            || f.hasAnnotation(Basic.class) || f.hasAnnotation(Transient.class)
+            || f.hasAnnotation(Embedded.class) || f.hasAnnotation(Id.class)
+            || f.hasAnnotation(EmbeddedId.class))
             .forEach(f -> {
                 boolean required = AdminScaffoldUtils.resolveRequiredAttribute(f);
                 Integer length = resolveLengthAttribute(f);
@@ -66,8 +77,8 @@ public class EntityConfigLoader {
                     entityConfig.setDisplayField(f.getName());
                 }
             });
-        if(entityConfig.getDisplayField() == null) {
-        	entityConfig.setDisplayField("");//this means we'll use entity's toString() method to display entity on pages
+        if (entityConfig.getDisplayField() == null) {
+            entityConfig.setDisplayField("");//this means we'll use entity's toString() method to display entity on pages
         }
         entityConfig.setMenuIcon("fa fa-circle-o");
         entityConfigFile.setContents(new Yaml().dump(entityConfig));
@@ -110,13 +121,11 @@ public class EntityConfigLoader {
             return INPUT_NUMBER;
         }
         if (type.isType(Boolean.class) || type.isType("double")) {
-             return INPUT_SWITCH;
-        }     
+            return INPUT_SWITCH;
+        }
         //TODO inspect other fields types
 
         return INPUT_TEXT;
     }
-
-    
 
 }

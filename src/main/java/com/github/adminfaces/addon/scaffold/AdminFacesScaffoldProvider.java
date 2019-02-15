@@ -80,7 +80,7 @@ import com.github.adminfaces.addon.freemarker.FreemarkerTemplateProcessor;
 import com.github.adminfaces.addon.freemarker.TemplateFactory;
 import com.github.adminfaces.addon.scaffold.metamodel.AdminFacesMetaModelProvider;
 import com.github.adminfaces.addon.scaffold.model.EntityConfig;
-import com.github.adminfaces.addon.scaffold.model.EntityConfigLoader;
+import com.github.adminfaces.addon.scaffold.model.ScaffoldConfigLoader;
 import com.github.adminfaces.addon.scaffold.model.ScaffoldEntity;
 import com.github.adminfaces.addon.ui.AdminFacesSetupCommand;
 import com.github.adminfaces.addon.util.AdminScaffoldUtils;
@@ -212,13 +212,13 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
     private void createScaffoldConfig(Project project) {
         DirectoryResource resources = project.getFacet(ResourcesFacet.class).getResourceDirectory();
         DirectoryResource scaffoldDir = resources.getOrCreateChildDirectory("scaffold");
-        if (!scaffoldDir.getChild("adminfaces.yaml").exists()) {
+        if (!scaffoldDir.getChild("global-config.yaml").exists()) {
             try (InputStream is = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("/scaffold/adminfaces.yaml")) {
+                .getResourceAsStream("/scaffold/global-config.yaml")) {
                 IOUtils.copy(is,
-                    new FileOutputStream(new File(scaffoldDir.getFullyQualifiedName() + "/adminfaces.yaml")));
+                    new FileOutputStream(new File(scaffoldDir.getFullyQualifiedName() + "/global-config.yaml")));
             } catch (IOException e) {
-                LOG.log(Level.SEVERE, "Could not add 'adminfaces.yaml'.", e);
+                LOG.log(Level.SEVERE, "Could not create 'global-config.yaml'.", e);
             }
         }
 
@@ -296,7 +296,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
                     entity.addImport("com.github.adminfaces.persistence.model.PersistenceEntity");
                     entity.addInterface("PersistenceEntity");
                     createOrOverwrite(java.getJavaResource(entity), entity.toString());
-                    EntityConfig entityConfig = EntityConfigLoader.createOrLoadEntityConfig(entity, project);
+                    EntityConfig entityConfig = ScaffoldConfigLoader.createOrLoadEntityConfig(entity, project);
                     ScaffoldEntity scaffoldEntity = new ScaffoldEntity(entity, entityConfig, project);
                     context.put("entity", scaffoldEntity);
                     String ccEntity = StringUtils.decapitalize(entity.getName());

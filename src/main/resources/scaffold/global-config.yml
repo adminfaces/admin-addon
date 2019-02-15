@@ -1,0 +1,7 @@
+!!com.github.adminfaces.addon.scaffold.model.GlobalConfig
+toOneComponentType: AUTOCOMPLETE
+toManyComponentType: CHECKBOXMENU
+dateComponentType: CALENDAR
+datatableEditable: false
+inputSize: 50
+menuIcon: "fa fa-circle-o"

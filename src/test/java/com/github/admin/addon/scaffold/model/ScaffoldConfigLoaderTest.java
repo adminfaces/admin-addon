@@ -23,10 +23,12 @@
  */
 package com.github.admin.addon.scaffold.model;
 
+import com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum;
 import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.*;
 import com.github.adminfaces.addon.scaffold.model.EntityConfig;
+import com.github.adminfaces.addon.scaffold.model.GlobalConfig;
 import static org.mockito.Mockito.*;
-import com.github.adminfaces.addon.scaffold.model.EntityConfigLoader;
+import com.github.adminfaces.addon.scaffold.model.ScaffoldConfigLoader;
 import java.io.InputStream;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.jboss.forge.addon.projects.Project;
@@ -44,7 +46,26 @@ import org.junit.runners.JUnit4;
  * @author rmpestano
  */
 @RunWith(JUnit4.class)
-public class EntityConfigLoaderTest {
+public class ScaffoldConfigLoaderTest {
+
+    @Test
+    public void shouldLoadGlobalConfig() {
+        Project project = mock(Project.class);
+        ResourcesFacet resourcesFacet = mock(ResourcesFacet.class);
+        DirectoryResource directoryResource = mock(DirectoryResource.class);
+        doReturn(directoryResource).when(resourcesFacet).getResourceDirectory();
+        DirectoryResource scaffoldDir = mock(DirectoryResource.class);
+        doReturn(scaffoldDir).when(directoryResource).getChildDirectory("scaffold");
+        FileResource<?> entityConfigFile = mock(FileResource.class);
+        doReturn(entityConfigFile).when(scaffoldDir).getChild(anyString());
+        InputStream is = ScaffoldConfigLoader.class.getResourceAsStream("/scaffold/global-config.yml");
+        doReturn(is).when(entityConfigFile).getResourceInputStream();
+        doReturn(resourcesFacet).when(project).getFacet(anyObject());
+        GlobalConfig globalConfig = ScaffoldConfigLoader.loadGlobalConfig(project);
+        assertThat(globalConfig).isNotNull();
+        assertThat(globalConfig).extracting("toOneComponentType", "toManyComponentType", "dateComponentType", "datatableEditable","inputSize", "menuIcon")
+            .contains(ComponentTypeEnum.AUTOCOMPLETE,ComponentTypeEnum.CHECKBOXMENU,ComponentTypeEnum.CALENDAR,false,50, "fa fa-circle-o");
+    }
 
     @Test
     public void shouldCreateEntityConfig() {
@@ -59,8 +80,8 @@ public class EntityConfigLoaderTest {
         doReturn(directoryResource).when(resourcesFacet).getResourceDirectory();
         doReturn(scaffoldDir).when(directoryResource).getChildDirectory("scaffold");
         doReturn(resourcesFacet).when(project).getFacet(anyObject());
-        JavaClassSource entity = Roaster.parse(JavaClassSource.class, EntityConfigLoaderTest.class.getResourceAsStream("/com/github/admin/addon/model/Speaker.java"));
-        EntityConfig entityConfig = EntityConfigLoader.createOrLoadEntityConfig(entity, project);
+        JavaClassSource entity = Roaster.parse(JavaClassSource.class, ScaffoldConfigLoaderTest.class.getResourceAsStream("/com/github/admin/addon/model/Speaker.java"));
+        EntityConfig entityConfig = ScaffoldConfigLoader.createOrLoadEntityConfig(entity, project);
         assertEntityConfig(entityConfig);
     }
 
@@ -79,8 +100,8 @@ public class EntityConfigLoaderTest {
         doReturn(directoryResource).when(resourcesFacet).getResourceDirectory();
         doReturn(scaffoldDir).when(directoryResource).getChildDirectory("scaffold");
         doReturn(resourcesFacet).when(project).getFacet(anyObject());
-        JavaClassSource entity = Roaster.parse(JavaClassSource.class, EntityConfigLoaderTest.class.getResourceAsStream("/com/github/admin/addon/model/Speaker.java"));
-        EntityConfig entityConfig = EntityConfigLoader.createOrLoadEntityConfig(entity, project);
+        JavaClassSource entity = Roaster.parse(JavaClassSource.class, ScaffoldConfigLoaderTest.class.getResourceAsStream("/com/github/admin/addon/model/Speaker.java"));
+        EntityConfig entityConfig = ScaffoldConfigLoader.createOrLoadEntityConfig(entity, project);
         assertEntityConfig(entityConfig);
     }
 

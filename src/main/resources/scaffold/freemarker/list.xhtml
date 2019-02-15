@@ -161,6 +161,11 @@
 										   itemValue="${r"#{"}item}"/>
                         </p:selectOneMenu>
                         </#if>
+                         <#elseif entity.isCheckboxMenuType(field)>
+                         TODO
+                         <#elseif entity.isSelectManyMenuType(field)>
+                         TODO
+                         </#if>
                     </#if>
                     </div>
     </#if>
