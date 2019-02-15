@@ -24,12 +24,14 @@ import ${field.getType().getQualifiedName()};
    </#if> 
 </#list>
 
+<#assign service = "${ccEntity}Service">
+
 @Named
 @ViewScoped
 public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> implements Serializable {
 
     @Inject
-    ${entity.getName()}Service ${ccEntity}Service;
+    ${entity.getName()}Service ${service};
 
 <#list toManyFields as field>
     List<${entity.getArrayType(field).getSimpleName()}> ${ccEntity}${field.getName()?cap_first};
@@ -41,14 +43,14 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
 
     @Inject
     public void initService() {
-        setCrudService(${ccEntity}Service);
+        setCrudService(${service});
     }
 
     public void delete() {
         int deletedEntities = 0;
         for (${entity.getName()} selected : selectionList) {
         	deletedEntities++;
-        	${ccEntity}Service.remove(selected);
+        	${service}.remove(selected);
         }
         selectionList.clear();
         addDetailMessage(deletedEntities + " ${ccEntity}(s) deleted successfully!");
@@ -107,11 +109,11 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
 <#list toOneFields as field>
     <#if entity.isAutoCompleteType(field)>
     public List<${field.getType().getSimpleName()}> complete${field.getName()?cap_first}(String query) {
-        return ${ccEntity}Service.get${field.getName()?cap_first}sBy${entity.getAssociationDisplayField(field)?cap_first}(query);
+        return ${service}.get${field.getName()?cap_first}sBy${entity.getAssociationDisplayField(field)?cap_first}(query);
     }
    <#elseif entity.isSelectOneMenuType(field)>
     public List<${field.getType().getSimpleName()}> list${field.getName()?cap_first}s() {
-        return ${ccEntity}Service.list${field.getName()?cap_first}s();
+        return ${service}.list${field.getName()?cap_first}s();
     }
    </#if>
 </#list>
@@ -120,11 +122,11 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
     public void show${field.getName()?cap_first}Detail(${nullablePrimaryKeyType} id) {
         this.show${field.getName()?cap_first}DetailMap.clear();//show details of one row at a time
         this.show${field.getName()?cap_first}DetailMap.put(id,true);
-        ${ccEntity}${field.getName()?cap_first} = ${ccEntity}Service.get${field.getName()?cap_first}ById(id);  
+        ${ccEntity}${field.getName()?cap_first} = ${service}.get${field.getName()?cap_first}ById(id);  
     }
     
     public List<${entity.getArrayType(field).getSimpleName()}> list${field.getName()?cap_first}() {
-        return ${ccEntity}Service.list${field.getName()?cap_first}();            
+        return ${service}.list${field.getName()?cap_first}();            
     } 
 
     public Map<${nullablePrimaryKeyType},Boolean> getShow${field.getName()?cap_first}DetailMap() {

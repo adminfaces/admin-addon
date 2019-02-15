@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core" xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui" xmlns:adm="http://github.com/adminfaces"
+                template="${r"#{"}layoutMB.template}">
+
+    <ui:define name="title">
+        Car form
+    </ui:define>
+<#assign mb = "${ccEntity}FormMB">
+    <ui:define name="body">
+        <f:metadata>
+            <f:viewParam name="id" value="${r"#{"}${mb}.id}" converter="javax.faces.Integer"/>
+            <!-- use view action if you are in a Java EE 7 server: <f:viewAction action="${r"#{"}${mb}.init()}"/>-->
+            <f:event type="preRenderView" listener="${r"#{"}${mb}.init}"/>
+        </f:metadata>
+
+        <adm:breadcrumb title="${r"#{"}empty ${mb}.id ? 'New ${entity.getName()}' : '${entity.getName()} '.concat(${mb}.id)}" link="${ccEntity}/${ccEntity}-form.xhtml?id=${r"#{"}${mb}.id}"/>
+        <h:form id="form" prependId="false">
+            <p:focus rendered="${r"#{"}empty ${mb}.id}"/>
+
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <div id="main-buttons" class="hidden-sm hidden-xs">
+                        <p:commandButton value="Save" action="${r"#{"}${mb}.save}" update="@form"
+                                         icon="fa fa-check" styleClass="btn-primary"/>
+                        <p:spacer width="5" rendered="${r"#{"}${mb}.isNew()}"/>
+                        <p:commandButton value="Clear" action="${r"#{"}${mb}.clear}" process="@this"
+                                         icon="fa fa-refresh" styleClass="btn-success"
+                                         update="@form" rendered="${r"#{"}${mb}.isNew()}" resetValues="true"/>
+                        <p:spacer width="5" rendered="${r"#{"}not ${mb}.isNew()}"/>
+
+                        <p:commandButton value="Delete" action="${r"#{"}${mb}.remove}" process="@this"
+                                         rendered="${r"#{"}not ${mb}.isNew()}" icon="fa fa-trash"
+                                         styleClass="btn-danger">
+                            <f:setPropertyActionListener value="true"
+                                                         target="${r"#{"}facesContext.externalContext.flash.keepMessages}"/>
+                            <p:confirm header="Confirmation" message="Are you sure?" icon="ui-icon-danger"/>
+                        </p:commandButton>
+                        <p:spacer width="5"/>
+                        <p:commandButton value="Back" immediate="true"
+                                         action="${ccEntity}/${ccEntity}-list?faces-redirect=true"
+                                         process="@this"
+                                         icon="fa fa-reply"/>
+                    </div>
+                    <p:splitButton value="Save" action="${r"#{"}${mb}.save}" update="@form"
+                                   icon="fa fa-check"
+                                   styleClass="hidden-md hidden-lg btn-primary">
+                        <p:menuitem value="Reset" action="${r"#{"}${mb}.clear}"
+                                    process="@this" update="@form" rendered="${r"#{"}${mb}.isNew()}"
+                                    resetValues="true" icon="fa fa-refresh"/>
+                        <p:menuitem value="Delete" action="${r"#{"}${mb}.remove}" process="@this"
+                                    rendered="${r"#{"}not ${mb}.isNew()}" icon="fa fa-trash">
+                            <f:setPropertyActionListener value="true"
+                                                         target="${r"#{"}facesContext.externalContext.flash.keepMessages}"/>
+                            <p:confirm header="Confirmation" message="Are you sure?" icon="ui-icon-danger"/>
+                        </p:menuitem>
+                        <p:separator/>
+                        <p:menuitem value="Back" action="${ccEntity}/${ccEntity}-list?faces-redirect=true"
+                                    process="@this" immediate="true"
+                                    icon="fa fa-reply"/>
+                    </p:splitButton>
+
+                    <p:separator/>
+
+                    <div class="ui-g ui-fluid">
+<#list fields as field>
+    <#if !entity.isHidden(field)>
+                        <div class="ui-sm-12 ui-md-2 ui-lg-1">
+                            <p:outputLabel for="${field.getName()}" value="${field.getName()?cap_first}"/>
+                        </div>    
+                        <#if field.hasAnnotation("javax.persistence.Id")>   
+                        <div class="ui-sm-12 ui-md-4 ui-lg-5" >
+                            <p:inputText id="id" value="${r"#{"}${mb}.entity.id}"
+                                         readonly="true" styleClass="form-control" style="width: 100%"/>
+                        </div>
+                        </#if>    
+                        <div class="ui-sm-12 ui-md-4 ui-lg-5" >
+                        <#if entity.isInputTextType(field)>
+                           <p:inputText id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" size="${entity.getSize(field)}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>    
+                        <#elseif entity.isInputNumberType(field)>
+                           <p:inputNumber id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" size="${entity.getSize(field)}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>   
+                        <#elseif entity.isCalendarType(field)>
+                           <p:calendar id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
+                        <#elseif entity.isDatePickerType(field)>
+                           <p:datePicker id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
+                        <#elseif entity.isSpinnerType(field)>
+                           <p:spinner id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
+                        <#elseif entity.isInputSwitchType(field)>
+                           <p:inputSwitch id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
+                        <#elseif entity.isAutoCompleteType(field)>
+                           <p:autoComplete id="${field.getName()}" completeMethod="${r"#{"}${mb}.complete${field.getName()?cap_first}}" minQueryLength="2" dropdown="true" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>
+                                        var="${field.getName()}" itemLabel="${r"#{"}${field.getName()}.${entity.getAssociationDisplayField(field)}}" itemValue="${r"#{"}${field.getName()}}" converter="entityConverter"/> 
+                        <#elseif entity.isSelectOneMenuType(field)>
+                           <p:selectOneMenu id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" converter="entityConverter" 
+                                            <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>>
+                               <f:selectItem itemLabel="${r"#{"}msg['label.empty-select']}" itemValue=""/>
+                               <f:selectItems value="${r"#{"}${mb}.get${field.getName()?cap_first}s}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
+										   itemValue="${r"#{"}item}"/>
+                           </p:selectOneMenu>
+                        <#elseif entity.isCheckboxMenuType(field)>
+                           <p:selectCheckboxMenu id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" label="${field.getName()?cap_first}" 
+                                          multiple="true" filter="true" filterMatchMode="contains" converter="entityConverter" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>>
+                               <f:selectItems value="${r"#{"}${mb}.list${field.getName()?cap_first}}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
+										   itemValue="${r"#{"}item}"/>
+                            </p:selectCheckboxMenu>
+                        <#elseif entity.isSelectManyMenuType(field)>
+                            <p:selectManyMenu id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" converter="entityConverter"
+                                      var="t" filter="true" filterMatchMode="contains" showCheckbox="true" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>>
+                                <f:selectItems value="${r"#{"}${mb}.list${field.getName()?cap_first}}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}" itemValue="#{item}" />
+                                <p:column>
+                                    <h:outputText value="${r"#{"}t.${entity.getAssociationDisplayField(field)}}" />
+                                </p:column>
+                            </p:selectManyMenu>
+                        </#if>
+                            <span class="help-block">
+                                <p:message for="${field.getName()}"/>
+                            </span>
+                        </div>
+    </#if>
+</#list>    
+                </div>
+            </div>
+
+            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" styleClass="box-danger box-solid">
+                <p:commandButton value="Yes" type="button" styleClass="btn-material btn-primary ui-confirmdialog-yes"
+                                 icon="fa fa-check"/>
+                <p:commandButton value="No" type="button" styleClass="btn-material btn-danger ui-confirmdialog-no"
+                                 icon="fa fa-close"/>
+            </p:confirmDialog>
+        </h:form>
+
+
+    </ui:define>
+
+</ui:composition>

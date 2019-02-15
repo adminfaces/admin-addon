@@ -84,13 +84,13 @@ public class ScaffoldEntity implements Serializable {
      * @param associationField a entity field that represents an (JPA) association
      * @return field name to be used as display field
      */
-    public String getAssociationDisplayField(FieldSource<JavaClassSource> field) {
+    public String getAssociationDisplayField(FieldSource<JavaClassSource> associationField) {
         JavaClassSource associationClassSource = null;
         String qualifiedName = null;
-        if (field.getType().isParameterized()) {
-            qualifiedName = field.getType().getTypeArguments().get(0).getQualifiedName();
+        if (associationField.getType().isParameterized()) {
+            qualifiedName = associationField.getType().getTypeArguments().get(0).getQualifiedName();
         } else {
-            qualifiedName = field.getType().getQualifiedName();
+            qualifiedName = associationField.getType().getQualifiedName();
         }
         try {
             String sourceFolder = resolveSourceFolder();

@@ -12,6 +12,7 @@
     <ui:define name="description">
         ${entity.getName()} listing
     </ui:define>
+<#assign mb = "${ccEntity}ListMB">
 
      <ui:define name="body">
         <h:form>
@@ -22,8 +23,8 @@
                                          value="${r"#{"}msg['label.new']}" styleClass="btn-primary"/>
                         <p:spacer width="5"/>
                         <p:commandButton value="${r"#{"}msg['label.delete-selected']}" icon="fa fa-trash" styleClass="btn-danger"
-                                         action="${r"#{"}${ccEntity}ListMB.delete}"
-                                         disabled="${r"#{"}empty ${ccEntity}ListMB.selectionList or ${ccEntity}ListMB.selectionList.size() == 0}"
+                                         action="${r"#{"}${mb}.delete}"
+                                         disabled="${r"#{"}empty ${mb}.selectionList or ${mb}.selectionList.size() == 0}"
                                          process="@this" update="@form">
                             <p:confirm header="Confirmation" message="${r"#{"}msg['label.confirm']}" icon="ui-icon-danger"/>
                         </p:commandButton>
@@ -33,16 +34,16 @@
 
                         <p:spacer width="5"/>
                         <p:commandButton value="${r"#{"}msg['label.clear']}" update="@(.ui-dialog, .ui-datatable)" process="@form"
-                                         action="${r"#{"}${ccEntity}ListMB.clear}"
+                                         action="${r"#{"}${mb}.clear}"
                                          icon="fa fa-refresh"/>
                     </div>
 
                     <p:splitButton value="${r"#{"}msg['label.new']}" action="${ccEntity}-form?faces-redirect=true"
                                    icon="fa fa-plus"
                                    styleClass="hidden-md hidden-lg btn-primary">
-                        <p:menuitem value="${r"#{"}msg['label.delete-selected']}" action="${r"#{"}${ccEntity}ListMB.delete}"
+                        <p:menuitem value="${r"#{"}msg['label.delete-selected']}" action="${r"#{"}${mb}.delete}"
                                     process="@this" update="@form"
-                                    disabled="${r"#{"}empty ${ccEntity}ListMB.selectionList or ${ccEntity}ListMB.selectionList.size() == 0}"
+                                    disabled="${r"#{"}empty ${mb}.selectionList or ${mb}.selectionList.size() == 0}"
                                     icon="fa fa-trash">
                             <p:confirm header="${r"#{"}msg['label.confirm']}" message="Are you sure?" icon="ui-icon-danger"/>
                         </p:menuitem>
@@ -51,15 +52,15 @@
                                     icon="fa fa-search"/>
 
                         <p:menuitem value="${r"#{"}msg['label.clear']}" update="@(.ui-dialog, .ui-datatable)" process="@form"
-                                    action="${r"#{"}${ccEntity}ListMB.clear}"
+                                    action="${r"#{"}${mb}.clear}"
                                     icon="fa fa-refresh"/>
                     </p:splitButton>
 
                     <p:separator/>
-                    <p:dataTable widgetVar="${ccEntity}sTable" var="row" value="${r"#{"}${ccEntity}ListMB.list}" rows="10"
+                    <p:dataTable widgetVar="${ccEntity}sTable" var="row" value="${r"#{"}${mb}.list}" rows="10"
                                  rowKey="${r"#{"}row.id}" lazy="true" paginator="true" sortBy="${r"#{"}row.id}"
-                                 filteredValue="${r"#{"}${ccEntity}ListMB.filteredValue}" styleClass="no-border"
-                                 paginatorPosition="bottom" selection="${r"#{"}${ccEntity}ListMB.selectionList}"
+                                 filteredValue="${r"#{"}${mb}.filteredValue}" styleClass="no-border"
+                                 paginatorPosition="bottom" selection="${r"#{"}${mb}.selectionList}"
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} {JumpToPageDropdown}"
                                  currentPageReportTemplate="[ {startRecord} to {endRecord} of {totalRecords} ]"
                                  rowsPerPageTemplate="5,10,15,20,30">
@@ -83,13 +84,13 @@
 			   <#elseif entity.hasToOneAssociation(field)>
 			       ${r"#{"}row.${entity.getAssociationDisplayField(field)}}   
                <#elseif entity.hasToManyAssociation(field)>   
-                            <h:panelGroup rendered="${r"#{"}not ${ccEntity}ListMB.show${field.getName()?cap_first}DetailMap[row.id]}" style="text-align: center">
-                                <p:commandLink action="${r"#{"}${ccEntity}ListMB.show${field.getName()?cap_first}Detail(row.id)}" process="@this"
+                            <h:panelGroup rendered="${r"#{"}not ${mb}.show${field.getName()?cap_first}DetailMap[row.id]}" style="text-align: center">
+                                <p:commandLink action="${r"#{"}${mb}.show${field.getName()?cap_first}Detail(row.id)}" process="@this"
                                            update="@(.ui-datatable)" styleClass="fa fa-search-plus"
                                            style="font-size: 20px"/>
                             </h:panelGroup>
-                            <p:dataList rendered="${r"#{"}${ccEntity}ListMB.show${field.getName()?cap_first}DetailMap[row.id]}"
-                                    value="${r"#{"}${ccEntity}ListMB.${ccEntity}${field.getName()?cap_first}}" var="d">
+                            <p:dataList rendered="${r"#{"}${mb}.show${field.getName()?cap_first}DetailMap[row.id]}"
+                                    value="${r"#{"}${mb}.${ccEntity}${field.getName()?cap_first}}" var="d">
                                 <p:link value="${r"#{"}d.${entity.getAssociationDisplayField(field)}}" outcome="${entity.getArrayType(field).getSimpleName()?lower_case}/${entity.getArrayType(field).getSimpleName()?lower_case}-form.xhtml">
                                     <f:param name="id" value="${r"#{"}d.id}"></f:param>
                                 </p:link>                 
@@ -124,7 +125,7 @@
                 <p:commandButton value="${r"#{"}msg['label.ok']}" update="@form @(.ui-datatable, .ui-tooltip)" icon="fa fa-check"
                                  ignoreAutoUpdate="true" styleClass="btn-primary"/>
                 <p:spacer height="5"/>
-                <p:commandButton value="${r"#{"}msg['label.clear']}" action="${r"#{"}${ccEntity}ListMB.clear}" process="@this"
+                <p:commandButton value="${r"#{"}msg['label.clear']}" action="${r"#{"}${mb}.clear}" process="@this"
                                  update="@form @(.ui-datatable, .ui-tooltip)" styleClass="btn-success"
                                  icon="fa fa-refresh"/>
                 <p:spacer height="5"/>
@@ -138,44 +139,42 @@
                         <p:outputLabel for="${field.getName()}" value="${field.getName()?cap_first}"/>
 					</div>
 					<div class="ui-g-12">
-                    <#if !entity.isHidden(field)>    
                         <#if entity.isInputTextType(field)>
-                        <p:inputText id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}"/>    
+                        <p:inputText id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}"/>    
                         <#elseif entity.isInputNumberType(field)>
-                        <p:inputNumber id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}"/>   
+                        <p:inputNumber id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}"/>   
                         <#elseif entity.isCalendarType(field)>
-                        <p:calendar id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}"/>
+                        <p:calendar id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}"/>
                         <#elseif entity.isDatePickerType(field)>
-                        <p:datePicker id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}"/>
+                        <p:datePicker id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}"/>
                         <#elseif entity.isSpinnerType(field)>
-                        <p:spinner id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}"/>
+                        <p:spinner id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}"/>
                         <#elseif entity.isInputSwitchType(field)>
-                        <p:inputSwitch id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}"/>
+                        <p:inputSwitch id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}"/>
                         <#elseif entity.isAutoCompleteType(field)>
-                        <p:autoComplete id="${field.getName()}" completeMethod="${r"#{"}${ccEntity}ListMB.complete${field.getName()?cap_first}}" minQueryLength="2" dropdown="true"
+                        <p:autoComplete id="${field.getName()}" completeMethod="${r"#{"}${mb}.complete${field.getName()?cap_first}}" minQueryLength="2" dropdown="true"
                                         var="${field.getName()}" itemLabel="${r"#{"}${field.getName()}.${entity.getAssociationDisplayField(field)}}" itemValue="${r"#{"}${field.getName()}}" converter="entityConverter"/> 
                         <#elseif entity.isSelectOneMenuType(field)>
-                        <p:selectOneMenu id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}" converter="entityConverter">
+                        <p:selectOneMenu id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}" converter="entityConverter">
                             <f:selectItem itemLabel="${r"#{"}msg['label.empty-select']}" itemValue=""/>
-                            <f:selectItems value="${r"#{"}${ccEntity}ListMB.get${field.getName()?cap_first}s}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
+                            <f:selectItems value="${r"#{"}${mb}.get${field.getName()?cap_first}s}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
 										   itemValue="${r"#{"}item}"/>
                         </p:selectOneMenu>
                         <#elseif entity.isCheckboxMenuType(field)>
-                        <p:selectCheckboxMenu id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}" label="${field.getName()?cap_first}" 
+                        <p:selectCheckboxMenu id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}" label="${field.getName()?cap_first}" 
                                           multiple="true" filter="true" filterMatchMode="contains" converter="entityConverter">
-                             <f:selectItems value="${r"#{"}${ccEntity}ListMB.list${field.getName()?cap_first}}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
+                             <f:selectItems value="${r"#{"}${mb}.list${field.getName()?cap_first}}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
 										   itemValue="${r"#{"}item}"/>
                         </p:selectCheckboxMenu>
                         <#elseif entity.isSelectManyMenuType(field)>
-                        <p:selectManyMenu id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}" converter="entityConverter"
+                        <p:selectManyMenu id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}" converter="entityConverter"
                                       var="t" filter="true" filterMatchMode="contains" showCheckbox="true">
-                            <f:selectItems value="${r"#{"}${ccEntity}ListMB.list${field.getName()?cap_first}}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}" itemValue="#{item}" />
+                            <f:selectItems value="${r"#{"}${mb}.list${field.getName()?cap_first}}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}" itemValue="#{item}" />
                             <p:column>
                                 <h:outputText value="${r"#{"}t.${entity.getAssociationDisplayField(field)}}" />
                             </p:column>
                         </p:selectManyMenu>
                         </#if>
-                    </#if>
                     </div>
     </#if>
 </#list>
@@ -188,7 +187,7 @@
             <p:autoUpdate/>
             <p:tooltip for="@(div[id$=footer])" escape="false" position="top"
                        showEvent="mouseover" hideEvent="mouseleave"
-                       value="${r"#{"}${ccEntity}ListMB.searchCriteria}"/>
+                       value="${r"#{"}${mb}.searchCriteria}"/>
         </p:outputPanel>
 
     </ui:define>

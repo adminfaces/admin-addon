@@ -4,22 +4,40 @@
  */
 package com.github.adminfaces.starter.bean;
 
-import com.github.adminfaces.persistence.bean.BeanService;
 import com.github.adminfaces.persistence.bean.CrudMB;
 import ${entity.getQualifiedName()};
 import ${service.getQualifiedName()};
 import org.omnifaces.cdi.ViewScoped;
 import org.omnifaces.util.Faces;
-
 import javax.inject.Named;
+import javax.inject.Inject;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.logging.Level;
+import static com.github.adminfaces.persistence.util.Messages.addDetailMessage;
+import static com.github.adminfaces.persistence.util.Messages.getMessage;
 
+import java.util.*;
+<#list fields as field>
+   <#if entity.hasToManyAssociation(field)>
+import ${entity.getArrayType(field).getQualifiedName()};   
+   <#elseif entity.hasToOneAssociation(field)>
+import ${field.getType().getQualifiedName()};      
+   </#if> 
+</#list>
+
+<#assign service = "${ccEntity}Service">
 @Named
 @ViewScoped
-@BeanService(${service.getName()}.class)//use annotation instead of setter
 public class ${entity.getName()}FormMB extends CrudMB<${entity.getName()}> implements Serializable {
+
+    @Inject
+    ${entity.getName()}Service ${service};
+
+    @Inject
+    public void initService() {
+        setCrudService(${service});
+    }
 
     public void afterRemove() {
         try {
@@ -34,13 +52,31 @@ public class ${entity.getName()}FormMB extends CrudMB<${entity.getName()}> imple
 
     @Override
     public void afterInsert() {
-        addDetailMsg("${entity.getName()} " + entity.getId() + " created successfully");
+        addDetailMessage("${entity.getName()} " + entity.getId() + " created successfully");
     }
 
     @Override
     public void afterUpdate() {
-        addDetailMsg("${entity.getName()} " + entity.getId() + " updated successfully");
+        addDetailMessage("${entity.getName()} " + entity.getId() + " updated successfully");
     }
+
+<#list toOneFields as field>
+    <#if entity.isAutoCompleteType(field)>
+    public List<${field.getType().getSimpleName()}> complete${field.getName()?cap_first}(String query) {
+        return ${service}.get${field.getName()?cap_first}sBy${entity.getAssociationDisplayField(field)?cap_first}(query);
+    }
+   <#elseif entity.isSelectOneMenuType(field)>
+    public List<${field.getType().getSimpleName()}> list${field.getName()?cap_first}s() {
+        return ${service}.list${field.getName()?cap_first}s();
+    }
+   </#if>
+</#list>
+
+<#list toManyFields as field>
+    public List<${entity.getArrayType(field).getSimpleName()}> list${field.getName()?cap_first}() {
+        return ${service}.list${field.getName()?cap_first}();            
+    } 
+</#list>
     
 
 }

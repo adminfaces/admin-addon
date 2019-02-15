@@ -60,7 +60,5 @@ public class EntityConfig {
     public Map<FieldSource<JavaClassSource>, String> getAssociationDisplayFieldMap() {
         return associationDisplayFieldMap;
     }
-    
-    
 
 }

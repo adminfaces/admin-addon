@@ -313,6 +313,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
                     addLeftMenuEntry(project, scaffoldEntity, generatedResources);
                     addToptMenuEntry(project, scaffoldEntity, generatedResources);
                     generateListPage(context, web, generatedResources);
+                    generateFormPage(context, web, generatedResources);
                 } catch (Exception e) {
                     LOG.log(Level.SEVERE, "Problems during AdminFaces scaffold execution.", e);
                     throw new RuntimeException(e);
@@ -421,6 +422,25 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
                 parser.parseInput(listPage, "UTF-8").outputSettings(outputSettings).toString()));
         }
     }
+    
+    /**
+     * Generates entity form page
+     *
+     * @param context generation context containing entity
+     * @param web Forge web facet used to access web resources
+     * @param generatedResources
+     */
+    private void generateFormPage(Map<Object, Object> context, WebResourcesFacet web,
+        List<Resource<?>> generatedResources) {
+        String listPage = FreemarkerTemplateProcessor.processTemplate(context, templates.getFormPageTemplate());
+        ScaffoldEntity entity = (ScaffoldEntity) context.get("entity");
+        String entityName = entity.getName().toLowerCase();
+        FileResource<?> formPageFile = web.getWebResource("/" + entityName + "/" + entityName + "-form.xhtml");
+        if (!formPageFile.exists()) {
+            generatedResources.add(createOrOverwrite(formPageFile,
+                parser.parseInput(listPage, "UTF-8").outputSettings(outputSettings).toString()));
+        }
+    }
 
     void addLeftMenuEntry(Project project, ScaffoldEntity entity, List<Resource<?>> generatedResources) {
         WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
@@ -512,14 +532,6 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
     @Override
     public AccessStrategy getAccessStrategy() {
         return null;
-    }
-
-    protected HashMap<Object, Object> getTemplateContext(String targetDir, final Resource<?> template) {
-        HashMap<Object, Object> context = new HashMap<>();
-        context.put("template", template);
-        context.put("templatePath", Constants.WebResources.PAGE_TEMPLATE);
-        context.put("targetDir", targetDir);
-        return context;
     }
 
     /**
