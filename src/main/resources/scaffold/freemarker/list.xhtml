@@ -157,10 +157,9 @@
                         <#elseif entity.isSelectOneMenuType(field)>
                         <p:selectOneMenu id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}">
                             <f:selectItem itemLabel="${r"#{"}msg['label.empty-select']}" itemValue=""/>
-                            <f:selectItems value="${r"#{"}models}" var="item" itemLabel="${r"#{"}item}"
+                            <f:selectItems value="${r"#{"}${ccEntity}ListMB.get${field.getName()?cap_first}s}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}" converter="entityConverter"
 										   itemValue="${r"#{"}item}"/>
                         </p:selectOneMenu>
-                        </#if>
                          <#elseif entity.isCheckboxMenuType(field)>
                          TODO
                          <#elseif entity.isSelectManyMenuType(field)>

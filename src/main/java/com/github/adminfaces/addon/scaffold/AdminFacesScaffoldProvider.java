@@ -212,13 +212,13 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
     private void createScaffoldConfig(Project project) {
         DirectoryResource resources = project.getFacet(ResourcesFacet.class).getResourceDirectory();
         DirectoryResource scaffoldDir = resources.getOrCreateChildDirectory("scaffold");
-        if (!scaffoldDir.getChild("global-config.yaml").exists()) {
+        if (!scaffoldDir.getChild("global-config.yml").exists()) {
             try (InputStream is = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("/scaffold/global-config.yaml")) {
+                .getResourceAsStream("/scaffold/global-config.yml")) {
                 IOUtils.copy(is,
-                    new FileOutputStream(new File(scaffoldDir.getFullyQualifiedName() + "/global-config.yaml")));
+                    new FileOutputStream(new File(scaffoldDir.getFullyQualifiedName() + "/global-config.yml")));
             } catch (IOException e) {
-                LOG.log(Level.SEVERE, "Could not create 'global-config.yaml'.", e);
+                LOG.log(Level.SEVERE, "Could not create 'global-config.yml'.", e);
             }
         }
 

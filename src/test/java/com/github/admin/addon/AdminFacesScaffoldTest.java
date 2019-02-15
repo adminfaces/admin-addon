@@ -104,6 +104,10 @@ public class AdminFacesScaffoldTest {
         shellTest.execute("jpa-new-field --named speaker --type com.github.admin.addon.model.Speaker --relationship-type Many-to-One", 10, TimeUnit.SECONDS); 
         
         Result result = shellTest.execute("scaffold-setup --provider AdminFaces", 10, TimeUnit.MINUTES);
+        
+        if (result instanceof Failed) {
+            ((Failed) result).getException().printStackTrace();
+        }
         assertThat(result).isInstanceOf(CompositeResult.class).extracting("message")
             .contains("***SUCCESS*** Scaffold was setup successfully.");
 
