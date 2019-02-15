@@ -166,7 +166,7 @@ public class AdminFacesScaffoldTest {
         JavaClassSource listMBSource = Roaster.parse(JavaClassSource.class, new File(listMB.getFullyQualifiedName()));
         assertThat(listMBSource.hasSyntaxErrors()).isFalse();
         assertThat(listMBSource.hasMethodSignature("showTalksDetail", Long.class)).isTrue();
-        assertThat(listMBSource.hasMethodSignature("getSpeakerTalks")).isTrue();
+        assertThat(listMBSource.hasMethodSignature("listTalks")).isTrue();
         assertThat(listMBSource.hasMethodSignature("getShowTalksDetailMap")).isTrue();
         
         repository = src

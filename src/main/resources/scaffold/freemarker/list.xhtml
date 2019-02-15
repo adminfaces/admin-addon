@@ -155,16 +155,26 @@
                         <p:autoComplete id="${field.getName()}" completeMethod="${r"#{"}${ccEntity}ListMB.complete${field.getName()?cap_first}}" minQueryLength="2" dropdown="true"
                                         var="${field.getName()}" itemLabel="${r"#{"}${field.getName()}.${entity.getAssociationDisplayField(field)}}" itemValue="${r"#{"}${field.getName()}}" converter="entityConverter"/> 
                         <#elseif entity.isSelectOneMenuType(field)>
-                        <p:selectOneMenu id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}">
+                        <p:selectOneMenu id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}" converter="entityConverter">
                             <f:selectItem itemLabel="${r"#{"}msg['label.empty-select']}" itemValue=""/>
-                            <f:selectItems value="${r"#{"}${ccEntity}ListMB.get${field.getName()?cap_first}s}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}" converter="entityConverter"
+                            <f:selectItems value="${r"#{"}${ccEntity}ListMB.get${field.getName()?cap_first}s}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
 										   itemValue="${r"#{"}item}"/>
                         </p:selectOneMenu>
-                         <#elseif entity.isCheckboxMenuType(field)>
-                         TODO
-                         <#elseif entity.isSelectManyMenuType(field)>
-                         TODO
-                         </#if>
+                        <#elseif entity.isCheckboxMenuType(field)>
+                        <p:selectCheckboxMenu id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}" label="${field.getName()?cap_first}" 
+                                          multiple="true" filter="true" filterMatchMode="contains" converter="entityConverter">
+                             <f:selectItems value="${r"#{"}${ccEntity}ListMB.list${field.getName()?cap_first}}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
+										   itemValue="${r"#{"}item}"/>
+                        </p:selectCheckboxMenu>
+                        <#elseif entity.isSelectManyMenuType(field)>
+                        <p:selectManyMenu id="${field.getName()}" value="${r"#{"}${ccEntity}ListMB.filter.entity.${field.getName()}}" converter="entityConverter"
+                                      var="t" filter="true" filterMatchMode="contains" showCheckbox="true">
+                            <f:selectItems value="${r"#{"}${ccEntity}ListMB.list${field.getName()?cap_first}}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}" itemValue="#{item}" />
+                            <p:column>
+                                <h:outputText value="${r"#{"}t.${entity.getAssociationDisplayField(field)}}" />
+                            </p:column>
+                        </p:selectManyMenu>
+                        </#if>
                     </#if>
                     </div>
     </#if>

@@ -107,11 +107,11 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
 <#list toOneFields as field>
     <#if entity.isAutoCompleteType(field)>
     public List<${field.getType().getSimpleName()}> complete${field.getName()?cap_first}(String query) {
-        return ${ccEntity}Service.get${field.getName()?cap_first}sBy${entity.getAssociationDisplayField(field)?cap_first}();
+        return ${ccEntity}Service.get${field.getName()?cap_first}sBy${entity.getAssociationDisplayField(field)?cap_first}(query);
     }
    <#elseif entity.isSelectOneMenuType(field)>
-    public List<${field.getType().getSimpleName()}> get${field.getName()?cap_first}s() {
-        return ${ccEntity}Service.get${field.getName()?cap_first}s();
+    public List<${field.getType().getSimpleName()}> list${field.getName()?cap_first}s() {
+        return ${ccEntity}Service.list${field.getName()?cap_first}s();
     }
    </#if>
 </#list>
@@ -123,8 +123,8 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
         ${ccEntity}${field.getName()?cap_first} = ${ccEntity}Service.get${field.getName()?cap_first}ById(id);  
     }
     
-    public List<${entity.getArrayType(field).getSimpleName()}> get${entity.getName()}${field.getName()?cap_first}() {
-        return ${ccEntity}${field.getName()?cap_first};             
+    public List<${entity.getArrayType(field).getSimpleName()}> list${field.getName()?cap_first}() {
+        return ${ccEntity}Service.list${field.getName()?cap_first}();            
     } 
 
     public Map<${nullablePrimaryKeyType},Boolean> getShow${field.getName()?cap_first}DetailMap() {

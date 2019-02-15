@@ -135,7 +135,7 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
                .getResultList();
     }
     <#elseif entity.isSelectOneMenuType(field)>
-    public List<${field.getType().getSimpleName()}> get${field.getName()?cap_first}s() {
+    public List<${field.getType().getSimpleName()}> list${field.getName()?cap_first}s() {
         return criteria(${field.getType().getSimpleName()}.class)  
                 .getResultList();      
     }
@@ -147,6 +147,11 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
          return getEntityManager().createNamedQuery("select r from ${entity.getArrayType(field).getSimpleName()} where r.${ccEntity}.id =:id",${entity.getArrayType(field).getSimpleName()}.class)
                 .setParameter("id",${ccEntity}id)
                 .getResultList(); 
+    }
+
+    public List<${entity.getArrayType(field).getSimpleName()}> list${field.getName()?cap_first}() {
+          return criteria(${entity.getArrayType(field).getSimpleName()}.class)  
+                 .getResultList();      
     }
     </#if>
 </#list>
