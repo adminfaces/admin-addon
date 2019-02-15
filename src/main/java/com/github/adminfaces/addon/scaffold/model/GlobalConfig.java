@@ -84,8 +84,4 @@ public class GlobalConfig {
     public void setMenuIcon(String menuIcon) {
         this.menuIcon = menuIcon;
     }
-    
-    
-    
-    
 }

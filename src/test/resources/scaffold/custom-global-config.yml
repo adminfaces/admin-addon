@@ -1,0 +1,7 @@
+!!com.github.adminfaces.addon.scaffold.model.GlobalConfig
+toOneComponentType: SELECT_ONE_MENU
+toManyComponentType: SELECT_MANY_MENU
+dateComponentType: DATEPICKER
+datatableEditable: true
+inputSize: 30
+menuIcon: "fa fa-circle"
