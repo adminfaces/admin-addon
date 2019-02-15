@@ -28,15 +28,20 @@ import com.github.adminfaces.addon.util.AdminScaffoldUtils;
 
 public class ScaffoldConfigLoader {
 
+    private static GlobalConfig globalConfig;
+
     public static GlobalConfig loadGlobalConfig(Project project) {
-        DirectoryResource scaffoldDir = project.getFacet(ResourcesFacet.class).getResourceDirectory()
-            .getChildDirectory("scaffold");
-        FileResource<?> globalConfigFile = (FileResource<?>) scaffoldDir.getChild("global-config.yml");
-        try (InputStream entityConfigStream = globalConfigFile.getResourceInputStream()) {
-            return new Yaml().loadAs(entityConfigStream, GlobalConfig.class);
-        } catch (IOException e) {
-            throw new RuntimeException("Could not load  scaffold config from:" + globalConfigFile.getFullyQualifiedName(), e);
+        if (globalConfig == null) {
+            DirectoryResource scaffoldDir = project.getFacet(ResourcesFacet.class).getResourceDirectory()
+                .getChildDirectory("scaffold");
+            FileResource<?> globalConfigFile = (FileResource<?>) scaffoldDir.getChild("global-config.yml");
+            try (InputStream entityConfigStream = globalConfigFile.getResourceInputStream()) {
+                globalConfig = new Yaml().loadAs(entityConfigStream, GlobalConfig.class);
+            } catch (IOException e) {
+                throw new RuntimeException("Could not load  scaffold config from:" + globalConfigFile.getFullyQualifiedName(), e);
+            }
         }
+        return globalConfig;
     }
 
     public static EntityConfig createOrLoadEntityConfig(JavaClassSource entity, Project project) {
@@ -45,7 +50,7 @@ public class ScaffoldConfigLoader {
         FileResource<?> entityConfigFile = (FileResource<?>) scaffoldDir.getChild(entity.getName() + ".yml");
         EntityConfig entityConfig = null;
         if (!entityConfigFile.exists()) {
-            entityConfig = createEntityConfig(entity, entityConfigFile);
+            entityConfig = createEntityConfig(entity, entityConfigFile, project);
         } else {
             entityConfig = loadEntityConfig(entityConfigFile);
         }
@@ -61,7 +66,8 @@ public class ScaffoldConfigLoader {
         }
     }
 
-    private static EntityConfig createEntityConfig(JavaClassSource entity, FileResource<?> entityConfigFile) {
+    private static EntityConfig createEntityConfig(JavaClassSource entity, FileResource<?> entityConfigFile, Project project) {
+        GlobalConfig globalConfig = loadGlobalConfig(project);
         EntityConfig entityConfig = new EntityConfig();
         entity.getFields().stream()
             .filter(f -> f.hasAnnotation(Column.class) || AdminScaffoldUtils.hasAssociation(f)
@@ -70,8 +76,8 @@ public class ScaffoldConfigLoader {
             || f.hasAnnotation(EmbeddedId.class))
             .forEach(f -> {
                 boolean required = AdminScaffoldUtils.resolveRequiredAttribute(f);
-                Integer length = resolveLengthAttribute(f);
-                ComponentTypeEnum type = resolveComponentType(f, length);
+                Integer length = resolveLengthAttribute(f, globalConfig.getInputSize());
+                ComponentTypeEnum type = resolveComponentType(f, length, globalConfig);
                 entityConfig.getFields().add(new FieldConfig(f.getName(), required, false, length, type));
                 if (entityConfig.getDisplayField() == null && type.equals(INPUT_TEXT) && required) { //by default displayField is the first non null inputText field
                     entityConfig.setDisplayField(f.getName());
@@ -80,37 +86,37 @@ public class ScaffoldConfigLoader {
         if (entityConfig.getDisplayField() == null) {
             entityConfig.setDisplayField("");//this means we'll use entity's toString() method to display entity on pages
         }
-        entityConfig.setMenuIcon("fa fa-circle-o");
+        entityConfig.setMenuIcon(globalConfig.getMenuIcon());
         entityConfigFile.setContents(new Yaml().dump(entityConfig));
         return entityConfig;
     }
 
-    private static Integer resolveLengthAttribute(FieldSource<JavaClassSource> field) {
+    private static Integer resolveLengthAttribute(FieldSource<JavaClassSource> field, Integer defaultValue) {
         AnnotationSource<JavaClassSource> columnAnnotation = field.getAnnotation(Column.class);
-        Integer length = 50;
+        Integer length = defaultValue;
         if (columnAnnotation != null && columnAnnotation.getStringValue("length") != null) {
             length = Integer.parseInt(columnAnnotation.getStringValue("length"));
         }
         return length;
     }
 
-    private static ComponentTypeEnum resolveComponentType(FieldSource<JavaClassSource> field, Integer length) {
+    private static ComponentTypeEnum resolveComponentType(FieldSource<JavaClassSource> field, Integer length, GlobalConfig globalConfig) {
         if (field.hasAnnotation(Temporal.class)) {
-            return ComponentTypeEnum.CALENDAR;
+            return globalConfig.getDateComponentType();
         }
         if (AdminScaffoldUtils.hasToManyAssociation(field)) {
-            return ComponentTypeEnum.CHECKBOXMENU;
+            return globalConfig.getToManyComponentType();
         }
 
         if (AdminScaffoldUtils.hasToOneAssociation(field)) {
-            return AUTOCOMPLETE;
+            return globalConfig.getToOneComponentType();
         }
         Type<JavaClassSource> type = field.getType();
         if (type.isType(String.class)) {
             if (field.getName().toLowerCase().contains("password")) {
                 return PASSWORD;
             }
-            if (length > 50) {
+            if (length > globalConfig.getInputSize()) {
                 return TEXT_AREA;
             } else {
                 return INPUT_TEXT;

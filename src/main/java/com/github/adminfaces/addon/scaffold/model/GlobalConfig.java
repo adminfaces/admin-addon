@@ -24,7 +24,8 @@
 package com.github.adminfaces.addon.scaffold.model;
 
 /**
- *
+ * Scaffold addon default behaviour. It can be overriden by EntityConfig. 
+ * In fact global config will be used to create entity config the first time.
  * @author rmpestano
  */
 public class GlobalConfig {
