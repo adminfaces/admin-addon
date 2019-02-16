@@ -488,11 +488,11 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
                 + "                <i class=\"" + entity.getEntityConfig().getMenuIcon() + "\"></i>" + NEW_LINE + "            </a>" + NEW_LINE + ""
                 + NEW_LINE + "" + NEW_LINE + "            <ul class=\"dropdown-menu\" role=\"menu\">" + NEW_LINE
                 + "                <li>" + NEW_LINE + "                    <p:link outcome=\"" + listPage + "\">"
-                + NEW_LINE + "                        <span>List</span>" + NEW_LINE
+                + NEW_LINE + "                        <span>List " + entityName.toLowerCase() + "s</span>" + NEW_LINE
                 + "                        <i class=\"fa fa-th-list\"></i>" + NEW_LINE
                 + "                    </p:link>" + NEW_LINE + "                </li>" + NEW_LINE
                 + "                <li>" + NEW_LINE + "                    <p:link outcome=\"" + formPage + "\">"
-                + NEW_LINE + "                        <span>New</span>" + NEW_LINE
+                + NEW_LINE + "                        <span>New " + entityName.toLowerCase()  + "</span>" + NEW_LINE
                 + "                        <i class=\"fa fa-plus-circle\"></i>" + NEW_LINE
                 + "                    </p:link>" + NEW_LINE + "                </li>" + NEW_LINE + "" + NEW_LINE
                 + "" + NEW_LINE + "            </ul>" + NEW_LINE + "" + NEW_LINE + "        </li>");
