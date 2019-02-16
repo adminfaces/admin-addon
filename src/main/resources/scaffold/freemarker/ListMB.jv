@@ -129,6 +129,14 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
         return ${service}.list${field.getName()?cap_first}();            
     } 
 
+    public List<${entity.getArrayType(field).getSimpleName()}> get${ccEntity}${field.getName()?cap_first}() {
+        return ${ccEntity}${field.getName()?cap_first};
+    }
+
+    public void set${ccEntity}${field.getName()?cap_first}(List<${entity.getArrayType(field).getSimpleName()}> ${ccEntity}${field.getName()?cap_first}) {
+        this.${ccEntity}${field.getName()?cap_first} = ${ccEntity?lower_case}${field.getName()?cap_first};
+    }
+
     public Map<${nullablePrimaryKeyType},Boolean> getShow${field.getName()?cap_first}DetailMap() {
         return show${field.getName()?cap_first}DetailMap;
     }
