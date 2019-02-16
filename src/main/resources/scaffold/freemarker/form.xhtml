@@ -113,7 +113,7 @@
                             </p:selectManyMenu>
                         </#if>
                             <span class="help-block">
-                                <#if isTextAreaType(field)>   
+                                <#if entity.isTextAreaType(field)>   
                                 <h:outputText id="display" />
                                 </#if>
                                 <p:message for="${field.getName()}"/>
