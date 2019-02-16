@@ -90,7 +90,7 @@
                                            style="font-size: 20px"/>
                             </h:panelGroup>
                             <p:dataList rendered="${r"#{"}${mb}.show${field.getName()?cap_first}DetailMap[row.id]}"
-                                    value="${r"#{"}${mb}.${ccEntity}${field.getName()?cap_first}}" var="d">
+                                    value="${r"#{"}${mb}.${ccEntity}${field.getName()?cap_first}}()" var="d">
                                 <p:link value="${r"#{"}d.${entity.getAssociationDisplayField(field)}}" outcome="/${entity.getArrayType(field).getSimpleName()?lower_case}/${entity.getArrayType(field).getSimpleName()?lower_case}-form.xhtml">
                                     <f:param name="id" value="${r"#{"}d.id}"></f:param>
                                 </p:link>                 
@@ -152,7 +152,7 @@
                         <#elseif entity.isInputSwitchType(field)>
                         <p:inputSwitch id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}"/>
                         <#elseif entity.isAutoCompleteType(field)>
-                        <p:autoComplete id="${field.getName()}" completeMethod="${r"#{"}${mb}.complete${field.getName()?cap_first}}" minQueryLength="2" dropdown="true"
+                        <p:autoComplete id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}" completeMethod="${r"#{"}${mb}.complete${field.getName()?cap_first}}" minQueryLength="2" dropdown="true"
                                         var="${field.getName()}" itemLabel="${r"#{"}${field.getName()}.${entity.getAssociationDisplayField(field)}}" itemValue="${r"#{"}${field.getName()}}" converter="entityConverter"/> 
                         <#elseif entity.isSelectOneMenuType(field)>
                         <p:selectOneMenu id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}" converter="entityConverter">
