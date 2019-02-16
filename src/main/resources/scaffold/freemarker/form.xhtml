@@ -80,15 +80,15 @@
                         <#elseif entity.isInputNumberType(field)>
                            <p:inputNumber id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" maxlength="${entity.getSize(field)?replace(",", "")}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>   
                         <#elseif entity.isCalendarType(field)>
-                           <p:calendar id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
+                           <p:calendar id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" showOn="both" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
                         <#elseif entity.isDatePickerType(field)>
-                           <p:datePicker id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
+                           <p:datePicker id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" showOn="both" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
                         <#elseif entity.isSpinnerType(field)>
                            <p:spinner id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
                         <#elseif entity.isInputSwitchType(field)>
                            <p:inputSwitch id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
                         <#elseif entity.isAutoCompleteType(field)>
-                           <p:autoComplete id="${field.getName()}" completeMethod="${r"#{"}${mb}.complete${field.getName()?cap_first}}" minQueryLength="2" dropdown="true" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>
+                           <p:autoComplete id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" completeMethod="${r"#{"}${mb}.complete${field.getName()?cap_first}}" minQueryLength="2" dropdown="true" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>
                                         var="${field.getName()}" itemLabel="${r"#{"}${field.getName()}.${entity.getAssociationDisplayField(field)}}" itemValue="${r"#{"}${field.getName()}}" converter="entityConverter"/> 
                         <#elseif entity.isSelectOneMenuType(field)>
                            <p:selectOneMenu id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" converter="entityConverter" 
