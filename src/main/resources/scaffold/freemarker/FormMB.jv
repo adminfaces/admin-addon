@@ -33,6 +33,9 @@ public class ${entity.getName()}FormMB extends CrudMB<${entity.getName()}> imple
 
     @Inject
     ${entity.getName()}Service ${service};
+<#list toManyFields as field>
+    List<${entity.getArrayType(field).getSimpleName()}> ${field.getName()};
+</#list>
 
     @Inject
     public void initService() {
@@ -42,7 +45,7 @@ public class ${entity.getName()}FormMB extends CrudMB<${entity.getName()}> imple
     public void afterRemove() {
         try {
             addDetailMsg("${entity.getName()} " + entity.${entity.getDisplayField()} + " removed successfully");
-            Faces.redirect("${ccEntity}-list.xhtml");
+            Faces.redirect("/${ccEntity}/${ccEntity}-list.xhtml");
             clear(); 
             sessionFilter.clear(${entity.getName()}FormMB.class.getName());//removes filter saved in session for this bean.
         } catch (IOException e) {
@@ -73,9 +76,16 @@ public class ${entity.getName()}FormMB extends CrudMB<${entity.getName()}> imple
 </#list>
 
 <#list toManyFields as field>
-    public List<${entity.getArrayType(field).getSimpleName()}> list${field.getName()?cap_first}() {
-        return ${service}.list${field.getName()?cap_first}();            
+    public List<${entity.getArrayType(field).getSimpleName()}> get${field.getName()?cap_first}() {
+        if(${field.getName()} == null) {
+            ${field.getName()} = ${service}.list${field.getName()?cap_first}();
+        }
+        return ${field.getName()};            
     } 
+
+    public void set${field.getName()?cap_first}(List<${entity.getArrayType(field).getSimpleName()}> ${field.getName()}) {
+        this.${field.getName()} = ${field.getName()};
+    }
 </#list>
     
 
