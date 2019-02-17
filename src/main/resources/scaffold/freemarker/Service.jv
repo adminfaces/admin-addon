@@ -24,11 +24,14 @@ import ${field.getType().getQualifiedName()}_;
 
 <#if toManyFields?size != 0>
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.JoinType;
+import javax.persistence.NoResultException;
 </#if>
 
-
+<#if toOneFields?size != 0>
+import javax.persistence.criteria.JoinType;
+</#if>
 import static com.github.adminfaces.template.util.Assert.has;
+
 
  
 @Stateless

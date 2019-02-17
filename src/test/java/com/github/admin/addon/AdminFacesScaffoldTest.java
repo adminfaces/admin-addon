@@ -29,6 +29,7 @@ import java.io.File;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -147,6 +148,8 @@ public class AdminFacesScaffoldTest {
         assertThat(serviceSource.hasSyntaxErrors()).isFalse();
         
         assertThat(serviceSource.hasMethodSignature("getTalksById", Long.class)).isTrue();  
+        
+        assertThat(serviceSource.hasMethodSignature("findById", Serializable.class)).isTrue();  
 
         Resource<?> formMB = src
             .getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
