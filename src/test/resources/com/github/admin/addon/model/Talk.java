@@ -15,6 +15,7 @@ import javax.validation.constraints.Size;
 import com.github.admin.addon.model.Speaker;
 import javax.persistence.ManyToOne;
 import com.github.adminfaces.persistence.model.PersistenceEntity;
+import java.util.Date;
 
 @Entity
 public class Talk implements Serializable, PersistenceEntity {
@@ -42,7 +43,7 @@ public class Talk implements Serializable, PersistenceEntity {
 
 	@Column
 	@Temporal(TemporalType.DATE)
-	private Calendar date;
+	private Date date;
 
 	@ManyToOne
 	private Speaker speaker;
@@ -112,11 +113,11 @@ public class Talk implements Serializable, PersistenceEntity {
 		this.room = room;
 	}
 
-	public Calendar getDate() {
+	public Date getDate() {
 		return date;
 	}
 
-	public void setDate(Calendar date) {
+	public void setDate(Date date) {
 		this.date = date;
 	}
 

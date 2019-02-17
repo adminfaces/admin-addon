@@ -89,7 +89,7 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
         if (has(${field.getName()})) {
 	     <#assign s = "<b>${field.getName()}</b>:">
             <#if entity.hasToOneAssociation(field)>
-            sb.append("${s} ").append(${ccEntity}Filter.get${entity.getAssociationDisplayField(field)?cap_first}()).append(", ");
+            sb.append("${s} ").append(${field.getName()}.get${entity.getAssociationDisplayField(field)?cap_first}()).append(", ");
             <#else>
 	        sb.append("${s} ").append(${ccEntity}Filter.get${field.getName()?cap_first}()).append(", ");
             </#if>
