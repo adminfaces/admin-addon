@@ -50,7 +50,7 @@ public class ${entity.getName()}FormMB extends CrudMB<${entity.getName()}> imple
             clear(); 
             sessionFilter.clear(${entity.getName()}FormMB.class.getName());//removes filter saved in session for this bean.
         } catch (IOException e) {
-           log.log(Level.WARNING, "",e);
+            log.log(Level.WARNING, "",e);
         }
     }
 
@@ -75,7 +75,6 @@ public class ${entity.getName()}FormMB extends CrudMB<${entity.getName()}> imple
     }
    </#if>
 </#list>
-
 <#list toManyFields as field>
     public List<${entity.getArrayType(field).getSimpleName()}> get${field.getName()?cap_first}() {
         if(${field.getName()} == null) {
