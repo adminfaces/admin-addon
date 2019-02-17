@@ -82,7 +82,7 @@
 			   <#elseif !entity.hasAssociation(field)>
 			       ${r"#{"}row.${field.getName()}}
 			   <#elseif entity.hasToOneAssociation(field)>
-			       ${r"#{"}row.${entity.getAssociationDisplayField(field)}}   
+			       ${r"#{"}row.${field.getName()}.${entity.getAssociationDisplayField(field)}}   
                <#elseif entity.hasToManyAssociation(field)>   
                             <h:panelGroup rendered="${r"#{"}not ${mb}.show${field.getName()?cap_first}DetailMap[row.id]}" style="text-align: center">
                                 <p:commandLink action="${r"#{"}${mb}.show${field.getName()?cap_first}Detail(row.id)}" process="@this"
@@ -90,7 +90,7 @@
                                            style="font-size: 20px"/>
                             </h:panelGroup>
                             <p:dataList rendered="${r"#{"}${mb}.show${field.getName()?cap_first}DetailMap[row.id]}"
-                                    value="${r"#{"}${mb}.${ccEntity}${field.getName()?cap_first}}()" var="d">
+                                    value="${r"#{"}${mb}.${ccEntity}${field.getName()?cap_first}}" var="d">
                                 <p:link value="${r"#{"}d.${entity.getAssociationDisplayField(field)}}" outcome="/${entity.getArrayType(field).getSimpleName()?lower_case}/${entity.getArrayType(field).getSimpleName()?lower_case}-form.xhtml">
                                     <f:param name="id" value="${r"#{"}d.id}"></f:param>
                                 </p:link>                 

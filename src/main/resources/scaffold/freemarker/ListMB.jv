@@ -80,9 +80,9 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
                 }
             }
 	<#else>   
-		${field.getType().getSimpleName()} ${field.getName()} = null;
+        ${field.getType().getSimpleName()} ${field.getName()} = null;
         if (filter.hasParam("${field.getName()}")) {
-            ${field.getName()} = (${field.getType().getSimpleName()}) filter.getParam("${field.getName()}");
+            ${field.getName()} = <#if field.getType().getSimpleName() == "Integer">filter.getIntParam("${field.getName()}")<#elseif field.getType().getSimpleName() == "Long">filter.getLongParam("${field.getName()}")<#elseif field.getType().getSimpleName() == "Boolean">filter.getBooleanParam("${field.getName()}")<#elseif field.getType().getSimpleName() == "Double">filter.getDoubleParam("${field.getName()}") <#else>(${field.getType().getSimpleName()})filter.getParam("${field.getName()}")</#if>;
         } else if (has(${ccEntity}Filter.get${field.getName()?cap_first}())) {
             ${field.getName()} = ${ccEntity}Filter.get${field.getName()?cap_first}();
         }
@@ -133,7 +133,7 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
         return ${service}.list${field.getName()?cap_first}();            
     } 
 
-    public List<${entity.getArrayType(field).getSimpleName()}> get${ccEntity}${field.getName()?cap_first}() {
+    public List<${entity.getArrayType(field).getSimpleName()}> get${ccEntity?cap_first}${field.getName()?cap_first}() {
         return ${ccEntity}${field.getName()?cap_first};
     }
 

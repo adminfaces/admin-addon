@@ -225,6 +225,22 @@ public class AdminFacesScaffoldTest {
             .contains("<li id=\"menuSpeaker\" class=\"dropdown\"> <a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">Speakers <span class=\"caret\"></span> <i class=\"fa fa-circle-o\"></i> </a> ");
         
         //TODO assertions on form and list pages
+        
+        FileResource<?> talkListPage = web.getWebResource("/talk/talk-list.xhtml");
+        
+        File talkListPageFile = new File(talkListPage.getFullyQualifiedName());
+        assertThat(talkListPageFile).exists();
+        assertThat(contentOf(talkListPageFile))
+            .contains("<p:column headerText=\"Speaker\" sortBy=\"#{row.speaker}\">")
+            .contains("#{row.speaker.firstname}");
+        
+        FileResource<?> speakerListPage = web.getWebResource("/speaker/speaker-list.xhtml");
+        
+        File speakerListPageFile = new File(speakerListPage.getFullyQualifiedName());
+        assertThat(speakerListPageFile).exists();
+        assertThat(contentOf(speakerListPageFile))
+            .contains("<h:panelGroup rendered=\"#{not speakerListMB.showTalksDetailMap[row.id]}\" style=\"text-align: center\">")
+            .contains("<p:dataList rendered=\"#{speakerListMB.showTalksDetailMap[row.id]}\" value=\"#{speakerListMB.speakerTalks}\" var=\"d\"> ");
     }
 
 }
