@@ -24,6 +24,7 @@ import ${field.getType().getQualifiedName()}_;
 
 <#if toManyFields?size != 0>
 import javax.persistence.TypedQuery;
+import javax.persistence.criteria.JoinType;
 </#if>
 
 
@@ -71,7 +72,7 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
             
 <#list fields as field>
 	<#if !entity.isHidden(field)>
-	    if (has(filterEntity.get${field.getName()?cap_first}())) {
+	        if (has(filterEntity.get${field.getName()?cap_first}())) {
             <#if !entity.hasAssociation(field)>
                  criteria.eq(${entity.getName()}_.${field.getName()}, filterEntity.get${field.getName()?cap_first}());   
             <#elseif entity.hasToManyAssociation(field)>
@@ -80,10 +81,10 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
  	  	    .in(${t}_.id, toListOfIds(filterEntity.get${field.getName()?cap_first}(), new ${nullablePrimaryKeyType}[0])));   
             <#elseif entity.hasToOneAssociation(field)>
                  criteria.join(${entity.getName()}_.${field.getName()},
-                    where(${field.getType().getSimpleName()}.class)
+                    where(${field.getType().getSimpleName()}.class, JoinType.LEFT)
                     .eq(${field.getType().getSimpleName()}_.id, filterEntity.get${field.getName()?cap_first}().getId()));
             </#if>
-	    }  
+	        }  
 	</#if>
 </#list>
         }
@@ -144,7 +145,7 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
 <#list toManyFields as field>
     <#if entity.isCheckboxMenuType(field) || entity.isSelectManyMenuType(field)>
     public List<${entity.getArrayType(field).getSimpleName()}> get${field.getName()?cap_first}ById(${nullablePrimaryKeyType} ${ccEntity}id) {
-         return getEntityManager().createNamedQuery("select r from ${entity.getArrayType(field).getSimpleName()} where r.${ccEntity}.id =:id",${entity.getArrayType(field).getSimpleName()}.class)
+         return getEntityManager().createQuery("select r from ${entity.getArrayType(field).getSimpleName()} r where r.${ccEntity}.id =:id",${entity.getArrayType(field).getSimpleName()}.class)
                 .setParameter("id",${ccEntity}id)
                 .getResultList(); 
     }
@@ -156,4 +157,17 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
     </#if>
 </#list>
 
+<#if toManyFields?size != 0>
+    @Override
+    public ${entity.getName()} findById(Serializable id) {
+        TypedQuery<${entity.getName()}> findById = getEntityManager().createQuery("select s from ${entity.getName()} s <#list toManyFields as field>left join fetch s.${field.getName()}</#list>  where s.id = :id", ${entity.getName()}.class)
+            .setParameter("id", id);
+        try {
+            return findById.getSingleResult();
+        } catch (NoResultException nre) {
+            return null;
+        }
+    }
+</#if>
+ 
 }

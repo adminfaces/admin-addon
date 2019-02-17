@@ -21,7 +21,7 @@ public class Speaker implements Serializable, PersistenceEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "id", updatable = false, nullable = false)
-	private Long id;
+	private Integer id;
 	private static final long serialVersionUID = 1L;
 	@Version
 	@Column(name = "version")
@@ -45,11 +45,11 @@ public class Speaker implements Serializable, PersistenceEntity {
 	@OneToMany
 	private Set<Talk> talks = new HashSet<Talk>();
 
-	public Long getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 

@@ -41,7 +41,7 @@ public class ${entity.getName()}FormMB extends CrudMB<${entity.getName()}> imple
 
     public void afterRemove() {
         try {
-            addDetailMsg("${entity.getName()} " + entity.getId() + " removed successfully");
+            addDetailMsg("${entity.getName()} ${entity.getDisplayField()}" + " removed successfully");
             Faces.redirect("${ccEntity}-list.xhtml");
             clear(); 
             sessionFilter.clear(${entity.getName()}FormMB.class.getName());//removes filter saved in session for this bean.
@@ -52,12 +52,12 @@ public class ${entity.getName()}FormMB extends CrudMB<${entity.getName()}> imple
 
     @Override
     public void afterInsert() {
-        addDetailMessage("${entity.getName()} " + entity.getId() + " created successfully");
+        addDetailMessage("${entity.getName()} ${entity.getDisplayField()}" + " created successfully");
     }
 
     @Override
     public void afterUpdate() {
-        addDetailMessage("${entity.getName()} " + entity.getId() + " updated successfully");
+        addDetailMessage("${entity.getName()} ${entity.getDisplayField()}" + " updated successfully");
     }
 
 <#list toOneFields as field>

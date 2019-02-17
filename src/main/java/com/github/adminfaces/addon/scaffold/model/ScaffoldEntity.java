@@ -75,6 +75,10 @@ public class ScaffoldEntity implements Serializable {
         }
         return entityFields;
     }
+    
+    public String getDisplayField() {
+        return entityConfig.getDisplayField();
+    }
 
     /**
      * retrieves the field name of given association
@@ -120,7 +124,7 @@ public class ScaffoldEntity implements Serializable {
     public boolean hasToManyAssociation(FieldSource<JavaClassSource> field) { //just expose to freemarker
         return AdminScaffoldUtils.hasToManyAssociation(field);
     }
-
+    
     public boolean hasToOneAssociation(FieldSource<JavaClassSource> field) { //just expose to freemarker
         return AdminScaffoldUtils.hasToOneAssociation(field);
     }

@@ -10,7 +10,7 @@
 <#assign mb = "${ccEntity}FormMB">
     <ui:define name="body">
         <f:metadata>
-            <f:viewParam name="id" value="${r"#{"}${mb}.id}" converter="javax.faces.Integer"/>
+            <f:viewParam name="id" value="${r"#{"}${mb}.id}" <#if nullablePrimaryKeyType != "String"> converter="javax.faces.${nullablePrimaryKeyType}" </#if>/>
             <!-- use view action if you are in a Java EE 7 server: <f:viewAction action="${r"#{"}${mb}.init()}"/>-->
             <f:event type="preRenderView" listener="${r"#{"}${mb}.init}"/>
         </f:metadata>
@@ -123,8 +123,7 @@
                                 </span>
                                 
                             </div>
-                            
-                        </div>    
+                        </div>
        <#else>    
                        <div class="ui-sm-12 ui-g-6 ui-g-nopad">
                              <div class="ui-sm-12 ui-g-11">  
@@ -175,18 +174,17 @@
                                 </p:selectManyMenu>
                         </#if>
                                 <span class="help-block">
-                                <#if entity.isTextAreaType(field)>   
+                        <#if entity.isTextAreaType(field)>   
                                     <h:outputText id="display" />
-                                </#if>
+                        </#if>
                                     <p:message for="${field.getName()}"/>
                                 </span>
                             </div>
-                            
-                        </div>
+                       </div>    
        </#if>
-                    </div>
     </#if>
 </#list>    
+                    </div>
                 </div>
             </div>
 
