@@ -55,16 +55,16 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
     <#if !entity.isHidden(field)>
         if (filter.hasParam("${field.getName()}")) {
         <#if !entity.hasAssociation(field)>
-            criteria.eq(${entity.getName()}_.${field.getName()}, (${field.getType().getSimpleName()})filter.getParam("${field.getName()}"));   
-            <#elseif entity.hasToManyAssociation(field)>
+            criteria.eq(${entity.getName()}_.${field.getName()}, <#if field.getType().getSimpleName() == "Integer">filter.getIntParam("${field.getName()}") <#elseif field.getType().getSimpleName() == "Long">filter.getLongParam("${field.getName()}") <#elseif field.getType().getSimpleName() == "Boolean">filter.getBooleanParam("${field.getName()}") <#elseif field.getType().getSimpleName() == "Double">filter.getDoubleParam("${field.getName()}") <#else>(${field.getType().getSimpleName()})filter.getParam("${field.getName()}")</#if>);   
+        <#elseif entity.hasToManyAssociation(field)>
             <#assign t = entity.getArrayType(field).getSimpleName() >
             criteria.join(${entity.getName()}_.${field.getName()}, where(${t}.class)
                 .in(${t}_.id, toListOfIds((${field.getType().getSimpleName()}<${entity.getArrayType(field).getSimpleName()}>) filter.getParam("${field.getName()}"), new ${nullablePrimaryKeyType}[0])));   
-            <#elseif entity.hasToOneAssociation(field)>
+        <#elseif entity.hasToOneAssociation(field)>
             criteria.join(${entity.getName()}_.${field.getName()},
                 where(${field.getType().getSimpleName()}.class)
                .eq(${field.getType().getSimpleName()}_.id, ((${field.getType().getSimpleName()}) filter.getParam("${field.getName()}")).getId()));
-            </#if>
+        </#if>
         }  
 	</#if>
 </#list>

@@ -84,7 +84,7 @@ public class AdminFacesScaffoldTest {
         shellTest.execute("jpa-new-field --named title", 10, TimeUnit.SECONDS);
         shellTest.execute("jpa-new-field --named description --length 2000", 10, TimeUnit.SECONDS);
         shellTest.execute("jpa-new-field --named room", 10, TimeUnit.SECONDS);
-        shellTest.execute("jpa-new-field --named date --type java.util.Calendar --temporal-type DATE", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named date --type java.util.Date --temporal-type DATE", 10, TimeUnit.SECONDS);
        
         shellTest.execute("constraint-add --on-property title --constraint NotNull", 10, TimeUnit.SECONDS);
         shellTest.execute("constraint-add --on-property room --constraint NotNull", 10, TimeUnit.SECONDS);

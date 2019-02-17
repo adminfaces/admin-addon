@@ -33,6 +33,7 @@ public class ${entity.getName()}FormMB extends CrudMB<${entity.getName()}> imple
 
     @Inject
     ${entity.getName()}Service ${service};
+
 <#list toManyFields as field>
     List<${entity.getArrayType(field).getSimpleName()}> ${field.getName()};
 </#list>
