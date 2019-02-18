@@ -122,11 +122,11 @@ public class ScaffoldConfigLoader {
                 return INPUT_TEXT;
             }
         }
-        if (type.isType(Long.class) || type.isType(Integer.class) || type.isType(Double.class) || type.isType(BigDecimal.class)
-            || type.isType("long") || type.isType("int") || type.isType("double")) {
+        if (type.isType(Long.class) || type.isType(Integer.class) || type.isType(Double.class) || type.isType(Short.class) || type.isType(BigDecimal.class)
+            || type.isType("long") || type.isType("int") || type.isType("double") || type.isType("short")) {
             return INPUT_NUMBER;
         }
-        if (type.isType(Boolean.class) || type.isType("double")) {
+        if (type.isType(Boolean.class) || type.isType("boolean")) {
             return INPUT_SWITCH;
         }
         //TODO inspect other fields types

@@ -101,6 +101,22 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
     public void beforeUpdate(${entity.getName()} ${ccEntity}) {
         validate(${ccEntity});
     }
+<#if toManyFields?size != 0>
+
+    @Override
+    public void beforeRemove(${entity.getName()} ${ccEntity}) {
+<#list toManyFields as field>
+        Criteria<${entity.getName()}, ${entity.getName()}> ${entity.getName()?lower_case}${field.getName()?cap_first}Criteria = criteria().
+            join(${entity.getName()}_.${field.getName()}, where(${entity.getArrayType(field)}.class, JoinType.LEFT)
+                .eq(${entity.getArrayType(field)}_.${ccEntity}, ${ccEntity}));
+        
+        if(count(${entity.getName()?lower_case}${field.getName()?cap_first}Criteria) > 0) {
+            throw new BusinessException("Cannot remove "+${ccEntity}.get${entity.getDisplayField()?cap_first} + " because it has ${field.getName()} associated.");
+        }
+</#list>
+
+    }
+</#if>
 
     public void validate(${entity.getName()} ${ccEntity}) {
         BusinessException be = new BusinessException();

@@ -46,7 +46,7 @@ public class ${entity.getName()}FormMB extends CrudMB<${entity.getName()}> imple
     public void afterRemove() {
         try {
             addDetailMsg("${entity.getName()} " + entity.get${entity.getDisplayField()?cap_first}() + " removed successfully");
-            Faces.redirect("/${ccEntity}/${ccEntity}-list.xhtml");
+            Faces.redirect("${ccEntity}/${ccEntity}-list.xhtml");
             clear(); 
             sessionFilter.clear(${entity.getName()}FormMB.class.getName());//removes filter saved in session for this bean.
         } catch (IOException e) {

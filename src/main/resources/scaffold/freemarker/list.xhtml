@@ -76,8 +76,8 @@
     <#if !entity.isHidden(field)>
 			            <p:column headerText="${field.getName()?cap_first}" <#if field.hasAnnotation("javax.persistence.Id")> filterBy="${r"#{"}row.id}" </#if> <#if !entity.hasToManyAssociation(field)>sortBy="${r"#{"}row.${field.getName()}}"</#if>>
 			   <#if field.hasAnnotation("javax.persistence.Id")>
-				            <p:link value="${r"#{"}row.id}" outcome="/${ccEntity}/${ccEntity}-form.xhtml" style="font-weight::bold;text-decoration:underline">
-					            <f:param name="id" value="${r"#{"}row.id}"></f:param>
+				            <p:link value="${r"#{"}row.id}" outcome="/${ccEntity}/${ccEntity}-form.xhtml" style="font-weight:bold;text-decoration:underline">
+					            <f:param name="id" value="#${r"#{"}row.id}"></f:param>
 				            </p:link>
 			   <#elseif !entity.hasAssociation(field)>
 			       ${r"#{"}row.${field.getName()}}
@@ -85,12 +85,11 @@
 			       ${r"#{"}row.${field.getName()}.${entity.getAssociationDisplayField(field)}}   
                <#elseif entity.hasToManyAssociation(field)>   
                             <h:panelGroup rendered="${r"#{"}not ${mb}.show${field.getName()?cap_first}DetailMap[row.id]}" style="text-align: center">
-                                <p:commandLink action="${r"#{"}${mb}.show${field.getName()?cap_first}Detail(row.id)}" process="@this"
-                                           update="@(.ui-datatable)" styleClass="fa fa-search-plus"
-                                           style="font-size: 20px"/>
+                                <p:commandLink value="${r"#{"}msg['label.view']} ${field.getName()}" action="${r"#{"}${mb}.show${field.getName()?cap_first}Detail(row.id)}" process="@this"
+                                           update="@(.ui-datatable)" style="text-decoration:underline"/>
                             </h:panelGroup>
                             <p:dataList rendered="${r"#{"}${mb}.show${field.getName()?cap_first}DetailMap[row.id]}"
-                                    value="${r"#{"}${mb}.${ccEntity}${field.getName()?cap_first}}" var="d">
+                                    value="${r"#{"}${mb}.${ccEntity}${field.getName()?cap_first}}" var="d" styleClass="no-border">
                                 <p:link value="${r"#{"}d.${entity.getAssociationDisplayField(field)}}" outcome="/${entity.getArrayType(field).getSimpleName()?lower_case}/${entity.getArrayType(field).getSimpleName()?lower_case}-form.xhtml">
                                     <f:param name="id" value="${r"#{"}d.id}"></f:param>
                                 </p:link>                 
