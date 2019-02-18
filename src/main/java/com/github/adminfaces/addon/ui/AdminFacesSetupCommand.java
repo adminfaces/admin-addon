@@ -49,7 +49,6 @@ import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaSource;
-import org.jboss.shrinkwrap.descriptor.api.javaee.ParamValueCommonType;
 import org.jboss.shrinkwrap.descriptor.api.javaee7.ParamValueType;
 import org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor;
 import org.jboss.shrinkwrap.descriptor.api.webcommon31.ServletMappingType;
@@ -252,6 +251,9 @@ public class AdminFacesSetupCommand extends AbstractProjectCommand {
 
         createOrOverwrite(web.getWebResource("/resources/images/login-bg.jpg"),
             getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/login-bg.jpg"));
+        
+        createOrOverwrite(web.getWebResource("/resources/images/login-bg-mobile.jpeg"),
+            getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/login-bg-mobile.jpeg"));
 
         createOrOverwrite(web.getWebResource("/resources/css/app.css"),
             getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/css/app.css"));
