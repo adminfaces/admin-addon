@@ -246,7 +246,7 @@ public class AdminFacesScaffoldTest {
         assertThat(speakerListPageFile).exists();
         assertThat(contentOf(speakerListPageFile))
             .contains("<h:panelGroup rendered=\"#{not speakerListMB.showTalksDetailMap[row.id]}\" style=\"text-align: center\">")
-            .contains("<p:dataList rendered=\"#{speakerListMB.showTalksDetailMap[row.id]}\" value=\"#{speakerListMB.speakerTalks}\" var=\"d\"> ");
+            .contains("<p:dataList rendered=\"#{speakerListMB.showTalksDetailMap[row.id]}\" value=\"#{speakerListMB.speakerTalks}\" var=\"d\" styleClass=\"no-border\"> ");
     }
 
 }
