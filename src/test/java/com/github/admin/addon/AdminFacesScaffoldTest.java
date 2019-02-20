@@ -26,6 +26,7 @@ import org.junit.runner.RunWith;
 
 import com.github.adminfaces.addon.util.Constants;
 import java.io.File;
+import java.io.FileOutputStream;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -33,11 +34,13 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.apache.commons.io.IOUtils;
 import org.jboss.forge.addon.projects.facets.WebResourcesFacet;
 import org.jboss.forge.addon.resource.FileResource;
 import static org.assertj.core.api.Assertions.contentOf;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import org.jboss.forge.addon.projects.facets.ResourcesFacet;
+import org.jboss.forge.addon.resource.DirectoryResource;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
@@ -62,8 +65,9 @@ public class AdminFacesScaffoldTest {
     @Deployment
     @AddonDependencies
     public static AddonArchive getDeployment() {
-        return ShrinkWrap.create(AddonArchive.class).addBeansXML().addClass(TestUtil.class).addPackages(true,
-            "org.assertj.core");
+        return ShrinkWrap.create(AddonArchive.class).addBeansXML().addClass(TestUtil.class)
+            .addPackages(true,"org.assertj.core")
+            .addAsResource("scaffold/custom-global-config.yml","custom-global-config.yml");
     }
 
     @Before
@@ -76,46 +80,23 @@ public class AdminFacesScaffoldTest {
         metadataFacet.setProjectName("AdminFaces");
         shellTest.execute("adminfaces-setup", 60, TimeUnit.SECONDS);
         shellTest.clearScreen();
+        JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
+        Resource<?> src = sourceFacet.getSourceDirectory();
+        Resource<?> talk = src
+            .getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
+            .getChild(Constants.Packages.MODEL + "/Talk.java");
+        if(!talk.exists()) {
+            generateEntities(); 
+        }
+        
+        DirectoryResource resourcesDir = project.getFacet(ResourcesFacet.class).getResourceDirectory();
+        if(resourcesDir.getChild("scaffold").exists()) {
+            resourcesDir.getChild("scaffold").delete(true);
+        }
     }
     
     @Test
     public void shouldScaffoldFromEntities() throws Exception {
-        shellTest.execute("jpa-new-entity --named Talk", 10, TimeUnit.SECONDS);
-        shellTest.execute("jpa-new-field --named title", 10, TimeUnit.SECONDS);
-        shellTest.execute("jpa-new-field --named description --length 2000", 10, TimeUnit.SECONDS);
-        shellTest.execute("jpa-new-field --named date --type java.util.Date --temporal-type DATE", 10, TimeUnit.SECONDS);
-       
-        shellTest.execute("constraint-add --on-property title --constraint NotNull", 10, TimeUnit.SECONDS);
-        shellTest.execute("constraint-add --on-property description --constraint Size --max 2000", 10, TimeUnit.SECONDS);
-        shellTest.execute("constraint-add --on-property date --constraint NotNull", 10, TimeUnit.SECONDS);
-
-        
-        shellTest.execute("jpa-new-entity --named Room", 15, TimeUnit.SECONDS);
-        shellTest.execute("jpa-new-field --named name --length 20", 10, TimeUnit.SECONDS);
-        shellTest.execute("jpa-new-field --named capacity --type java.lang.Short", 10, TimeUnit.SECONDS);
-        shellTest.execute("jpa-new-field --named hasWifi --type java.lang.Boolean", 10, TimeUnit.SECONDS);
-        shellTest.execute("jpa-new-field --named talks --type com.github.admin.addon.model.Talk --relationship-type One-to-Many", 10, TimeUnit.SECONDS);
-       
-        shellTest.execute("constraint-add --on-property name --constraint NotNull", 10, TimeUnit.SECONDS);
-        shellTest.execute("constraint-add --on-property capacity --constraint NotNull", 10, TimeUnit.SECONDS);
-
-        shellTest.execute("jpa-new-entity --named Speaker", 15, TimeUnit.SECONDS);
-        shellTest.execute("jpa-new-field --named firstname", 10, TimeUnit.SECONDS);
-        shellTest.execute("jpa-new-field --named surname", 10, TimeUnit.SECONDS);
-        shellTest.execute("jpa-new-field --named bio --length 2000", 10, TimeUnit.SECONDS);
-        shellTest.execute("jpa-new-field --named twitter", 10, TimeUnit.SECONDS);
-        shellTest.execute("jpa-new-field --named talks --type com.github.admin.addon.model.Talk --relationship-type One-to-Many", 10, TimeUnit.SECONDS);
-        
-        shellTest.execute("constraint-add --on-property firstname --constraint NotNull", 10, TimeUnit.SECONDS);
-        shellTest.execute("constraint-add --on-property surname --constraint NotNull", 10, TimeUnit.SECONDS);
-        shellTest.execute("constraint-add --on-property bio --constraint Size --max 2000", 10, TimeUnit.SECONDS);
-        
-        shellTest.execute("cd ../Talk.java",15, TimeUnit.SECONDS);
-        shellTest.execute("jpa-new-field --named speaker --type com.github.admin.addon.model.Speaker --relationship-type Many-to-One", 10, TimeUnit.SECONDS); 
-        shellTest.execute("jpa-new-field --named room --type com.github.admin.addon.model.Room --relationship-type Many-to-One", 10, TimeUnit.SECONDS);
-        shellTest.execute("constraint-add --on-property speaker --constraint NotNull", 10, TimeUnit.SECONDS);
-        shellTest.execute("constraint-add --on-property room --constraint NotNull", 10, TimeUnit.SECONDS);
-
 
         Result result = shellTest.execute("scaffold-setup --provider AdminFaces", 10, TimeUnit.MINUTES);
         
@@ -247,6 +228,53 @@ public class AdminFacesScaffoldTest {
         assertThat(contentOf(speakerListPageFile))
             .contains("<h:panelGroup rendered=\"#{not speakerListMB.showTalksDetailMap[row.id]}\" style=\"text-align: center\">")
             .contains("<p:dataList rendered=\"#{speakerListMB.showTalksDetailMap[row.id]}\" value=\"#{speakerListMB.speakerTalks}\" var=\"d\" styleClass=\"no-border\"> ");
+    }
+    
+    @Test
+    public void shouldScaffoldFromEntitiesUsingCustomConfiguration() throws Exception {
+        DirectoryResource resources = project.getFacet(ResourcesFacet.class).getResourceDirectory();
+        DirectoryResource scaffoldDir = resources.getOrCreateChildDirectory("scaffold");
+        IOUtils.copy(Thread.currentThread().getContextClassLoader().getResourceAsStream("custom-global-config.yml"),
+                    new FileOutputStream(new File(scaffoldDir.getFullyQualifiedName() + "/global-config.yml")));
+        
+    }
+
+    private void generateEntities() throws TimeoutException {
+        shellTest.execute("jpa-new-entity --named Talk", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named title", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named description --length 2000", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named date --type java.util.Date --temporal-type DATE", 10, TimeUnit.SECONDS);
+       
+        shellTest.execute("constraint-add --on-property title --constraint NotNull", 10, TimeUnit.SECONDS);
+        shellTest.execute("constraint-add --on-property description --constraint Size --max 2000", 10, TimeUnit.SECONDS);
+        shellTest.execute("constraint-add --on-property date --constraint NotNull", 10, TimeUnit.SECONDS);
+
+        
+        shellTest.execute("jpa-new-entity --named Room", 15, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named name --length 20", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named capacity --type java.lang.Short", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named hasWifi --type java.lang.Boolean", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named talks --type com.github.admin.addon.model.Talk --relationship-type One-to-Many", 10, TimeUnit.SECONDS);
+       
+        shellTest.execute("constraint-add --on-property name --constraint NotNull", 10, TimeUnit.SECONDS);
+        shellTest.execute("constraint-add --on-property capacity --constraint NotNull", 10, TimeUnit.SECONDS);
+
+        shellTest.execute("jpa-new-entity --named Speaker", 15, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named firstname", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named surname", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named bio --length 2000", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named twitter", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named talks --type com.github.admin.addon.model.Talk --relationship-type One-to-Many", 10, TimeUnit.SECONDS);
+        
+        shellTest.execute("constraint-add --on-property firstname --constraint NotNull", 10, TimeUnit.SECONDS);
+        shellTest.execute("constraint-add --on-property surname --constraint NotNull", 10, TimeUnit.SECONDS);
+        shellTest.execute("constraint-add --on-property bio --constraint Size --max 2000", 10, TimeUnit.SECONDS);
+        
+        shellTest.execute("cd ../Talk.java",15, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named speaker --type com.github.admin.addon.model.Speaker --relationship-type Many-to-One", 10, TimeUnit.SECONDS); 
+        shellTest.execute("jpa-new-field --named room --type com.github.admin.addon.model.Room --relationship-type Many-to-One", 10, TimeUnit.SECONDS);
+        shellTest.execute("constraint-add --on-property speaker --constraint NotNull", 10, TimeUnit.SECONDS);
+        shellTest.execute("constraint-add --on-property room --constraint NotNull", 10, TimeUnit.SECONDS);
     }
 
 }

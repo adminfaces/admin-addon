@@ -109,6 +109,7 @@
                                         <f:selectItems value="${r"#{"}${mb}.get${field.getName()?cap_first}s}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
                                                        itemValue="${r"#{"}item}"/>
                                     </p:selectOneMenu>
+                                    </#if>
                                 </f:facet>
                             </p:cellEditor> 
                    <#else>  <#-- end isDatatableEditable -->
