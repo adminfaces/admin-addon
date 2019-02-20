@@ -69,7 +69,9 @@
                         <p:ajax event="rowUnselectCheckbox" update="@(.ui-button, .ui-confirm-dialog)"/>
                         <p:ajax event="rowSelect" update="@(.ui-button, .ui-confirm-dialog)"/>
                         <p:ajax event="rowUnselect" update="@(.ui-button, .ui-confirm-dialog)"/>
-
+                    <#if entity.isDatatableEditable()>        
+                        <p:ajax event="rowEdit" listener="${r"#{"}${mb}.onRowEdit}" update="@(.ui-datatable, .ui-button, .ui-confirm-dialog)" />
+                    </#if>
                         <p:column selectionMode="multiple" width="5%" styleClass="align-center"/>
 
  <#list fields as field>
@@ -80,9 +82,60 @@
 					            <f:param name="id" value="#${r"#{"}row.id}"></f:param>
 				            </p:link>
 			   <#elseif !entity.hasAssociation(field)>
-			       ${r"#{"}row.${field.getName()}}
+                   <#if entity.isDatatableEditable()>  
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value=" ${r"#{"}row.${field.getName()}}" />
+                                </f:facet>
+                                <f:facet name="input">
+                                    <#if entity.isInputTextType(field)>
+                                    <p:inputText id="${field.getName()}" value="${r"#{"}row.${field.getName()}}"/>    
+                                    <#elseif entity.isInputNumberType(field)>
+                                    <p:inputNumber id="${field.getName()}" value="${r"#{"}row.${field.getName()}}"/>   
+                                    <#elseif entity.isCalendarType(field)>
+                                    <p:calendar id="${field.getName()}" value="${r"#{"}row.${field.getName()}}"/>
+                                    <#elseif entity.isDatePickerType(field)>
+                                    <p:datePicker id="${field.getName()}" value="${r"#{"}row.${field.getName()}}"/>
+                                    <#elseif entity.isSpinnerType(field)>
+                                    <p:spinner id="${field.getName()}" value="${r"#{"}row.${field.getName()}}"/>
+                                    <#elseif entity.isInputSwitchType(field)>
+                                    <p:inputSwitch id="${field.getName()}" value="${r"#{"}row.${field.getName()}}"/>
+                                    <#elseif entity.isAutoCompleteType(field)>
+                                    <p:autoComplete id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}" completeMethod="${r"#{"}${mb}.complete${field.getName()?cap_first}}" minQueryLength="2" dropdown="true"
+                                                    var="${field.getName()}" itemLabel="${r"#{"}${field.getName()}.${entity.getAssociationDisplayField(field)}}" itemValue="${r"#{"}${field.getName()}}" converter="entityConverter"/> 
+                                    <#elseif entity.isSelectOneMenuType(field)>
+                                    <p:selectOneMenu id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}" converter="entityConverter">
+                                        <f:selectItem itemLabel="${r"#{"}msg['label.empty-select']}" itemValue=""/>
+                                        <f:selectItems value="${r"#{"}${mb}.get${field.getName()?cap_first}s}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
+                                                       itemValue="${r"#{"}item}"/>
+                                    </p:selectOneMenu>
+                                </f:facet>
+                            </p:cellEditor> 
+                   <#else>  <#-- end isDatatableEditable -->
+                            ${r"#{"}row.${field.getName()}}
+                   </#if>
 			   <#elseif entity.hasToOneAssociation(field)>
-			       ${r"#{"}row.${field.getName()}.${entity.getAssociationDisplayField(field)}}   
+                   <#if entity.isDatatableEditable()> 
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="${r"#{"}row.${field.getName()}.${entity.getAssociationDisplayField(field)}}" />
+                                </f:facet>
+                                <f:facet name="input">
+                                  <#if entity.isAutoCompleteType(field)>
+                                    <p:autoComplete id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}" completeMethod="${r"#{"}${mb}.complete${field.getName()?cap_first}}" minQueryLength="2" dropdown="true"
+                                                    var="${field.getName()}" itemLabel="${r"#{"}${field.getName()}.${entity.getAssociationDisplayField(field)}}" itemValue="${r"#{"}${field.getName()}}" converter="entityConverter"/> 
+                                  <#else>
+                                    <p:selectOneMenu id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}" converter="entityConverter">
+                                        <f:selectItem itemLabel="${r"#{"}msg['label.empty-select']}" itemValue=""/>
+                                        <f:selectItems value="${r"#{"}${mb}.get${field.getName()?cap_first}s}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
+                                                       itemValue="${r"#{"}item}"/>
+                                    </p:selectOneMenu>
+                                  </#if>
+                                </f:facet>
+                            </p:cellEditor> 
+                   <#else> <#-- end isDatatableEditable -->
+                            ${r"#{"}row.${field.getName()}.${entity.getAssociationDisplayField(field)}}   
+                   </#if>
                <#elseif entity.hasToManyAssociation(field)>   
                             <h:panelGroup rendered="${r"#{"}not ${mb}.show${field.getName()?cap_first}DetailMap[row.id]}" style="text-align: center">
                                 <p:commandLink value="${r"#{"}msg['label.view']} ${field.getName()}" action="${r"#{"}${mb}.show${field.getName()?cap_first}Detail(row.id)}" process="@this"
@@ -99,6 +152,11 @@
 			            </p:column>
 	</#if>
 </#list>
+                      <#if entity.isDatatableEditable()>   
+                        <p:column style="width:40px">
+                            <p:rowEditor />
+                        </p:column>
+                      </#if>
                         <f:facet name="footer">
                             <div id="footer">
                                 ${r"#{"}msg['label.search-criteria']} <i class="fa fa-filter"/>

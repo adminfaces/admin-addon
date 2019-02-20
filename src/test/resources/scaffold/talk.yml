@@ -9,3 +9,4 @@ fields:
 - {hidden: false, length: 50, name: date, required: false, type: CALENDAR}
 - {hidden: false, length: 50, name: speaker, required: false, type: AUTOCOMPLETE}
 menuIcon: fa fa-circle-o
+datatableEditable: false

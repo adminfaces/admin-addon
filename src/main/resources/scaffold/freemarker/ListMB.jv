@@ -14,7 +14,9 @@ import ${service.getQualifiedName()};
 import static com.github.adminfaces.persistence.util.Messages.addDetailMessage;
 import static com.github.adminfaces.persistence.util.Messages.getMessage;
 import static com.github.adminfaces.template.util.Assert.has;
-
+<#if entity.isDatatableEditable()>   
+import org.primefaces.event.RowEditEvent;
+</#if>
 import java.util.*;
 <#list fields as field>
    <#if entity.hasToManyAssociation(field)>
@@ -146,4 +148,10 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
     }
 </#list>
 
+<#if entity.isDatatableEditable()>       
+    public void onRowEdit(RowEditEvent event) {
+        setEntity((${entity.getName()})event.getObject());
+        super.save();
+    }
+</#if>
 }

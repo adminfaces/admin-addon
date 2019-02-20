@@ -28,7 +28,7 @@ import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.*;
 import com.github.adminfaces.addon.scaffold.model.EntityConfig;
 import com.github.adminfaces.addon.scaffold.model.GlobalConfig;
 import static org.mockito.Mockito.*;
-import com.github.adminfaces.addon.scaffold.model.ScaffoldConfigLoader;
+import com.github.adminfaces.addon.scaffold.config.ScaffoldConfigLoader;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -189,6 +189,8 @@ public class ScaffoldConfigLoaderTest {
             .extracting("type", "length", "required", "hidden")
             .contains(INPUT_NUMBER, 30, true, false);
         
+        assertThat(entityConfig.getDatatableEditable()).isTrue();
+        
         entity = Roaster.parse(JavaClassSource.class, ScaffoldConfigLoaderTest.class.getResourceAsStream("/com/github/admin/addon/model/Talk.java"));
         entityConfig = ScaffoldConfigLoader.createOrLoadEntityConfig(entity, project);
         
@@ -223,6 +225,8 @@ public class ScaffoldConfigLoaderTest {
         assertThat(entityConfig.getFieldConfigByName("speaker"))
             .extracting("type", "length", "required", "hidden")
             .contains(SELECT_ONE_MENU, 30, false, false);
+        
+        assertThat(entityConfig.getDatatableEditable()).isTrue();
     }
 
     private void assertSpeakerEntityConfig(EntityConfig entityConfig) {
@@ -257,6 +261,7 @@ public class ScaffoldConfigLoaderTest {
         assertThat(entityConfig.getFieldConfigByName("talks"))
             .extracting("type", "length", "required", "hidden")
             .contains(CHECKBOXMENU, 50, false, false);
+        assertThat(entityConfig.getDatatableEditable()).isFalse();
     }
 
     private void assertTalkEntityConfig(EntityConfig entityConfig) {
@@ -291,5 +296,7 @@ public class ScaffoldConfigLoaderTest {
         assertThat(entityConfig.getFieldConfigByName("speaker"))
             .extracting("type", "length", "required", "hidden")
             .contains(AUTOCOMPLETE, 50, false, false);
+        
+        assertThat(entityConfig.getDatatableEditable()).isFalse();
     }
 }

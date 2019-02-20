@@ -9,3 +9,4 @@ fields:
 - {hidden: false, length: 50, name: talks, required: false, type: CHECKBOXMENU}
 displayField: firstname
 menuIcon: "fa fa-circle-o"
+datatableEditable: false

@@ -1,6 +1,10 @@
-package com.github.adminfaces.addon.scaffold.model;
+package com.github.adminfaces.addon.scaffold.config;
 
+import com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum;
 import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.*;
+import com.github.adminfaces.addon.scaffold.model.EntityConfig;
+import com.github.adminfaces.addon.scaffold.model.FieldConfig;
+import com.github.adminfaces.addon.scaffold.model.GlobalConfig;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -87,6 +91,7 @@ public class ScaffoldConfigLoader {
             entityConfig.setDisplayField("");//this means we'll use entity's toString() method to display entity on pages
         }
         entityConfig.setMenuIcon(globalConfig.getMenuIcon());
+        entityConfig.setDatatableEditable(globalConfig.getDatatableEditable());
         entityConfigFile.setContents(new Yaml().dump(entityConfig));
         return entityConfig;
     }

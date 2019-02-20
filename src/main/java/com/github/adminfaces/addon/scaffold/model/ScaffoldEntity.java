@@ -193,6 +193,11 @@ public class ScaffoldEntity implements Serializable {
     public boolean isSpinnerType(FieldSource<JavaClassSource> field) {
         return getFieldConfig(field).getType().equals(ComponentTypeEnum.SPINNER);
     }
+    
+    public boolean isDatatableEditable() {
+        return entityConfig.getDatatableEditable();
+    }
+
 
     private String resolveSourceFolder() {
         JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
