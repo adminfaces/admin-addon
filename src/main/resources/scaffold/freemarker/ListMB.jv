@@ -27,7 +27,6 @@ import ${field.getType().getQualifiedName()};
 </#list>
 
 <#assign service = "${ccEntity}Service">
-
 @Named
 @ViewScoped
 public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> implements Serializable {
@@ -44,6 +43,7 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
 <#list toOneFields as field>
     <#if entity.isSelectOneMenuType(field)>
     List<${field.getType().getSimpleName()}> ${field.getName()}s;    
+
     </#if>
 </#list>
     @Inject

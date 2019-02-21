@@ -97,7 +97,7 @@
                                 <p:selectOneMenu id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" converter="entityConverter" 
                                             <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>>
                                    <f:selectItem itemLabel="${r"#{"}msg['label.empty-select']}" itemValue=""/>
-                                   <f:selectItems value="${r"#{"}${mb}.get${field.getName()?cap_first}s}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
+                                   <f:selectItems value="${r"#{"}${mb}.${field.getName()}s}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
 										   itemValue="${r"#{"}item}"/>
                                 </p:selectOneMenu>
                         <#elseif entity.isCheckboxMenuType(field)>
@@ -155,7 +155,7 @@
                                 <p:selectOneMenu id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" converter="entityConverter" 
                                             <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>>
                                    <f:selectItem itemLabel="${r"#{"}msg['label.empty-select']}" itemValue=""/>
-                                   <f:selectItems value="${r"#{"}${mb}.get${field.getName()?cap_first}s}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
+                                   <f:selectItems value="${r"#{"}${mb}.${field.getName()}s}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
 										   itemValue="${r"#{"}item}"/>
                                 </p:selectOneMenu>
                         <#elseif entity.isCheckboxMenuType(field)>
