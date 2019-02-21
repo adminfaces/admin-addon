@@ -40,7 +40,9 @@ import org.apache.commons.io.IOUtils;
 import org.jboss.forge.addon.projects.facets.WebResourcesFacet;
 import org.jboss.forge.addon.resource.FileResource;
 import static org.assertj.core.api.Assertions.contentOf;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import org.jboss.forge.addon.maven.projects.MavenFacet;
 import org.jboss.forge.addon.projects.facets.ResourcesFacet;
 import org.jboss.forge.addon.resource.DirectoryResource;
 import org.jboss.forge.roaster.Roaster;
@@ -222,6 +224,11 @@ public class AdminFacesScaffoldTest {
         assertThat(contentOf(speakerListPageFile))
             .contains("<h:panelGroup rendered=\"#{not speakerListMB.showTalksDetailMap[row.id]}\" style=\"text-align: center\">")
             .contains("<p:dataList rendered=\"#{speakerListMB.showTalksDetailMap[row.id]}\" value=\"#{speakerListMB.speakerTalks}\" var=\"d\" styleClass=\"no-border\"> ");
+        
+        shellTest.execute("cd "+project.getRoot().getFullyQualifiedName());
+        MavenFacet maven = project.getFacet(MavenFacet.class);
+        boolean buildSuccess = maven.executeMaven(Arrays.asList("clean","package"));
+        assertThat(buildSuccess).isTrue();
     }
     
     @Test
@@ -292,6 +299,11 @@ public class AdminFacesScaffoldTest {
         assertThat(contentOf(speakertalkListPageFile))
             .contains("<p:selectOneMenu id=\"room\" value=\"#{talkListMB.filter.entity.room}\" converter=\"entityConverter\"> ")
             .contains("<p:selectOneMenu id=\"speaker\" value=\"#{talkListMB.filter.entity.speaker}\" converter=\"entityConverter\">");
+        
+        shellTest.execute("cd "+project.getRoot().getFullyQualifiedName());
+        MavenFacet maven = project.getFacet(MavenFacet.class);
+        boolean buildSuccess = maven.executeMaven(Arrays.asList("clean","package"));
+        assertThat(buildSuccess).isTrue();
     }
 
     private void generateEntities() throws TimeoutException {

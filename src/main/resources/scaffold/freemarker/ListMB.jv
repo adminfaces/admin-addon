@@ -37,12 +37,15 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
 
 <#list toManyFields as field>
     List<${entity.getArrayType(field).getSimpleName()}> ${ccEntity}${field.getName()?cap_first};
-</#list>
-
-<#list toManyFields as field>
+ 
     Map<${nullablePrimaryKeyType},Boolean> show${field.getName()?cap_first}DetailMap = new HashMap<>();//used to show details in datatable rows    
-</#list>
 
+</#list>
+<#list toOneFields as field>
+    <#if entity.isSelectOneMenuType(field)>
+    List<${field.getType().getSimpleName()}> ${field.getName()}s;    
+    </#if>
+</#list>
     @Inject
     public void initService() {
         setCrudService(${service});
@@ -118,12 +121,19 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
         return ${service}.get${field.getName()?cap_first}sBy${entity.getAssociationDisplayField(field)?cap_first}(query);
     }
    <#elseif entity.isSelectOneMenuType(field)>
-    public List<${field.getType().getSimpleName()}> list${field.getName()?cap_first}s() {
-        return ${service}.list${field.getName()?cap_first}s();
+    public List<${field.getType().getSimpleName()}> get${field.getName()?cap_first}s() {
+        if(${field.getName()}s == null) {
+            ${field.getName()}s = ${service}.list${field.getName()?cap_first}s();
+        }
+        return ${field.getName()}s;
     }
+
+    public void set${field.getName()?cap_first}s(List<${field.getType().getSimpleName()}> ${field.getName()}s) {
+        this.${field.getName()}s = ${field.getName()}s;
+    }
+
    </#if>
 </#list>
-
 <#list toManyFields as field>
     public void show${field.getName()?cap_first}Detail(${nullablePrimaryKeyType} id) {
         this.show${field.getName()?cap_first}DetailMap.clear();//show details of one row at a time
@@ -146,12 +156,13 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
     public Map<${nullablePrimaryKeyType},Boolean> getShow${field.getName()?cap_first}DetailMap() {
         return show${field.getName()?cap_first}DetailMap;
     }
-</#list>
 
+</#list>
 <#if entity.isDatatableEditable()>       
     public void onRowEdit(RowEditEvent event) {
         setEntity((${entity.getName()})event.getObject());
         super.save();
     }
+
 </#if>
 }
