@@ -109,7 +109,7 @@
                         <#elseif entity.isSelectManyMenuType(field)>
                                 <p:selectManyMenu id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" converter="entityConverter"
                                       var="t" filter="true" filterMatchMode="contains" showCheckbox="true" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>>
-                                    <f:selectItems value="${r"#{"}${mb}.${field.getName()}}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}" itemValue="#{item}" />
+                                    <f:selectItems value="${r"#{"}${mb}.${field.getName()}}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}" itemValue="${r"#{"}item}" />
                                     <p:column>
                                        <h:outputText value="${r"#{"}t.${entity.getAssociationDisplayField(field)}}" />
                                     </p:column>
@@ -167,7 +167,7 @@
                         <#elseif entity.isSelectManyMenuType(field)>
                                 <p:selectManyMenu id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" converter="entityConverter"
                                       var="t" filter="true" filterMatchMode="contains" showCheckbox="true" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>>
-                                    <f:selectItems value="${r"#{"}${mb}.${field.getName()}}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}" itemValue="#{item}" />
+                                    <f:selectItems value="${r"#{"}${mb}.${field.getName()}}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}" itemValue="${r"#{"}item}" />
                                     <p:column>
                                        <h:outputText value="${r"#{"}t.${entity.getAssociationDisplayField(field)}}" />
                                     </p:column>

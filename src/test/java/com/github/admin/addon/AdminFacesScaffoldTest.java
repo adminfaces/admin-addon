@@ -1,5 +1,6 @@
 package com.github.admin.addon;
 
+import com.github.adminfaces.addon.scaffold.config.ScaffoldConfigLoader;
 import static com.github.adminfaces.addon.util.Constants.NEW_LINE;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -31,6 +32,7 @@ import java.io.FileOutputStream;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -38,6 +40,7 @@ import org.apache.commons.io.IOUtils;
 import org.jboss.forge.addon.projects.facets.WebResourcesFacet;
 import org.jboss.forge.addon.resource.FileResource;
 import static org.assertj.core.api.Assertions.contentOf;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import org.jboss.forge.addon.projects.facets.ResourcesFacet;
 import org.jboss.forge.addon.resource.DirectoryResource;
@@ -71,7 +74,10 @@ public class AdminFacesScaffoldTest {
     }
 
     @Before
-    public void setUp() throws IOException, TimeoutException {
+    public void setUp() throws IOException, TimeoutException, NoSuchFieldException, IllegalArgumentException, IllegalArgumentException, IllegalAccessException, IllegalAccessException {
+        Field globalConfigField = ScaffoldConfigLoader.class.getDeclaredField("globalConfig");
+        globalConfigField.setAccessible(true);
+        globalConfigField.set(null,null);
         project = projectFactory.createTempProject(Arrays.asList(JavaEE7Facet.class, ServletFacet_3_1.class,
             JPAFacet.class, FacesFacet_2_0.class, JavaSourceFacet.class));
         shellTest.getShell().setCurrentResource(project.getRoot());
@@ -80,19 +86,8 @@ public class AdminFacesScaffoldTest {
         metadataFacet.setProjectName("AdminFaces");
         shellTest.execute("adminfaces-setup", 60, TimeUnit.SECONDS);
         shellTest.clearScreen();
-        JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
-        Resource<?> src = sourceFacet.getSourceDirectory();
-        Resource<?> talk = src
-            .getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
-            .getChild(Constants.Packages.MODEL + "/Talk.java");
-        if(!talk.exists()) {
-            generateEntities(); 
-        }
+        generateEntities(); 
         
-        DirectoryResource resourcesDir = project.getFacet(ResourcesFacet.class).getResourceDirectory();
-        if(resourcesDir.getChild("scaffold").exists()) {
-            resourcesDir.getChild("scaffold").delete(true);
-        }
     }
     
     @Test
@@ -237,6 +232,67 @@ public class AdminFacesScaffoldTest {
         IOUtils.copy(Thread.currentThread().getContextClassLoader().getResourceAsStream("custom-global-config.yml"),
                     new FileOutputStream(new File(scaffoldDir.getFullyQualifiedName() + "/global-config.yml")));
         
+          Result result = shellTest.execute("scaffold-setup --provider AdminFaces", 10, TimeUnit.MINUTES);
+        
+        if (result instanceof Failed) {
+            ((Failed) result).getException().printStackTrace();
+        }
+        assertThat(result).isInstanceOf(CompositeResult.class).extracting("message")
+            .contains("***SUCCESS*** Scaffold was setup successfully.");
+
+        JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
+        String entityPackageName = sourceFacet.getBasePackage() + ".model";
+        Resource<?> src = sourceFacet.getSourceDirectory();
+        
+        Result scaffoldGenerate1 = shellTest
+            .execute(("scaffold-generate --entities " + entityPackageName + ".*"), 10, TimeUnit.MINUTES);
+
+        if (scaffoldGenerate1 instanceof Failed) {
+            ((Failed) scaffoldGenerate1).getException().printStackTrace();
+        }
+        assertThat(scaffoldGenerate1).isNotInstanceOf(Failed.class);
+        
+         Resource<?> service = src
+            .getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
+            .getChild(Constants.Packages.SERVICE + "/SpeakerService.java");
+
+        assertThat(service.exists()).isTrue();
+        
+        JavaClassSource serviceSource = Roaster.parse(JavaClassSource.class, new File(service.getFullyQualifiedName()));
+        assertThat(serviceSource.hasSyntaxErrors()).isFalse();
+        
+        assertThat(serviceSource.hasMethodSignature("listTalks")).isTrue();  
+        
+        Resource<?> listMB = src
+            .getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
+            .getChild(Constants.Packages.BEAN + "/SpeakerListMB.java");
+
+        assertThat(listMB.exists()).isTrue();
+        
+        JavaClassSource listMBSource = Roaster.parse(JavaClassSource.class, new File(listMB.getFullyQualifiedName()));
+        assertThat(listMBSource.hasSyntaxErrors()).isFalse();
+        
+        assertThat(listMBSource.hasMethodSignature("onRowEdit", "org.primefaces.event.RowEditEvent")).isTrue();  
+        
+        WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
+        FileResource<?> speakerListPage = web.getWebResource("/speaker/speaker-list.xhtml");
+        
+        File speakerListPageFile = new File(speakerListPage.getFullyQualifiedName());
+        assertThat(speakerListPageFile).exists();
+        assertThat(contentOf(speakerListPageFile))
+            .contains("editable=\"true\"")
+            .contains(" <p:ajax event=\"rowEdit\" listener=\"#{speakerListMB.onRowEdit}\"")
+            .contains("<p:selectManyMenu id=\"talks\" value=\"#{speakerListMB.filter.entity.talks}\"")
+            .contains("<h:panelGroup rendered=\"#{not speakerListMB.showTalksDetailMap[row.id]}\" style=\"text-align: center\">")
+            .contains("<p:dataList rendered=\"#{speakerListMB.showTalksDetailMap[row.id]}\" value=\"#{speakerListMB.speakerTalks}\" var=\"d\" styleClass=\"no-border\"> ");
+        
+       FileResource<?> talkListPage = web.getWebResource("/talk/talk-list.xhtml");
+        
+        File speakertalkListPageFile = new File(talkListPage.getFullyQualifiedName());
+        assertThat(speakertalkListPageFile).exists();
+        assertThat(contentOf(speakertalkListPageFile))
+            .contains("<p:selectOneMenu id=\"room\" value=\"#{talkListMB.filter.entity.room}\" converter=\"entityConverter\"> ")
+            .contains("<p:selectOneMenu id=\"speaker\" value=\"#{talkListMB.filter.entity.speaker}\" converter=\"entityConverter\">");
     }
 
     private void generateEntities() throws TimeoutException {

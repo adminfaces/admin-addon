@@ -60,7 +60,7 @@
                     <p:dataTable widgetVar="${ccEntity}sTable" var="row" value="${r"#{"}${mb}.list}" rows="10"
                                  rowKey="${r"#{"}row.id}" lazy="true" paginator="true" sortBy="${r"#{"}row.id}"
                                  filteredValue="${r"#{"}${mb}.filteredValue}" styleClass="no-border"
-                                 paginatorPosition="bottom" selection="${r"#{"}${mb}.selectionList}"
+                                 paginatorPosition="bottom" selection="${r"#{"}${mb}.selectionList}" <#if entity.isDatatableEditable()>editable="true"</#if>
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} {JumpToPageDropdown}"
                                  currentPageReportTemplate="[ {startRecord} to {endRecord} of {totalRecords} ]"
                                  rowsPerPageTemplate="5,10,15,20,30">
@@ -227,7 +227,7 @@
                         <#elseif entity.isSelectManyMenuType(field)>
                         <p:selectManyMenu id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}" converter="entityConverter"
                                       var="t" filter="true" filterMatchMode="contains" showCheckbox="true">
-                            <f:selectItems value="${r"#{"}${mb}.list${field.getName()?cap_first}()}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}" itemValue="#{item}" />
+                            <f:selectItems value="${r"#{"}${mb}.list${field.getName()?cap_first}()}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}" itemValue="${r"#{"}item}" />
                             <p:column>
                                 <h:outputText value="${r"#{"}t.${entity.getAssociationDisplayField(field)}}" />
                             </p:column>
