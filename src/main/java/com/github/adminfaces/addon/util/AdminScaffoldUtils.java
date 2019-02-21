@@ -34,28 +34,6 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
 
     public static final Logger log = LoggerFactory.getLogger(AdminScaffoldUtils.class.getName());
 
-    public static void unzip(InputStream zipFile, String targetDir) throws IOException {
-        try (ZipInputStream zipInputStream = new ZipInputStream(zipFile)) {
-            ZipEntry zipEntry = zipInputStream.getNextEntry();
-            while (zipEntry != null) {
-                File destPath = new File(targetDir, zipEntry.getName());
-                log.info("Unpacking {}.", destPath.getAbsoluteFile());
-                if (!zipEntry.isDirectory()) {
-                    FileOutputStream fout = new FileOutputStream(destPath);
-                    final byte[] buffer = new byte[8192];
-                    int n = 0;
-                    while (-1 != (n = zipInputStream.read(buffer))) {
-                        fout.write(buffer, 0, n);
-                    }
-                    fout.close();
-                } else {
-                    destPath.mkdir();
-                }
-                zipEntry = zipInputStream.getNextEntry();
-            }
-        }
-    }
-
     public static boolean hasAssociation(FieldSource<JavaClassSource> field) {
         return field.hasAnnotation(OneToMany.class) || field.hasAnnotation(OneToOne.class)
             || field.hasAnnotation(ManyToOne.class) || field.hasAnnotation(ManyToMany.class);
