@@ -45,7 +45,7 @@ public class ScaffoldEntity implements Serializable {
     }
 
     public boolean isHidden(FieldSource<JavaClassSource> field) {
-        return field.getName().equals("version") || getFieldConfig(field.getName()).isHidden();
+        return field.getName().equals("version") || (getFieldConfig(field.getName()) != null && getFieldConfig(field.getName()).isHidden());
     }
 
     /**
