@@ -1,5 +1,9 @@
 <#macro formFields entity field embeddedField>
-<#assign fieldName = ${embeddedField??then('embeddedField.getName().field.getName()', 'field.getName()')}>
+<#if ${embeddedField??}>
+	<#assign fieldName = "${embeddedField.getName()}.${field.getName()}">
+<#else>
+	<#assign fieldName = "${field.getName()}">
+</#if>	
                         <#if field.hasAnnotation("javax.persistence.Id")>   
                                 <p:inputText id="id" value="${r"#{"}${mb}.entity.id}"
                                          readonly="true" styleClass="form-control" style="width: 100%"/>
