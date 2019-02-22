@@ -1,5 +1,5 @@
-<#macro formFields entity field embeddedField>
-<#if embeddedField??>
+<#macro formFields entity field embeddedField="">
+<#if embeddedField?has_content>
 	<#assign fieldName = "${embeddedField.getName()}.${field.getName()}">
 <#else>
 	<#assign fieldName = "${field.getName()}">
