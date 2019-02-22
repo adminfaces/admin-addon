@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
-import javax.persistence.Embedded;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Id;
 import javax.persistence.Temporal;
@@ -29,6 +28,11 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.yaml.snakeyaml.Yaml;
 
 import com.github.adminfaces.addon.util.AdminScaffoldUtils;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ScaffoldConfigLoader {
 
@@ -73,19 +77,23 @@ public class ScaffoldConfigLoader {
     private static EntityConfig createEntityConfig(JavaClassSource entity, FileResource<?> entityConfigFile, Project project) {
         GlobalConfig globalConfig = loadGlobalConfig(project);
         EntityConfig entityConfig = new EntityConfig();
-        entity.getFields().stream()
+        List<FieldSource<JavaClassSource>> entityFields = new ArrayList<>(entity.getFields());
+        AdminScaffoldUtils.extractEmbeddedFields(entity).forEach(embeddedField -> {
+            try {
+                List<FieldSource<JavaClassSource>> fieldsFromEmbeddedField = AdminScaffoldUtils.getFieldsFromEmbeddedField(embeddedField, project);
+                if (!fieldsFromEmbeddedField.isEmpty()) {
+                    entityFields.addAll(fieldsFromEmbeddedField);
+                }
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(ScaffoldConfigLoader.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+        entityFields.stream()
             .filter(f -> f.hasAnnotation(Column.class) || AdminScaffoldUtils.hasAssociation(f)
-            || f.hasAnnotation(Basic.class) || f.hasAnnotation(Transient.class)
-            || f.hasAnnotation(Embedded.class) || f.hasAnnotation(Id.class)
+            || f.hasAnnotation(Basic.class) || f.hasAnnotation(Transient.class) || f.hasAnnotation(Id.class)
             || f.hasAnnotation(EmbeddedId.class))
             .forEach(f -> {
-                boolean required = AdminScaffoldUtils.resolveRequiredAttribute(f);
-                Integer length = resolveLengthAttribute(f, globalConfig.getInputSize());
-                ComponentTypeEnum type = resolveComponentType(f, length, globalConfig);
-                entityConfig.getFields().add(new FieldConfig(f.getName(), required, false, length, type));
-                if (entityConfig.getDisplayField() == null && type.equals(INPUT_TEXT) && required) { //by default displayField is the first non null inputText field
-                    entityConfig.setDisplayField(f.getName());
-                }
+                configFromField(f, globalConfig, entityConfig);
             });
         if (entityConfig.getDisplayField() == null) {
             entityConfig.setDisplayField("");//this means we'll use entity's toString() method to display entity on pages
@@ -94,6 +102,16 @@ public class ScaffoldConfigLoader {
         entityConfig.setDatatableEditable(globalConfig.getDatatableEditable());
         entityConfigFile.setContents(new Yaml().dump(entityConfig));
         return entityConfig;
+    }
+
+    private static void configFromField(FieldSource<JavaClassSource> f, GlobalConfig globalConfig1, EntityConfig entityConfig) {
+        boolean required = AdminScaffoldUtils.resolveRequiredAttribute(f);
+        Integer length = resolveLengthAttribute(f, globalConfig1.getInputSize());
+        ComponentTypeEnum type = resolveComponentType(f, length, globalConfig1);
+        entityConfig.getFields().add(new FieldConfig(f.getName(), required, false, length, type));
+        if (entityConfig.getDisplayField() == null && type.equals(INPUT_TEXT) && required) { //by default displayField is the first non null inputText field
+            entityConfig.setDisplayField(f.getName());
+        }
     }
 
     private static Integer resolveLengthAttribute(FieldSource<JavaClassSource> field, Integer defaultValue) {

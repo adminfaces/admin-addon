@@ -1,12 +1,12 @@
 !!com.github.adminfaces.addon.scaffold.model.EntityConfig
 displayField: title
 fields:
-- {hidden: false, length: 50, name: id, required: true, type: INPUT_NUMBER}
-- {hidden: false, length: 50, name: version, required: false, type: INPUT_NUMBER}
-- {hidden: false, length: 50, name: title, required: true, type: INPUT_TEXT}
+- {hidden: false, length: 100, name: id, required: true, type: INPUT_NUMBER}
+- {hidden: false, length: 100, name: version, required: false, type: INPUT_NUMBER}
+- {hidden: false, length: 100, name: title, required: true, type: INPUT_TEXT}
 - {hidden: false, length: 2000, name: description, required: false, type: TEXT_AREA}
-- {hidden: false, length: 50, name: room, required: true, type: INPUT_TEXT}
-- {hidden: false, length: 50, name: date, required: false, type: CALENDAR}
-- {hidden: false, length: 50, name: speaker, required: false, type: AUTOCOMPLETE}
+- {hidden: false, length: 100, name: room, required: true, type: INPUT_TEXT}
+- {hidden: false, length: 100, name: date, required: false, type: CALENDAR}
+- {hidden: false, length: 100, name: speaker, required: false, type: AUTOCOMPLETE}
 menuIcon: fa fa-circle-o
 datatableEditable: false

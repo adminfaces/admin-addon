@@ -3,5 +3,5 @@ toOneComponentType: AUTOCOMPLETE
 toManyComponentType: CHECKBOXMENU
 dateComponentType: CALENDAR
 datatableEditable: false
-inputSize: 50
+inputSize: 100
 menuIcon: "fa fa-circle-o"

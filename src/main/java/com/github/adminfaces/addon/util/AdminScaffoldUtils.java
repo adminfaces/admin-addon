@@ -1,12 +1,10 @@
 package com.github.adminfaces.addon.util;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
@@ -17,9 +15,13 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
+import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
+import org.jboss.forge.addon.projects.Project;
 
 import org.jboss.forge.addon.scaffold.util.ScaffoldUtil;
+import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.Type;
 import org.jboss.forge.roaster.model.source.AnnotationSource;
 import org.jboss.forge.roaster.model.source.FieldSource;
@@ -76,7 +78,6 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
             return "";
         }
     }
-
     
    private static boolean isValidDisplayField(FieldSource<JavaClassSource> field) {
        return field.hasAnnotation(Column.class)
@@ -84,4 +85,43 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
             || field.hasAnnotation(Embedded.class) || field.hasAnnotation(Id.class)
             || field.hasAnnotation(EmbeddedId.class);
    }
+   
+   
+   public static List<FieldSource<JavaClassSource>> extractEntityFields(JavaClassSource entity) {
+        List<FieldSource<JavaClassSource>> fields = new ArrayList<>();
+        entity.getFields().stream()
+            .filter(f -> !f.hasAnnotation(Transient.class) && (f.hasAnnotation(Column.class)
+                || hasAssociation(f) || f.hasAnnotation(Basic.class)
+                || f.hasAnnotation(Id.class) || f.hasAnnotation(EmbeddedId.class)))
+            .forEach(fields::add);
+        return fields;
+    }
+   
+    public static List<FieldSource<JavaClassSource>> extractEmbeddedFields(JavaClassSource entity) {
+        List<FieldSource<JavaClassSource>> fields = new ArrayList<>();
+        entity.getFields().stream()
+            .filter(f -> !f.hasAnnotation(Transient.class) && f.hasAnnotation(Embedded.class))
+            .forEach(fields::add);
+        return fields;
+    }
+    
+    public static List<FieldSource<JavaClassSource>> getFieldsFromEmbeddedField(FieldSource<JavaClassSource> embeddedField, Project project) throws FileNotFoundException {
+        List<FieldSource<JavaClassSource>> fields = new ArrayList<>();
+        String sourceFolder = resolveSourceFolder(project);
+        String qualifiedName = embeddedField.getType().getQualifiedName();
+        JavaClassSource embeddedFieldClassSource = Roaster.parse(JavaClassSource.class, new File(sourceFolder + "/" + qualifiedName.replace(".", "/") + ".java"));
+        embeddedFieldClassSource.getFields().stream()
+            .filter(f -> !f.hasAnnotation(Transient.class) && (f.hasAnnotation(Column.class)
+            || hasAssociation(f) || f.hasAnnotation(Basic.class)))
+            .forEach(fields::add);
+        return fields;
+    }
+
+    public static String resolveSourceFolder(Project project) {
+        JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
+        return sourceFacet.getSourceDirectory().getFullyQualifiedName();
+    }
+    
+    
+   
 }

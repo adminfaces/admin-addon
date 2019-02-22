@@ -1,12 +1,16 @@
 !!com.github.adminfaces.addon.scaffold.model.EntityConfig
 fields:
-- {hidden: false, length: 50, name: id, required: true, type: INPUT_NUMBER}
-- {hidden: false, length: 50, name: version, required: false, type: INPUT_NUMBER}
-- {hidden: false, length: 50, name: firstname, required: true, type: INPUT_TEXT}
-- {hidden: false, length: 50, name: surname, required: true, type: INPUT_TEXT}
+- {hidden: false, length: 100, name: id, required: true, type: INPUT_NUMBER}
+- {hidden: false, length: 100, name: version, required: false, type: INPUT_NUMBER}
+- {hidden: false, length: 100, name: firstname, required: true, type: INPUT_TEXT}
+- {hidden: false, length: 100, name: surname, required: true, type: INPUT_TEXT}
 - {hidden: false, length: 2000, name: bio, required: false, type: TEXT_AREA}
-- {hidden: false, length: 50, name: twitter, required: false, type: INPUT_TEXT}
-- {hidden: false, length: 50, name: talks, required: false, type: CHECKBOXMENU}
+- {hidden: false, length: 100, name: twitter, required: false, type: INPUT_TEXT}
+- {hidden: false, length: 100, name: talks, required: false, type: CHECKBOXMENU}
+- {hidden: false, length: 50, name: street, required: true, type: INPUT_TEXT}
+- {hidden: false, length: 50, name: city, required: true, type: INPUT_TEXT}
+- {hidden: false, length: 10, name: zipcode, required: true, type: INPUT_NUMBER}
+- {hidden: false, length: 100, name: state, required: false, type: INPUT_TEXT}
 displayField: firstname
 menuIcon: "fa fa-circle-o"
 datatableEditable: false

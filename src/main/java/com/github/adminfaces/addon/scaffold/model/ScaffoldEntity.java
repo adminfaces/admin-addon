@@ -16,6 +16,8 @@ import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 
 import com.github.adminfaces.addon.util.AdminScaffoldUtils;
+import static com.github.adminfaces.addon.util.AdminScaffoldUtils.extractEmbeddedFields;
+import static com.github.adminfaces.addon.util.AdminScaffoldUtils.extractEntityFields;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.logging.Level;
@@ -68,28 +70,22 @@ public class ScaffoldEntity implements Serializable {
     public List<FieldSource<JavaClassSource>> getFields() {
         if (entityFields == null) {
             entityFields = new ArrayList<>();
-            entity.getFields().stream()
-                .filter(f -> !f.hasAnnotation(Transient.class) && (f.hasAnnotation(Column.class)
-                || hasAssociation(f) || f.hasAnnotation(Basic.class)
-                || f.hasAnnotation(Id.class) || f.hasAnnotation(EmbeddedId.class)))
-                .forEach(entityFields::add);
+            entityFields.addAll(extractEntityFields(entity));
         }
         return entityFields;
     }
-    
-     public List<FieldSource<JavaClassSource>> getEmbeddedFields() {
+
+    public List<FieldSource<JavaClassSource>> getEmbeddedFields() {
         if (embeddedFields == null) {
             embeddedFields = new ArrayList<>();
-            entity.getFields().stream()
-                .filter(f -> f.hasAnnotation(Embedded.class))
-                .forEach(embeddedFields::add);
+            embeddedFields.addAll(extractEmbeddedFields(entity));
         }
         return embeddedFields;
     }
-     
+
     public List<FieldSource<JavaClassSource>> getFieldsFromEmbeddedField(FieldSource<JavaClassSource> embeddedField) throws FileNotFoundException {
         List<FieldSource<JavaClassSource>> fields = new ArrayList<>();
-        String sourceFolder = resolveSourceFolder();
+        String sourceFolder = AdminScaffoldUtils.resolveSourceFolder(project);
         String qualifiedName = embeddedField.getType().getQualifiedName();
         JavaClassSource embeddedFieldClassSource = Roaster.parse(JavaClassSource.class, new File(sourceFolder + "/" + qualifiedName.replace(".", "/") + ".java"));
         embeddedFieldClassSource.getFields().stream()
@@ -98,7 +94,7 @@ public class ScaffoldEntity implements Serializable {
             .forEach(fields::add);
         return fields;
     }
-    
+
     public String getDisplayField() {
         return entityConfig.getDisplayField();
     }
@@ -120,8 +116,8 @@ public class ScaffoldEntity implements Serializable {
             qualifiedName = associationField.getType().getQualifiedName();
         }
         try {
-            String sourceFolder = resolveSourceFolder();
-            associationClassSource = Roaster.parse(JavaClassSource.class, new File(sourceFolder+"/"+ qualifiedName.replace(".", "/") + ".java"));
+            String sourceFolder = AdminScaffoldUtils.resolveSourceFolder(project);
+            associationClassSource = Roaster.parse(JavaClassSource.class, new File(sourceFolder + "/" + qualifiedName.replace(".", "/") + ".java"));
         } catch (FileNotFoundException ex) {
             Logger.getLogger(ScaffoldEntity.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -147,7 +143,7 @@ public class ScaffoldEntity implements Serializable {
     public boolean hasToManyAssociation(FieldSource<JavaClassSource> field) { //just expose to freemarker
         return AdminScaffoldUtils.hasToManyAssociation(field);
     }
-    
+
     public boolean hasToOneAssociation(FieldSource<JavaClassSource> field) { //just expose to freemarker
         return AdminScaffoldUtils.hasToOneAssociation(field);
     }
@@ -204,7 +200,7 @@ public class ScaffoldEntity implements Serializable {
     public boolean isCalendarType(FieldSource<JavaClassSource> field) {
         return getFieldConfig(field).getType().equals(ComponentTypeEnum.CALENDAR);
     }
-    
+
     public boolean isDatePickerType(FieldSource<JavaClassSource> field) {
         return getFieldConfig(field).getType().equals(ComponentTypeEnum.DATEPICKER);
     }
@@ -216,15 +212,9 @@ public class ScaffoldEntity implements Serializable {
     public boolean isSpinnerType(FieldSource<JavaClassSource> field) {
         return getFieldConfig(field).getType().equals(ComponentTypeEnum.SPINNER);
     }
-    
+
     public boolean isDatatableEditable() {
         return entityConfig.getDatatableEditable();
-    }
-
-
-    private String resolveSourceFolder() {
-        JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
-        return sourceFacet.getSourceDirectory().getFullyQualifiedName();
     }
 
 }

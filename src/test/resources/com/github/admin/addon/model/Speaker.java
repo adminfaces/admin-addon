@@ -45,6 +45,9 @@ public class Speaker implements Serializable, PersistenceEntity {
 	@OneToMany
 	private Set<Talk> talks = new HashSet<Talk>();
 
+	@Embedded
+	private Address address;
+
 	public Integer getId() {
 		return id;
 	}
@@ -116,6 +119,14 @@ public class Speaker implements Serializable, PersistenceEntity {
 
 	public void setTwitter(String twitter) {
 		this.twitter = twitter;
+	}
+
+	public Address getAddress() {
+		return address;
+	}
+
+	public void setAddress(Address address) {
+		this.address = address;
 	}
 
 	@Override
