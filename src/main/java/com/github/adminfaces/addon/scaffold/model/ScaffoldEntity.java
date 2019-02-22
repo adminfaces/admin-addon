@@ -32,6 +32,7 @@ public class ScaffoldEntity implements Serializable {
     private List<FieldSource<JavaClassSource>> entityFields;
     private final EntityConfig entityConfig;
     private final Project project;
+    private List<FieldSource<JavaClassSource>> embeddedFields;
 
     public ScaffoldEntity(JavaClassSource entity, EntityConfig entityConfig, Project project) {
         this.entity = entity;
@@ -60,7 +61,7 @@ public class ScaffoldEntity implements Serializable {
     }
 
     /**
-     * Lists entity fields excluding fields that are not persisted
+     * Lists entity fields excluding fields that are not persisted and embedded fields
      *
      * @return
      */
@@ -69,11 +70,33 @@ public class ScaffoldEntity implements Serializable {
             entityFields = new ArrayList<>();
             entity.getFields().stream()
                 .filter(f -> !f.hasAnnotation(Transient.class) && (f.hasAnnotation(Column.class)
-                || hasAssociation(f) || f.hasAnnotation(Basic.class) || f.hasAnnotation(Embedded.class)
+                || hasAssociation(f) || f.hasAnnotation(Basic.class)
                 || f.hasAnnotation(Id.class) || f.hasAnnotation(EmbeddedId.class)))
                 .forEach(entityFields::add);
         }
         return entityFields;
+    }
+    
+     public List<FieldSource<JavaClassSource>> getEmbeddedFields() {
+        if (embeddedFields == null) {
+            embeddedFields = new ArrayList<>();
+            entity.getFields().stream()
+                .filter(f -> f.hasAnnotation(Embedded.class))
+                .forEach(embeddedFields::add);
+        }
+        return embeddedFields;
+    }
+     
+    public List<FieldSource<JavaClassSource>> getFieldsFromEmbeddedField(FieldSource<JavaClassSource> embeddedField) throws FileNotFoundException {
+        List<FieldSource<JavaClassSource>> fields = new ArrayList<>();
+        String sourceFolder = resolveSourceFolder();
+        String qualifiedName = embeddedField.getType().getQualifiedName();
+        JavaClassSource embeddedFieldClassSource = Roaster.parse(JavaClassSource.class, new File(sourceFolder + "/" + qualifiedName.replace(".", "/") + ".java"));
+        embeddedFieldClassSource.getFields().stream()
+            .filter(f -> !f.hasAnnotation(Transient.class) && (f.hasAnnotation(Column.class)
+            || hasAssociation(f) || f.hasAnnotation(Basic.class)))
+            .forEach(fields::add);
+        return fields;
     }
     
     public String getDisplayField() {

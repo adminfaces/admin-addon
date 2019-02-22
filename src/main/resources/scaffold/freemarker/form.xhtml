@@ -1,3 +1,47 @@
+<#macro formFields entity field>
+                        <#if field.hasAnnotation("javax.persistence.Id")>   
+                                <p:inputText id="id" value="${r"#{"}${mb}.entity.id}"
+                                         readonly="true" styleClass="form-control" style="width: 100%"/>
+                        <#elseif entity.isInputTextType(field)>
+                                <p:inputText id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" maxlength="${entity.getSize(field)?replace(",", "")}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>    
+                        <#elseif entity.isTextAreaType(field)>
+                                <p:inputTextarea id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}"  rows="3" cols="20" counter="display" maxlength="${entity.getSize(field)?replace(",", "")}" counterTemplate="{0} ${r"#{"}msg['label.remaining-chars']}" autoResize="true" />
+                        <#elseif entity.isInputNumberType(field)>
+                                <p:inputNumber id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" maxlength="${entity.getSize(field)?replace(",", "")}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>   
+                        <#elseif entity.isCalendarType(field)>
+                                <p:calendar id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" showOn="both" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
+                        <#elseif entity.isDatePickerType(field)>
+                                <p:datePicker id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" showOn="both" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
+                        <#elseif entity.isSpinnerType(field)>
+                                <p:spinner id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
+                        <#elseif entity.isInputSwitchType(field)>
+                                <p:inputSwitch id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
+                        <#elseif entity.isAutoCompleteType(field)>
+                                <p:autoComplete id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" completeMethod="${r"#{"}${mb}.complete${field.getName()?cap_first}}" minQueryLength="2" dropdown="true" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>
+                                        var="${field.getName()}" itemLabel="${r"#{"}${field.getName()}.${entity.getAssociationDisplayField(field)}}" itemValue="${r"#{"}${field.getName()}}" converter="entityConverter"/> 
+                        <#elseif entity.isSelectOneMenuType(field)>
+                                <p:selectOneMenu id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" converter="entityConverter" 
+                                            <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>>
+                                   <f:selectItem itemLabel="${r"#{"}msg['label.empty-select']}" itemValue=""/>
+                                   <f:selectItems value="${r"#{"}${mb}.${field.getName()}s}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
+										   itemValue="${r"#{"}item}"/>
+                                </p:selectOneMenu>
+                        <#elseif entity.isCheckboxMenuType(field)>
+                                <p:selectCheckboxMenu id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" label="${field.getName()?cap_first}" 
+                                          multiple="true" filter="true" filterMatchMode="contains" converter="entityConverter" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>>
+                                    <f:selectItems value="${r"#{"}${mb}.${field.getName()}}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
+										   itemValue="${r"#{"}item}"/>
+                                </p:selectCheckboxMenu>
+                        <#elseif entity.isSelectManyMenuType(field)>
+                                <p:selectManyMenu id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" converter="entityConverter"
+                                      var="t" filter="true" filterMatchMode="contains" showCheckbox="true" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>>
+                                    <f:selectItems value="${r"#{"}${mb}.${field.getName()}}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}" itemValue="${r"#{"}item}" />
+                                    <p:column>
+                                       <h:outputText value="${r"#{"}t.${entity.getAssociationDisplayField(field)}}" />
+                                    </p:column>
+                                </p:selectManyMenu>
+                        </#if>  
+</#macro>
 <?xml version="1.0" encoding="UTF-8"?>
 <ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core" xmlns:ui="http://java.sun.com/jsf/facelets"
@@ -73,48 +117,7 @@
                              </div>
                             
                             <div class="ui-sm-12 ui-g-11">  
-                        <#if field.hasAnnotation("javax.persistence.Id")>   
-                                <p:inputText id="id" value="${r"#{"}${mb}.entity.id}"
-                                         readonly="true" styleClass="form-control" style="width: 100%"/>
-                        <#elseif entity.isInputTextType(field)>
-                                <p:inputText id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" maxlength="${entity.getSize(field)?replace(",", "")}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>    
-                        <#elseif entity.isTextAreaType(field)>
-                                <p:inputTextarea id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}"  rows="3" cols="20" counter="display" maxlength="${entity.getSize(field)?replace(",", "")}" counterTemplate="{0} ${r"#{"}msg['label.remaining-chars']}" autoResize="true" />
-                        <#elseif entity.isInputNumberType(field)>
-                                <p:inputNumber id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" maxlength="${entity.getSize(field)?replace(",", "")}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>   
-                        <#elseif entity.isCalendarType(field)>
-                                <p:calendar id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" showOn="both" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
-                        <#elseif entity.isDatePickerType(field)>
-                                <p:datePicker id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" showOn="both" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
-                        <#elseif entity.isSpinnerType(field)>
-                                <p:spinner id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
-                        <#elseif entity.isInputSwitchType(field)>
-                                <p:inputSwitch id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
-                        <#elseif entity.isAutoCompleteType(field)>
-                                <p:autoComplete id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" completeMethod="${r"#{"}${mb}.complete${field.getName()?cap_first}}" minQueryLength="2" dropdown="true" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>
-                                        var="${field.getName()}" itemLabel="${r"#{"}${field.getName()}.${entity.getAssociationDisplayField(field)}}" itemValue="${r"#{"}${field.getName()}}" converter="entityConverter"/> 
-                        <#elseif entity.isSelectOneMenuType(field)>
-                                <p:selectOneMenu id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" converter="entityConverter" 
-                                            <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>>
-                                   <f:selectItem itemLabel="${r"#{"}msg['label.empty-select']}" itemValue=""/>
-                                   <f:selectItems value="${r"#{"}${mb}.${field.getName()}s}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
-										   itemValue="${r"#{"}item}"/>
-                                </p:selectOneMenu>
-                        <#elseif entity.isCheckboxMenuType(field)>
-                                <p:selectCheckboxMenu id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" label="${field.getName()?cap_first}" 
-                                          multiple="true" filter="true" filterMatchMode="contains" converter="entityConverter" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>>
-                                    <f:selectItems value="${r"#{"}${mb}.${field.getName()}}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
-										   itemValue="${r"#{"}item}"/>
-                                </p:selectCheckboxMenu>
-                        <#elseif entity.isSelectManyMenuType(field)>
-                                <p:selectManyMenu id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" converter="entityConverter"
-                                      var="t" filter="true" filterMatchMode="contains" showCheckbox="true" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>>
-                                    <f:selectItems value="${r"#{"}${mb}.${field.getName()}}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}" itemValue="${r"#{"}item}" />
-                                    <p:column>
-                                       <h:outputText value="${r"#{"}t.${entity.getAssociationDisplayField(field)}}" />
-                                    </p:column>
-                                </p:selectManyMenu>
-                        </#if>
+                                <@formFields entity=entity field=field/>
                                 <span class="help-block">
                                 <#if entity.isTextAreaType(field)>   
                                     <h:outputText id="display" />
@@ -131,48 +134,7 @@
                              </div>
                             
                             <div class="ui-sm-12 ui-g-11">  
-                                <#if field.hasAnnotation("javax.persistence.Id")>   
-                                <p:inputText id="id" value="${r"#{"}${mb}.entity.id}"
-                                         readonly="true" styleClass="form-control" style="width: 100%"/>
-                        <#elseif entity.isInputTextType(field)>
-                                <p:inputText id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" maxlength="${entity.getSize(field)?replace(",", "")}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>    
-                        <#elseif entity.isTextAreaType(field)>
-                                <p:inputTextarea id="${field.getName()}" rows="5" cols="30" counter="display" maxlength="${entity.getSize(field)?replace(",", "")}" counterTemplate="{0} ${r"#{"}msg['label.remaining-chars']}" autoResize="true" />
-                        <#elseif entity.isInputNumberType(field)>
-                                <p:inputNumber id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" maxlength="${entity.getSize(field)?replace(",", "")}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>   
-                        <#elseif entity.isCalendarType(field)>
-                                <p:calendar id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" showOn="both" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
-                        <#elseif entity.isDatePickerType(field)>
-                                <p:datePicker id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" showOn="both" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
-                        <#elseif entity.isSpinnerType(field)>
-                                <p:spinner id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
-                        <#elseif entity.isInputSwitchType(field)>
-                                <p:inputSwitch id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
-                        <#elseif entity.isAutoCompleteType(field)>
-                                <p:autoComplete id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" completeMethod="${r"#{"}${mb}.complete${field.getName()?cap_first}}" minQueryLength="2" dropdown="true" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>
-                                        var="${field.getName()}" itemLabel="${r"#{"}${field.getName()}.${entity.getAssociationDisplayField(field)}}" itemValue="${r"#{"}${field.getName()}}" converter="entityConverter"/> 
-                        <#elseif entity.isSelectOneMenuType(field)>
-                                <p:selectOneMenu id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" converter="entityConverter" 
-                                            <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>>
-                                   <f:selectItem itemLabel="${r"#{"}msg['label.empty-select']}" itemValue=""/>
-                                   <f:selectItems value="${r"#{"}${mb}.${field.getName()}s}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
-										   itemValue="${r"#{"}item}"/>
-                                </p:selectOneMenu>
-                        <#elseif entity.isCheckboxMenuType(field)>
-                                <p:selectCheckboxMenu id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" label="${field.getName()?cap_first}" 
-                                          multiple="true" filter="true" filterMatchMode="contains" converter="entityConverter" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>>
-                                    <f:selectItems value="${r"#{"}${mb}.${field.getName()}}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
-										   itemValue="${r"#{"}item}"/>
-                                </p:selectCheckboxMenu>
-                        <#elseif entity.isSelectManyMenuType(field)>
-                                <p:selectManyMenu id="${field.getName()}" value="${r"#{"}${mb}.entity.${field.getName()}}" converter="entityConverter"
-                                      var="t" filter="true" filterMatchMode="contains" showCheckbox="true" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>>
-                                    <f:selectItems value="${r"#{"}${mb}.${field.getName()}}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}" itemValue="${r"#{"}item}" />
-                                    <p:column>
-                                       <h:outputText value="${r"#{"}t.${entity.getAssociationDisplayField(field)}}" />
-                                    </p:column>
-                                </p:selectManyMenu>
-                        </#if>
+                        <@formFields entity=entity field=field/>
                                 <span class="help-block">
                         <#if entity.isTextAreaType(field)>   
                                     <h:outputText id="display" />
@@ -183,7 +145,49 @@
                        </div>    
        </#if>
     </#if>
-</#list>    
+</#list> 
+ 
+<#list embeddedFields as embeddedField>
+<p:separator/>
+<#list entity.getFieldsFromEmbeddedField(embeddedField) as field>
+    <#if !entity.isHidden(field)>
+       <#if field?item_parity == "odd">
+                        <div class="ui-sm-12 ui-g-6 ui-g-nopad">
+                             <div class="ui-sm-12 ui-g-11">  
+                                 <p:outputLabel for="${field.getName()}" value="${field.getName()?cap_first}"/>
+                             </div>
+                            
+                            <div class="ui-sm-12 ui-g-11">  
+                                <@formFields entity=entity field=field/>
+                                <span class="help-block">
+                                <#if entity.isTextAreaType(field)>   
+                                    <h:outputText id="display" />
+                                </#if>
+                                    <p:message for="${field.getName()}"/>
+                                </span>
+                                
+                            </div>
+                        </div>
+       <#else>    
+                       <div class="ui-sm-12 ui-g-6 ui-g-nopad">
+                             <div class="ui-sm-12 ui-g-11">  
+                                 <p:outputLabel for="${field.getName()}" value="${field.getName()?cap_first}"/>
+                             </div>
+                            
+                            <div class="ui-sm-12 ui-g-11">  
+                        <@formFields entity=entity field=field/>
+                                <span class="help-block">
+                        <#if entity.isTextAreaType(field)>   
+                                    <h:outputText id="display" />
+                        </#if>
+                                    <p:message for="${field.getName()}"/>
+                                </span>
+                            </div>
+                       </div>    
+       </#if>
+    </#if>
+  </#list>   
+</#list> 
                     </div>
                 </div>
             </div>

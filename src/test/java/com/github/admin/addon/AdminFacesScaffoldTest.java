@@ -40,7 +40,6 @@ import org.apache.commons.io.IOUtils;
 import org.jboss.forge.addon.projects.facets.WebResourcesFacet;
 import org.jboss.forge.addon.resource.FileResource;
 import static org.assertj.core.api.Assertions.contentOf;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import org.jboss.forge.addon.maven.projects.MavenFacet;
 import org.jboss.forge.addon.projects.facets.ResourcesFacet;
@@ -325,17 +324,27 @@ public class AdminFacesScaffoldTest {
        
         shellTest.execute("constraint-add --on-property name --constraint NotNull", 10, TimeUnit.SECONDS);
         shellTest.execute("constraint-add --on-property capacity --constraint NotNull", 10, TimeUnit.SECONDS);
+        
+        shellTest.execute("jpa-new-embeddable --named Address", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named street --length 50 --not-nullable", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named city  --length 50 --not-nullable", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named zipcode --columnName --length 10 --not-nullable --type java.lang.Integer", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named state", 10, TimeUnit.SECONDS);
 
         shellTest.execute("jpa-new-entity --named Speaker", 15, TimeUnit.SECONDS);
         shellTest.execute("jpa-new-field --named firstname", 10, TimeUnit.SECONDS);
         shellTest.execute("jpa-new-field --named surname", 10, TimeUnit.SECONDS);
         shellTest.execute("jpa-new-field --named bio --length 2000", 10, TimeUnit.SECONDS);
         shellTest.execute("jpa-new-field --named twitter", 10, TimeUnit.SECONDS);
+        
         shellTest.execute("jpa-new-field --named talks --type com.github.admin.addon.model.Talk --relationship-type One-to-Many", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named address --entity --type com.github.admin.addon.model.Address --relationship-type Embedded", 10, TimeUnit.SECONDS);
         
         shellTest.execute("constraint-add --on-property firstname --constraint NotNull", 10, TimeUnit.SECONDS);
         shellTest.execute("constraint-add --on-property surname --constraint NotNull", 10, TimeUnit.SECONDS);
         shellTest.execute("constraint-add --on-property bio --constraint Size --max 2000", 10, TimeUnit.SECONDS);
+        
+ 
         
         shellTest.execute("cd ../Talk.java",15, TimeUnit.SECONDS);
         shellTest.execute("jpa-new-field --named speaker --type com.github.admin.addon.model.Speaker --relationship-type Many-to-One", 10, TimeUnit.SECONDS); 
