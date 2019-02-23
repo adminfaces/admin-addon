@@ -1,14 +1,14 @@
 <#macro formFields entity field embeddedField="">
 <#if embeddedField?has_content>
-	<#assign fieldName = "${embeddedField.getName()}.${field.getName()}">
+	<#assign fieldName = "entity.${embeddedField.getName()}.${field.getName()}">
 <#else>
-	<#assign fieldName = "${field.getName()}">
+	<#assign fieldName = "entity.${field.getName()}">
 </#if>	
                         <#if field.hasAnnotation("javax.persistence.Id")>   
                                 <p:inputText id="id" value="${r"#{"}${mb}.entity.id}"
                                          readonly="true" styleClass="form-control" style="width: 100%"/>
                         <#elseif entity.isInputTextType(field)>
-                                <p:inputText id="${field.getName()}" value="${r"#{"}${mb}.entity.${fieldName}}" maxlength="${entity.getSize(field)?replace(",", "")}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
+                                <p:inputText id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" maxlength="${entity.getSize(field)?replace(",", "")}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
                         <#elseif entity.isTextAreaType(field)>
                                 <p:inputTextarea id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}"  rows="3" cols="20" counter="display" maxlength="${entity.getSize(field)?replace(",", "")}" counterTemplate="{0} ${r"#{"}msg['label.remaining-chars']}" autoResize="true" />
                         <#elseif entity.isInputNumberType(field)>
