@@ -7,7 +7,6 @@ import org.apache.deltaspike.data.api.criteria.Criteria;
 import ${entity.getQualifiedName()};
 import ${entity.getQualifiedName()}_;
 import ${appListsPackage};
-import com.github.adminfaces.persistence.bean.AppLists;
 import ${repository.getQualifiedName()};
 import javax.ejb.Stateless;
 import javax.inject.Inject;
