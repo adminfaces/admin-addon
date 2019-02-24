@@ -287,6 +287,9 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
         List<Resource<?>> generatedResources = new ArrayList<>();
         Map<Object, Object> context = CollectionUtils.newHashMap();
         JavaSourceFacet java = project.getFacet(JavaSourceFacet.class);
+        MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
+        String appListsPackage = metadataFacet.getProjectGroupName() + "." + Constants.Packages.BEAN + ".AppLists";
+        context.put("appListsPackage", appListsPackage);
         WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
         for (Resource<?> resource : entities) {
             if (resource instanceof JavaResource) {
