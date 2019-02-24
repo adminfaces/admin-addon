@@ -38,16 +38,6 @@ public class ${entity.getName()}FormMB extends CrudMB<${entity.getName()}> imple
     @Inject
     ${entity.getName()}Service ${service};
 
-<#list toManyFields as field>
-    List<${entity.getArrayType(field).getSimpleName()}> ${field.getName()};
-
-</#list>
-<#list toOneFields as field>
-    <#if entity.isSelectOneMenuType(field)>
-    List<${field.getType().getSimpleName()}> ${field.getName()}s;    
-
-    </#if>
-</#list>
     @Inject
     public void initService() {
         setCrudService(${service});
@@ -93,19 +83,7 @@ public class ${entity.getName()}FormMB extends CrudMB<${entity.getName()}> imple
 
    </#if>
 </#list>
-<#list toManyFields as field>
-    public List<${entity.getArrayType(field).getSimpleName()}> get${field.getName()?cap_first}() {
-        if(${field.getName()} == null) {
-            ${field.getName()} = ${service}.list${field.getName()?cap_first}();
-        }
-        return ${field.getName()};            
-    } 
-
-    public void set${field.getName()?cap_first}(List<${entity.getArrayType(field).getSimpleName()}> ${field.getName()}) {
-        this.${field.getName()} = ${field.getName()};
-    }
-
-</#list>
+ 
 <#if embeddedFields?size != 0>
     @Override
     public ${entity.getName()} createEntity() {

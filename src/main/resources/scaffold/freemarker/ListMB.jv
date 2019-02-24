@@ -141,10 +141,6 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
         ${ccEntity}${field.getName()?cap_first} = ${service}.get${field.getName()?cap_first}ById(id);  
     }
     
-    public List<${entity.getArrayType(field).getSimpleName()}> list${field.getName()?cap_first}() {
-        return ${service}.list${field.getName()?cap_first}();            
-    } 
-
     public List<${entity.getArrayType(field).getSimpleName()}> get${ccEntity?cap_first}${field.getName()?cap_first}() {
         return ${ccEntity}${field.getName()?cap_first};
     }

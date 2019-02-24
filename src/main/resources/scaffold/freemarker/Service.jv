@@ -2,6 +2,7 @@ package com.github.adminfaces.starter.service;
 
 import com.github.adminfaces.persistence.model.Filter;
 import com.github.adminfaces.persistence.service.CrudService;
+import com.github.adminfaces.persistence.bean.AppLists;
 import com.github.adminfaces.template.exception.BusinessException;
 import org.apache.deltaspike.data.api.criteria.Criteria;
 import ${entity.getQualifiedName()};
@@ -41,6 +42,13 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
     @Inject
     protected ${entity.getName()}Repository ${ccEntity}Repository;// you can use repositories to extract complex queries from your service
 
+    @Inject
+    protected AppLists appLists;
+
+    @Override
+    public void beforeAll(${entity.getName()} ${ccEntity}) {
+        appLists.clear${entity.getName()}s();//invalidate ${entity.getName()} list cache
+    }
 
     /** 
      * This method is used for (real) pagination and is called by lazy 
@@ -155,11 +163,6 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
                .likeIgnoreCase(${field.getType().getSimpleName()}_.${entity.getAssociationDisplayField(field)}, "%" + query + "%")
                .getResultList();
     }
-    <#elseif entity.isSelectOneMenuType(field)>
-    public List<${field.getType().getSimpleName()}> list${field.getName()?cap_first}s() {
-        return criteria(${field.getType().getSimpleName()}.class)  
-                .getResultList();      
-    }
    </#if>  
 </#list>    
 <#list toManyFields as field>
@@ -168,11 +171,6 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
          return getEntityManager().createQuery("select r from ${entity.getArrayType(field).getSimpleName()} r where r.${ccEntity}.id =:id",${entity.getArrayType(field).getSimpleName()}.class)
                 .setParameter("id",${ccEntity}Id)
                 .getResultList(); 
-    }
-
-    public List<${entity.getArrayType(field).getSimpleName()}> list${field.getName()?cap_first}() {
-          return criteria(${entity.getArrayType(field).getSimpleName()}.class)  
-                 .getResultList();      
     }
     </#if>
 </#list>

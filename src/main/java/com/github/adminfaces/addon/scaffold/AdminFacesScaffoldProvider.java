@@ -122,6 +122,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
         addEntityManagerProducer(project);
         configJPAMetaModel(project);
         createScaffoldConfig(project);
+        addAppListCache(project);
         return Collections.emptyList();
     }
 
@@ -230,7 +231,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
             .filter(r -> r.getName().equals("directory") && r.getText().equals("src/main/resources")).findFirst();
 
         Node resourceNode = resourcesNode.getOrCreate("resource");
-        if(!resourcesDirectory.isPresent()) {
+        if (!resourcesDirectory.isPresent()) {
             resourceNode.getOrCreate("filtering").text("true");
             resourcesDirectory = Optional.of(resourceNode.getOrCreate("directory"));
             resourcesDirectory.get().text("src/main/resources");
@@ -310,6 +311,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
                     generateService(context, java, generatedResources);
                     generateListMBean(context, java, generatedResources);
                     generateFormMBean(context, java, generatedResources);
+                    updateAppListsCache(entity, project, context);
                     addLeftMenuEntry(project, scaffoldEntity, generatedResources);
                     addToptMenuEntry(project, scaffoldEntity, generatedResources);
                     generateListPage(context, web, generatedResources);
@@ -330,8 +332,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
      *
      * @param context generation context containing entity
      * @param java Forge Java facet used to access java files
-     * @param generatedResources generated resources on current scaffold
-     * execution
+     * @param generatedResources generated resources on current scaffold execution
      */
     private void generateFormMBean(Map<Object, Object> context, JavaSourceFacet java,
         List<Resource<?>> generatedResources) {
@@ -349,8 +350,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
      *
      * @param context generation context containing entity
      * @param java Forge Java facet used to access java files
-     * @param generatedResources generated resources on current scaffold
-     * execution
+     * @param generatedResources generated resources on current scaffold execution
      */
     private void generateListMBean(Map<Object, Object> context, JavaSourceFacet java,
         List<Resource<?>> generatedResources) {
@@ -368,8 +368,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
      *
      * @param context generation context containing entity
      * @param java Forge Java facet used to access java files
-     * @param generatedResources generated resources on current scaffold
-     * execution
+     * @param generatedResources generated resources on current scaffold execution
      */
     private void generateRepository(Map<Object, Object> context, JavaSourceFacet java,
         List<Resource<?>> generatedResources) {
@@ -388,8 +387,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
      *
      * @param context generation context containing entity
      * @param java Forge Java facet used to access java files
-     * @param generatedResources generated resources on current scaffold
-     * execution
+     * @param generatedResources generated resources on current scaffold execution
      *
      */
     private void generateService(Map<Object, Object> context, JavaSourceFacet java,
@@ -422,7 +420,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
                 parser.parseInput(listPage, "UTF-8").outputSettings(outputSettings).toString()));
         }
     }
-    
+
     /**
      * Generates entity form page
      *
@@ -455,7 +453,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
             String listPage = pageFolder + entityName.toLowerCase() + "-list.xhtml";
             menuContent.append("<li>" + NEW_LINE + "                    <p:link id=\"menu" + entityName
                 + "\" outcome=\"" + listPage + "\" title=\"" + entityName + "s page\">" + NEW_LINE
-                + "                        <i class=\""+ entity.getEntityConfig().getMenuIcon() + "\"></i>" + NEW_LINE
+                + "                        <i class=\"" + entity.getEntityConfig().getMenuIcon() + "\"></i>" + NEW_LINE
                 + "                        <span>" + entityName + "s</span>" + NEW_LINE
                 + "                    </p:link>" + NEW_LINE + "                </li>");
 
@@ -492,7 +490,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
                 + "                        <i class=\"fa fa-th-list\"></i>" + NEW_LINE
                 + "                    </p:link>" + NEW_LINE + "                </li>" + NEW_LINE
                 + "                <li>" + NEW_LINE + "                    <p:link outcome=\"" + formPage + "\">"
-                + NEW_LINE + "                        <span>New " + entityName.toLowerCase()  + "</span>" + NEW_LINE
+                + NEW_LINE + "                        <span>New " + entityName.toLowerCase() + "</span>" + NEW_LINE
                 + "                        <i class=\"fa fa-plus-circle\"></i>" + NEW_LINE
                 + "                    </p:link>" + NEW_LINE + "                </li>" + NEW_LINE + "" + NEW_LINE
                 + "" + NEW_LINE + "            </ul>" + NEW_LINE + "" + NEW_LINE + "        </li>");
@@ -587,21 +585,83 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
     private List<FieldSource<JavaClassSource>> resolveToManyAssociationFields(List<FieldSource<JavaClassSource>> fields) {
         List<FieldSource<JavaClassSource>> toManyFields = new ArrayList<>();
         for (FieldSource<JavaClassSource> field : fields) {
-            if(AdminScaffoldUtils.hasToManyAssociation(field)) {
+            if (AdminScaffoldUtils.hasToManyAssociation(field)) {
                 toManyFields.add(field);
             }
         }
         return toManyFields;
     }
-    
-      private List<FieldSource<JavaClassSource>> resolveToOneAssociationFields(List<FieldSource<JavaClassSource>> fields) {
+
+    private List<FieldSource<JavaClassSource>> resolveToOneAssociationFields(List<FieldSource<JavaClassSource>> fields) {
         List<FieldSource<JavaClassSource>> toOneFields = new ArrayList<>();
         for (FieldSource<JavaClassSource> field : fields) {
-            if(AdminScaffoldUtils.hasToOneAssociation(field)) {
+            if (AdminScaffoldUtils.hasToOneAssociation(field)) {
                 toOneFields.add(field);
             }
         }
         return toOneFields;
+    }
+
+    private void addAppListCache(Project project) {
+        MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
+        JavaSourceFacet javaSource = project.getFacet(JavaSourceFacet.class);
+        try (InputStream appListsStream = Thread.currentThread().getContextClassLoader()
+            .getResourceAsStream("/bean/AppLists.java")) {
+            JavaSource<?> appLists = (JavaSource<?>) Roaster.parse(appListsStream);
+            appLists.setPackage(metadataFacet.getProjectGroupName() + "."+Constants.Packages.BEAN);
+            javaSource.saveJavaSource(appLists);
+            FileUtils.copyInputStreamToFile(appListsStream, new File(project.getRoot().getFullyQualifiedName()
+                + "/"+appLists.getPackage().replaceAll("\\.", "/")));
+        } catch (Exception e) {
+            LOG.log(Level.SEVERE, "Could not add 'AppLists'.", e);
+        }
+    }
+
+    private void updateAppListsCache(JavaClassSource entity, Project project, Map<Object, Object> context) {
+        MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
+        JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
+        JavaResource appListsFile = sourceFacet.getJavaResource((metadataFacet.getProjectGroupName() + "/" + Constants.Packages.BEAN + "/AppLists").replaceAll("\\.", "/")+".java");
+        JavaClassSource appListsSource = Roaster.parse(JavaClassSource.class, appListsFile.getResourceInputStream());
+        String ccEntity = (String) context.get("ccEntity");
+        String instanceVariableName = ccEntity + "s;";//e.g Room becomes rooms;
+        String serviceName = ccEntity+"Service";
+        if(!appListsSource.hasField(serviceName)) {
+            FieldSource<JavaClassSource> serviceField = appListsSource.addField("private CrudService<"+entity.getName()+", "+context.get("nullablePrimaryKeyType")+ "> "+serviceName+";\n");
+            serviceField.addAnnotation("javax.inject.Inject");
+            serviceField.addAnnotation("com.github.adminfaces.persistence.service.Service");
+        }
+        if (!appListsSource.hasField(instanceVariableName)) {
+            String field = "private Set<ENTITY> ".replace("ENTITY", entity.getName()).concat(instanceVariableName)+"\n";
+            appListsSource.addField(field);
+        }
+        
+        String entityImport = entity.getPackage() + "."+entity.getName();
+        if (!appListsSource.hasImport(entityImport)) {
+            appListsSource.addImport(entityImport);
+        }
+        String methodName = "all"+entity.getName()+"s";//Room becomes allRooms()
+        if(!appListsSource.hasMethodSignature(methodName)) {
+            MethodSource<JavaClassSource> method = appListsSource.addMethod()
+                .setPublic()
+                .setName(methodName)
+                .setBody(("if(ENTITYs == null) {\n" +
+"            ENTITYs = new HashSet<>(ENTITYService.criteria()\n" +
+"           .getResultList());\n" +
+"        }\n" +
+"               return ENTITYs;").replaceAll("ENTITY", ccEntity))
+                .setReturnType("java.util.Set<" + entity.getName() + ">");
+            method.addAnnotation("javax.inject.Named")
+                .setStringValue("value",methodName);
+            method.addAnnotation("javax.enterprise.inject.Produces");
+            
+            methodName = "clear"+entity.getName()+"s";//Room becomes clearRooms()
+            method = appListsSource.addMethod()
+                .setPublic()
+                .setName(methodName)
+                .setReturnTypeVoid()
+                .setBody(ccEntity+"s = null;");
+            sourceFacet.saveJavaSourceUnformatted(appListsSource);
+        }
     }
 
 }

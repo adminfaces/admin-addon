@@ -87,14 +87,11 @@ public class AdminFacesScaffoldTest {
         shellTest.execute("adminfaces-setup", 60, TimeUnit.SECONDS);
         shellTest.clearScreen();
         generateEntities(); 
-        
     }
     
     @Test
     public void shouldScaffoldFromEntities() throws Exception {
-
         Result result = shellTest.execute("scaffold-setup --provider AdminFaces", 10, TimeUnit.MINUTES);
-        
         if (result instanceof Failed) {
             ((Failed) result).getException().printStackTrace();
         }
@@ -153,7 +150,6 @@ public class AdminFacesScaffoldTest {
         JavaClassSource listMBSource = Roaster.parse(JavaClassSource.class, new File(listMB.getFullyQualifiedName()));
         assertThat(listMBSource.hasSyntaxErrors()).isFalse();
         assertThat(listMBSource.hasMethodSignature("showTalksDetail", Long.class)).isTrue();
-        assertThat(listMBSource.hasMethodSignature("listTalks")).isTrue();
         assertThat(listMBSource.hasMethodSignature("getShowTalksDetailMap")).isTrue();
         
         repository = src

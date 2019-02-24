@@ -106,7 +106,7 @@
                                     <#elseif entity.isSelectOneMenuType(field)>
                                     <p:selectOneMenu id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}" converter="entityConverter">
                                         <f:selectItem itemLabel="${r"#{"}msg['label.empty-select']}" itemValue=""/>
-                                        <f:selectItems value="${r"#{"}${mb}.${field.getName()}s}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
+                                        <f:selectItems value="${r"#{"}all${field.getName()?cap_first}s}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
                                                        itemValue="${r"#{"}item}"/>
                                     </p:selectOneMenu>
                                     </#if>
@@ -128,7 +128,7 @@
                                   <#else>
                                     <p:selectOneMenu id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}" converter="entityConverter">
                                         <f:selectItem itemLabel="${r"#{"}msg['label.empty-select']}" itemValue=""/>
-                                        <f:selectItems value="${r"#{"}${mb}.${field.getName()}s}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
+                                        <f:selectItems value="${r"#{"}all${field.getName()?cap_first}s}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
                                                        itemValue="${r"#{"}item}"/>
                                     </p:selectOneMenu>
                                   </#if>
@@ -215,19 +215,21 @@
                         <#elseif entity.isSelectOneMenuType(field)>
                         <p:selectOneMenu id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}" converter="entityConverter">
                             <f:selectItem itemLabel="${r"#{"}msg['label.empty-select']}" itemValue=""/>
-                            <f:selectItems value="${r"#{"}${mb}.${field.getName()}s}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
+                            <f:selectItems value="${r"#{"}all${field.getName()?cap_first}s}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
 										   itemValue="${r"#{"}item}"/>
                         </p:selectOneMenu>
                         <#elseif entity.isCheckboxMenuType(field)>
                         <p:selectCheckboxMenu id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}" label="${field.getName()?cap_first}" 
                                           multiple="true" filter="true" filterMatchMode="contains" converter="entityConverter">
-                             <f:selectItems value="${r"#{"}${mb}.list${field.getName()?cap_first}()}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
+                             <f:attribute name="collectionType" value="java.util.HashSet" />
+                             <f:selectItems value="${r"#{"}all${field.getName()?cap_first}}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
 										   itemValue="${r"#{"}item}"/>
                         </p:selectCheckboxMenu>
                         <#elseif entity.isSelectManyMenuType(field)>
                         <p:selectManyMenu id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}" converter="entityConverter"
                                       var="t" filter="true" filterMatchMode="contains" showCheckbox="true">
-                            <f:selectItems value="${r"#{"}${mb}.list${field.getName()?cap_first}()}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}" itemValue="${r"#{"}item}" />
+                            <f:attribute name="collectionType" value="java.util.HashSet" />
+                            <f:selectItems value="${r"#{"}all${field.getName()?cap_first}}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}" itemValue="${r"#{"}item}" />
                             <p:column>
                                 <h:outputText value="${r"#{"}t.${entity.getAssociationDisplayField(field)}}" />
                             </p:column>
