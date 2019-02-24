@@ -262,8 +262,6 @@ public class AdminFacesScaffoldTest {
         JavaClassSource serviceSource = Roaster.parse(JavaClassSource.class, new File(service.getFullyQualifiedName()));
         assertThat(serviceSource.hasSyntaxErrors()).isFalse();
         
-        assertThat(serviceSource.hasMethodSignature("listTalks")).isTrue();  
-        
         Resource<?> listMB = src
             .getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
             .getChild(Constants.Packages.BEAN + "/SpeakerListMB.java");
