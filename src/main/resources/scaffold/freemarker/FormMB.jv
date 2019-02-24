@@ -26,6 +26,10 @@ import ${field.getType().getQualifiedName()};
    </#if> 
 </#list>
 
+<#list embeddedFields as embeddedField>
+import ${embeddedField.getType().getQualifiedName()};      
+</#list>
+
 <#assign service = "${ccEntity}Service">
 @Named
 @ViewScoped
@@ -100,7 +104,17 @@ public class ${entity.getName()}FormMB extends CrudMB<${entity.getName()}> imple
     public void set${field.getName()?cap_first}(List<${entity.getArrayType(field).getSimpleName()}> ${field.getName()}) {
         this.${field.getName()} = ${field.getName()};
     }
+
 </#list>
-    
+<#if embeddedFields?size != 0>
+    @Override
+    public ${entity.getName()} createEntity() {
+        ${entity.getName()} ${ccEntity} = super.createEntity();
+<#list embeddedFields as embeddedField>
+        ${ccEntity}.set${embeddedField.getName()?cap_first}(new ${embeddedField.getType().getSimpleName()}());
+</#list>
+        return ${ccEntity};  
+    }
+</#if>   
 
 }

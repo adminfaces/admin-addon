@@ -153,6 +153,7 @@
 </#list> 
  
 <#list embeddedFields as embeddedField>
+<p:separator style="width:100%"/>
 <p:panel header="${embeddedField.getName()?cap_first}" styleClass="card no-border ui-g-12">
 <#list entity.getFieldsFromEmbeddedField(embeddedField) as field>
     <#if !entity.isHidden(field)>
