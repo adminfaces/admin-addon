@@ -164,9 +164,9 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
 </#list>    
 <#list toManyFields as field>
     <#if entity.isCheckboxMenuType(field) || entity.isSelectManyMenuType(field)>
-    public List<${entity.getArrayType(field).getSimpleName()}> get${field.getName()?cap_first}ById(${nullablePrimaryKeyType} ${ccEntity}id) {
+    public List<${entity.getArrayType(field).getSimpleName()}> get${field.getName()?cap_first}ById(${nullablePrimaryKeyType} ${ccEntity}Id) {
          return getEntityManager().createQuery("select r from ${entity.getArrayType(field).getSimpleName()} r where r.${ccEntity}.id =:id",${entity.getArrayType(field).getSimpleName()}.class)
-                .setParameter("id",${ccEntity}id)
+                .setParameter("id",${ccEntity}Id)
                 .getResultList(); 
     }
 

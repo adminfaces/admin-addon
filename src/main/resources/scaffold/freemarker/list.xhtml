@@ -78,8 +78,8 @@
     <#if !entity.isHidden(field)>
 			            <p:column headerText="${field.getName()?cap_first}" <#if field.hasAnnotation("javax.persistence.Id")> filterBy="${r"#{"}row.id}" </#if> <#if !entity.hasToManyAssociation(field)>sortBy="${r"#{"}row.${field.getName()}}"</#if>>
 			   <#if field.hasAnnotation("javax.persistence.Id")>
-				            <p:link value="${r"#{"}row.id}" outcome="/${ccEntity}/${ccEntity}-form.xhtml" style="font-weight:bold;text-decoration:underline">
-					            <f:param name="id" value="#${r"#{"}row.id}"></f:param>
+				            <p:link value="#${r"#{"}row.id}" outcome="/${ccEntity}/${ccEntity}-form.xhtml" style="font-weight:bold;text-decoration:underline">
+					            <f:param name="id" value="${r"#{"}row.id}"></f:param>
 				            </p:link>
 			   <#elseif !entity.hasAssociation(field)>
                    <#if entity.isDatatableEditable()>  
@@ -91,7 +91,7 @@
                                     <#if entity.isInputTextType(field)>
                                     <p:inputText id="${field.getName()}" value="${r"#{"}row.${field.getName()}}"/>    
                                     <#elseif entity.isInputNumberType(field)>
-                                    <p:inputNumber id="${field.getName()}" value="${r"#{"}row.${field.getName()}}"/>   
+                                    <p:inputNumber id="${field.getName()}" value="${r"#{"}row.${field.getName()}}" decimalPlaces="0" thousandSeparator="" decimalSeparator=""/>   
                                     <#elseif entity.isCalendarType(field)>
                                     <p:calendar id="${field.getName()}" value="${r"#{"}row.${field.getName()}}"/>
                                     <#elseif entity.isDatePickerType(field)>
@@ -200,7 +200,7 @@
                         <#if entity.isInputTextType(field)>
                         <p:inputText id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}"/>    
                         <#elseif entity.isInputNumberType(field)>
-                        <p:inputNumber id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}"/>   
+                        <p:inputNumber id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}" decimalPlaces="0" thousandSeparator="" decimalSeparator=""/>   
                         <#elseif entity.isCalendarType(field)>
                         <p:calendar id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}"/>
                         <#elseif entity.isDatePickerType(field)>
