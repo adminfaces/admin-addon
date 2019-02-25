@@ -341,7 +341,7 @@ public class AdminFacesScaffoldTest {
  
         
         shellTest.execute("cd ../Talk.java",15, TimeUnit.SECONDS);
-        shellTest.execute("jpa-new-field --named speaker --type com.github.admin.addon.model.Speaker --relationship-type Many-to-One", 10, TimeUnit.SECONDS); 
+        //shellTest.execute("jpa-new-field --named speaker --type com.github.admin.addon.model.Speaker --relationship-type Many-to-One", 10, TimeUnit.SECONDS); 
         shellTest.execute("jpa-new-field --named room --type com.github.admin.addon.model.Room --relationship-type Many-to-One", 10, TimeUnit.SECONDS);
         shellTest.execute("constraint-add --on-property speaker --constraint NotNull", 10, TimeUnit.SECONDS);
         shellTest.execute("constraint-add --on-property room --constraint NotNull", 10, TimeUnit.SECONDS);
