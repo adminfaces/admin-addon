@@ -10,7 +10,7 @@
                         <#elseif entity.isInputTextType(field)>
                                 <p:inputText id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" maxlength="${entity.getSize(field)?replace(",", "")}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} ${r"#{"}msg['label.is-required']}." </#if>/>
                         <#elseif entity.isTextAreaType(field)>
-                                <p:inputTextarea id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}"  rows="3" cols="20" counter="display" maxlength="${entity.getSize(field)?replace(",", "")}" counterTemplate="{0} ${r"#{"}msg['label.remaining-chars']}" autoResize="true" />
+                                <p:inputTextarea id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}"  rows="3" cols="20" counter="${field.getName()}Display" maxlength="${entity.getSize(field)?replace(",", "")}" counterTemplate="{0} ${r"#{"}msg['label.remaining-chars']}" autoResize="true" />
                         <#elseif entity.isInputNumberType(field)>
                                 <p:inputNumber id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" decimalPlaces="0" thousandSeparator="" decimalSeparator="" maxlength="${entity.getSize(field)?replace(",", "")}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} ${r"#{"}msg['label.is-required']}." </#if>/>
                         <#elseif entity.isCalendarType(field)>
@@ -133,7 +133,7 @@
                                 <@formFields entity=entity field=field/>
                                 <span class="help-block">
                                 <#if entity.isTextAreaType(field)>   
-                                    <h:outputText id="display" />
+                                    <h:outputText id="${field.getName()}Display" />
                                 </#if>
                                     <p:message for="${field.getName()}"/>
                                 </span>
@@ -150,7 +150,7 @@
                         <@formFields entity=entity field=field/>
                                 <span class="help-block">
                         <#if entity.isTextAreaType(field)>   
-                                    <h:outputText id="display" />
+                                    <h:outputText id="${field.getName()}Display" />
                         </#if>
                                     <p:message for="${field.getName()}"/>
                                 </span>
@@ -175,7 +175,7 @@
                                 <@formFields entity=entity field=field embeddedField=embeddedField/>
                                 <span class="help-block">
                                 <#if entity.isTextAreaType(field)>   
-                                    <h:outputText id="display" />
+                                    <h:outputText id="${field.getName()}Display" />
                                 </#if>
                                     <p:message for="${field.getName()}"/>
                                 </span>
@@ -192,7 +192,7 @@
                         <@formFields entity=entity field=field embeddedField=embeddedField/>
                                 <span class="help-block">
                         <#if entity.isTextAreaType(field)>   
-                                    <h:outputText id="display" />
+                                    <h:outputText id="${field.getName()}Display" />
                         </#if>
                                     <p:message for="${field.getName()}"/>
                                 </span>
