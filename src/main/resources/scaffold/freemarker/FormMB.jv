@@ -43,9 +43,10 @@ public class ${entity.getName()}FormMB extends CrudMB<${entity.getName()}> imple
         setCrudService(${service});
     }
 
+    @Override
     public void afterRemove() {
         try {
-            addDetailMsg("${entity.getName()} " + entity.get${entity.getDisplayField()?cap_first}() + " removed successfully");
+            //addDetailMsg("${entity.getName()} " + entity.get${entity.getDisplayField()?cap_first}() + " removed successfully");
             Faces.redirect("${ccEntity}/${ccEntity}-list.xhtml");
             clear(); 
             sessionFilter.clear(${entity.getName()}FormMB.class.getName());//removes filter saved in session for this bean.
@@ -54,33 +55,11 @@ public class ${entity.getName()}FormMB extends CrudMB<${entity.getName()}> imple
         }
     }
 
-    @Override
-    public void afterInsert() {
-        addDetailMessage("${entity.getName()} "+ entity.get${entity.getDisplayField()?cap_first}() + " created successfully");
-    }
-
-    @Override
-    public void afterUpdate() {
-        addDetailMessage("${entity.getName()} "+ entity.get${entity.getDisplayField()?cap_first}() + " updated successfully");
-    }
-
 <#list toOneFields as field>
     <#if entity.isAutoCompleteType(field)>
     public List<${field.getType().getSimpleName()}> complete${field.getName()?cap_first}(String query) {
         return ${service}.get${field.getName()?cap_first}sBy${entity.getAssociationDisplayField(field)?cap_first}(query);
     }
-   <#elseif entity.isSelectOneMenuType(field)>
-    public List<${field.getType().getSimpleName()}> get${field.getName()?cap_first}s() {
-        if(${field.getName()}s == null) {
-            ${field.getName()}s = ${service}.list${field.getName()?cap_first}s();
-        }
-        return ${field.getName()}s;
-    }
-
-    public void set${field.getName()?cap_first}s(List<${field.getType().getSimpleName()}> ${field.getName()}s) {
-        this.${field.getName()}s = ${field.getName()}s;
-    }
-
    </#if>
 </#list>
  

@@ -120,18 +120,6 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
     public List<${field.getType().getSimpleName()}> complete${field.getName()?cap_first}(String query) {
         return ${service}.get${field.getName()?cap_first}sBy${entity.getAssociationDisplayField(field)?cap_first}(query);
     }
-   <#elseif entity.isSelectOneMenuType(field)>
-    public List<${field.getType().getSimpleName()}> get${field.getName()?cap_first}s() {
-        if(${field.getName()}s == null) {
-            ${field.getName()}s = ${service}.list${field.getName()?cap_first}s();
-        }
-        return ${field.getName()}s;
-    }
-
-    public void set${field.getName()?cap_first}s(List<${field.getType().getSimpleName()}> ${field.getName()}s) {
-        this.${field.getName()}s = ${field.getName()}s;
-    }
-
    </#if>
 </#list>
 <#list toManyFields as field>

@@ -12,7 +12,6 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.*;
-
 <#list fields as field>
    <#if entity.hasToManyAssociation(field)>
 import ${entity.getArrayType(field).getQualifiedName()};   
@@ -22,13 +21,11 @@ import ${field.getType().getQualifiedName()};
 import ${field.getType().getQualifiedName()}_;   
    </#if> 
 </#list>
-
 <#if toManyFields?size != 0>
 import javax.persistence.TypedQuery;
 import javax.persistence.NoResultException;
 import javax.persistence.criteria.JoinType;
 </#if>
-
 <#if toOneFields?size != 0>
 import javax.persistence.criteria.JoinType;
 </#if>
@@ -46,7 +43,7 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
     protected AppLists appLists;
 
     @Override
-    public void beforeAll(${entity.getName()} ${ccEntity}) {
+    public void afterAll(${entity.getName()} ${ccEntity}) {
         appLists.clear${entity.getName()}s();//invalidate ${entity.getName()} list cache
     }
 
