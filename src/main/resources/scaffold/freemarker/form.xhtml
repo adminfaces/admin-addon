@@ -8,39 +8,39 @@
                                 <p:inputText id="id" value="${r"#{"}${mb}.entity.id}"
                                          readonly="true" styleClass="form-control ui-state-disabled" style="width: 100%"/>
                         <#elseif entity.isInputTextType(field)>
-                                <p:inputText id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" maxlength="${entity.getSize(field)?replace(",", "")}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
+                                <p:inputText id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" maxlength="${entity.getSize(field)?replace(",", "")}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} ${r"#{"}msg['label.is-required']}." </#if>/>
                         <#elseif entity.isTextAreaType(field)>
                                 <p:inputTextarea id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}"  rows="3" cols="20" counter="display" maxlength="${entity.getSize(field)?replace(",", "")}" counterTemplate="{0} ${r"#{"}msg['label.remaining-chars']}" autoResize="true" />
                         <#elseif entity.isInputNumberType(field)>
-                                <p:inputNumber id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" decimalPlaces="0" thousandSeparator="" decimalSeparator="" maxlength="${entity.getSize(field)?replace(",", "")}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
+                                <p:inputNumber id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" decimalPlaces="0" thousandSeparator="" decimalSeparator="" maxlength="${entity.getSize(field)?replace(",", "")}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} ${r"#{"}msg['label.is-required']}." </#if>/>
                         <#elseif entity.isCalendarType(field)>
-                                <p:calendar id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" showOn="both" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
+                                <p:calendar id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" showOn="both" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} ${r"#{"}msg['label.is-required']}." </#if>/>
                         <#elseif entity.isDatePickerType(field)>
-                                <p:datePicker id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" showOn="both" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
+                                <p:datePicker id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" showOn="both" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} ${r"#{"}msg['label.is-required']}." </#if>/>
                         <#elseif entity.isSpinnerType(field)>
-                                <p:spinner id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
+                                <p:spinner id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} ${r"#{"}msg['label.is-required']}." </#if>/>
                         <#elseif entity.isInputSwitchType(field)>
-                                <p:inputSwitch id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>/>
+                                <p:inputSwitch id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} ${r"#{"}msg['label.is-required']}." </#if>/>
                         <#elseif entity.isAutoCompleteType(field)>
-                                <p:autoComplete id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" completeMethod="${r"#{"}${mb}.complete${field.getName()?cap_first}}" minQueryLength="2" dropdown="true" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>
+                                <p:autoComplete id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" completeMethod="${r"#{"}${mb}.complete${field.getName()?cap_first}}" minQueryLength="2" dropdown="true" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} ${r"#{"}msg['label.is-required']}." </#if>
                                         var="${field.getName()}" itemLabel="${r"#{"}${field.getName()}.${entity.getAssociationDisplayField(field)}}" itemValue="${r"#{"}${field.getName()}}" converter="entityConverter"/> 
                         <#elseif entity.isSelectOneMenuType(field)>
                                 <p:selectOneMenu id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" converter="entityConverter"
-                                            <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>>
+                                            <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} ${r"#{"}msg['label.is-required']}." </#if>>
                                    <f:selectItem itemLabel="${r"#{"}msg['label.empty-select']}" itemValue=""/>
                                    <f:selectItems value="${r"#{"}all${field.getName()?cap_first}s}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
 										   itemValue="${r"#{"}item}"/>
                                 </p:selectOneMenu>
                         <#elseif entity.isCheckboxMenuType(field)>
                                 <p:selectCheckboxMenu id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" label="${field.getName()?cap_first}"
-                                          multiple="true" filter="true" filterMatchMode="contains" converter="entityConverter" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>>
+                                          multiple="true" filter="true" filterMatchMode="contains" converter="entityConverter" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} ${r"#{"}msg['label.is-required']}." </#if>>
                                     <f:attribute name="collectionType" value="java.util.HashSet" />
                                     <f:selectItems value="${r"#{"}all${field.getName()?cap_first}}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
 										   itemValue="${r"#{"}item}"/>
                                 </p:selectCheckboxMenu>
                         <#elseif entity.isSelectManyMenuType(field)>
                                 <p:selectManyMenu id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" converter="entityConverter"
-                                      var="t" filter="true" filterMatchMode="contains" showCheckbox="true" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} is required." </#if>>
+                                      var="t" filter="true" filterMatchMode="contains" showCheckbox="true" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} ${r"#{"}msg['label.is-required']}." </#if>>
                                     <f:attribute name="collectionType" value="java.util.HashSet"/>  
                                     <f:selectItems value="${r"#{"}all${field.getName()?cap_first}}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}" itemValue="${r"#{"}item}" />
                                     <p:column>
@@ -56,7 +56,7 @@
                 template="${r"#{"}layoutMB.template}">
 
     <ui:define name="title">
-        ${entity.getName()} form
+        ${entity.getName()} ${r"#{"}msg['title.form']}
     </ui:define>
 <#assign mb = "${ccEntity}FormMB">
     <ui:define name="body">
@@ -66,22 +66,22 @@
             <f:event type="preRenderView" listener="${r"#{"}${mb}.init}"/>
         </f:metadata>
 
-        <adm:breadcrumb title="${r"#{"}empty ${mb}.id ? 'New ${entity.getName()}' : '${entity.getName()} '.concat(${mb}.id)}" link="${ccEntity}/${ccEntity}-form.xhtml?id=${r"#{"}${mb}.id}"/>
+        <adm:breadcrumb title="${r"#{"}empty ${mb}.id ? '${r"#{"}msg['label.new']} ${entity.getName()}' : '${entity.getName()} '.concat(${mb}.id)}" link="${ccEntity}/${ccEntity}-form.xhtml?id=${r"#{"}${mb}.id}"/>
         <h:form id="form" prependId="false">
             <p:focus rendered="${r"#{"}empty ${mb}.id}"/>
 
             <div class="box box-primary">
                 <div class="box-header with-border">
                     <div id="main-buttons" class="hidden-sm hidden-xs">
-                        <p:commandButton value="Save" action="${r"#{"}${mb}.save}" update="@form"
+                        <p:commandButton value="${r"#{"}msg['label.save']}" action="${r"#{"}${mb}.save}" update="@form"
                                          icon="fa fa-check" styleClass="btn-primary"/>
                         <p:spacer width="5" rendered="${r"#{"}${mb}.isNew()}"/>
-                        <p:commandButton value="Clear" action="${r"#{"}${mb}.clear}" process="@this"
+                        <p:commandButton value="${r"#{"}msg['label.clear']}" action="${r"#{"}${mb}.clear}" process="@this"
                                          icon="fa fa-refresh" styleClass="btn-success"
                                          update="@form" rendered="${r"#{"}${mb}.isNew()}" resetValues="true"/>
                         <p:spacer width="5" rendered="${r"#{"}not ${mb}.isNew()}"/>
 
-                        <p:commandButton value="Delete" action="${r"#{"}${mb}.remove}" process="@this"
+                        <p:commandButton value="${r"#{"}msg['label.delete']}" action="${r"#{"}${mb}.remove}" process="@this"
                                          rendered="${r"#{"}not ${mb}.isNew()}" icon="fa fa-trash"
                                          styleClass="btn-danger">
                             <f:setPropertyActionListener value="true"
@@ -89,7 +89,7 @@
                             <p:confirm header="Confirmation" message="Are you sure?" icon="ui-icon-danger"/>
                         </p:commandButton>
                         <p:spacer width="5"/>
-                        <p:commandButton value="Back" immediate="true"
+                        <p:commandButton value="${r"#{"}msg['label.back']}" immediate="true"
                                          action="/${ccEntity}/${ccEntity}-list?faces-redirect=true"
                                          process="@this"
                                          icon="fa fa-reply"/>
@@ -202,9 +202,9 @@
             </div>
 
             <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" styleClass="box-danger box-solid">
-                <p:commandButton value="Yes" type="button" styleClass="btn-material btn-primary ui-confirmdialog-yes"
+                <p:commandButton value="${r"#{"}msg['label.yes']}" type="button" styleClass="btn-material btn-primary ui-confirmdialog-yes"
                                  icon="fa fa-check"/>
-                <p:commandButton value="No" type="button" styleClass="btn-material btn-danger ui-confirmdialog-no"
+                <p:commandButton value="${r"#{"}msg['label.no']}" type="button" styleClass="btn-material btn-danger ui-confirmdialog-no"
                                  icon="fa fa-close"/>
             </p:confirmDialog>
         </h:form>
