@@ -66,7 +66,7 @@
             <f:event type="preRenderView" listener="${r"#{"}${mb}.init}"/>
         </f:metadata>
 
-        <adm:breadcrumb title="${r"#{"}empty ${mb}.id ? '${r"#{"}msg['label.new']} ${entity.getName()}' : '${entity.getName()} '.concat(${mb}.id)}" link="${ccEntity}/${ccEntity}-form.xhtml?id=${r"#{"}${mb}.id}"/>
+        <adm:breadcrumb title="${r"#{"}empty ${mb}.id ? msg['label.new'].concat(' ${entity.getName()}') : '${entity.getName()} '.concat(${mb}.id)}" link="${ccEntity}/${ccEntity}-form.xhtml?id=${r"#{"}${mb}.id}"/>
         <h:form id="form" prependId="false">
             <p:focus rendered="${r"#{"}empty ${mb}.id}"/>
 
@@ -94,20 +94,20 @@
                                          process="@this"
                                          icon="fa fa-reply"/>
                     </div>
-                    <p:splitButton value="Save" action="${r"#{"}${mb}.save}" update="@form"
+                    <p:splitButton value="${r"#{"}msg['label.save']}" action="${r"#{"}${mb}.save}" update="@form"
                                    icon="fa fa-check"
                                    styleClass="hidden-md hidden-lg btn-primary">
-                        <p:menuitem value="Reset" action="${r"#{"}${mb}.clear}"
+                        <p:menuitem value="${r"#{"}msg['label.clear']}" action="${r"#{"}${mb}.clear}"
                                     process="@this" update="@form" rendered="${r"#{"}${mb}.isNew()}"
                                     resetValues="true" icon="fa fa-refresh"/>
-                        <p:menuitem value="Delete" action="${r"#{"}${mb}.remove}" process="@this"
+                        <p:menuitem value="${r"#{"}msg['label.delete']}" action="${r"#{"}${mb}.remove}" process="@this"
                                     rendered="${r"#{"}not ${mb}.isNew()}" icon="fa fa-trash">
                             <f:setPropertyActionListener value="true"
                                                          target="${r"#{"}facesContext.externalContext.flash.keepMessages}"/>
                             <p:confirm header="Confirmation" message="Are you sure?" icon="ui-icon-danger"/>
                         </p:menuitem>
                         <p:separator/>
-                        <p:menuitem value="Back" action="/${ccEntity}/${ccEntity}-list?faces-redirect=true"
+                        <p:menuitem value="${r"#{"}msg['label.back']}" action="/${ccEntity}/${ccEntity}-list?faces-redirect=true"
                                     process="@this" immediate="true"
                                     icon="fa fa-reply"/>
                     </p:splitButton>
