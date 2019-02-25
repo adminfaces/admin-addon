@@ -653,9 +653,9 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 "        }\n" +
 "               return ENTITYs;").replaceAll("ENTITY", ccEntity))
                 .setReturnType("java.util.Set<" + entity.getName() + ">");
+            method.addAnnotation("javax.enterprise.inject.Produces");
             method.addAnnotation("javax.inject.Named")
                 .setStringValue("value",methodName);
-            method.addAnnotation("javax.enterprise.inject.Produces");
             
             methodName = "clear"+entity.getName()+"s";//Room becomes clearRooms()
             method = appListsSource.addMethod()

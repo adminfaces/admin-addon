@@ -31,14 +31,14 @@
                                    <f:selectItems value="${r"#{"}all${field.getName()?cap_first}s}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
 										   itemValue="${r"#{"}item}"/>
                                 </p:selectOneMenu>
-                        <#elseif entity.isCheckboxMenuType(field)>
+                        <#elseif entity.isCheckboxMenuType(field) && !entity.isBidirectionalAssociation(field)>
                                 <p:selectCheckboxMenu id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" label="${field.getName()?cap_first}"
                                           multiple="true" filter="true" filterMatchMode="contains" converter="entityConverter" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} ${r"#{"}msg['label.is-required']}." </#if>>
                                     <f:attribute name="collectionType" value="java.util.HashSet" />
                                     <f:selectItems value="${r"#{"}all${field.getName()?cap_first}}" var="item" itemLabel="${r"#{"}item.${entity.getAssociationDisplayField(field)}}"
 										   itemValue="${r"#{"}item}"/>
                                 </p:selectCheckboxMenu>
-                        <#elseif entity.isSelectManyMenuType(field)>
+                        <#elseif entity.isSelectManyMenuType(field) && !entity.isBidirectionalAssociation(field)>
                                 <p:selectManyMenu id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" converter="entityConverter"
                                       var="t" filter="true" filterMatchMode="contains" showCheckbox="true" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} ${r"#{"}msg['label.is-required']}." </#if>>
                                     <f:attribute name="collectionType" value="java.util.HashSet"/>  
@@ -47,6 +47,12 @@
                                        <h:outputText value="${r"#{"}t.${entity.getAssociationDisplayField(field)}}" />
                                     </p:column>
                                 </p:selectManyMenu>
+                        <#elseif entity.isBidirectionalAssociation(field)>
+                                <p:dataList id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" var="d"> 
+                                    <p:link value="${r"#{"}d.${entity.getAssociationDisplayField(field)}}" outcome="/${entity.getArrayType(field).getSimpleName()?lower_case}/${entity.getArrayType(field).getSimpleName()?lower_case}-form.xhtml"> 
+                                        <f:param name="id" value="${r"#{"}d.id}"></f:param> 
+                                    </p:link> 
+                                </p:dataList> 
                         </#if>  
 </#macro>
 <?xml version="1.0" encoding="UTF-8"?>

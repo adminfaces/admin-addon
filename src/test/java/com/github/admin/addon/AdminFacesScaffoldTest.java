@@ -128,7 +128,7 @@ public class AdminFacesScaffoldTest {
         JavaClassSource serviceSource = Roaster.parse(JavaClassSource.class, new File(service.getFullyQualifiedName()));
         assertThat(serviceSource.hasSyntaxErrors()).isFalse();
         
-        assertThat(serviceSource.hasMethodSignature("getTalksById", Long.class)).isTrue();  
+        assertThat(serviceSource.hasMethodSignature("getTalksBySpeakerId", Long.class)).isTrue();  
         
         assertThat(serviceSource.hasMethodSignature("findById", Serializable.class)).isTrue();  
 
@@ -331,7 +331,7 @@ public class AdminFacesScaffoldTest {
         shellTest.execute("jpa-new-field --named bio --length 2000", 10, TimeUnit.SECONDS);
         shellTest.execute("jpa-new-field --named twitter", 10, TimeUnit.SECONDS);
         
-        shellTest.execute("jpa-new-field --named talks --type com.github.admin.addon.model.Talk --relationship-type One-to-Many", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named talks --type com.github.admin.addon.model.Talk --relationship-type One-to-Many --inverse-field-name speaker", 10, TimeUnit.SECONDS);
         shellTest.execute("jpa-new-field --named address --entity --type com.github.admin.addon.model.Address --relationship-type Embedded", 10, TimeUnit.SECONDS);
         
         shellTest.execute("constraint-add --on-property firstname --constraint NotNull", 10, TimeUnit.SECONDS);

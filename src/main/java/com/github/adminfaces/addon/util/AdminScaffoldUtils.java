@@ -44,6 +44,11 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
     public static boolean hasToManyAssociation(FieldSource<JavaClassSource> field) {
         return field.hasAnnotation(OneToMany.class) || field.hasAnnotation(ManyToMany.class);
     }
+    
+    public static boolean isBidirectionalAssociation(FieldSource<JavaClassSource> field) {
+        return (field.hasAnnotation(OneToMany.class) && field.getAnnotation(OneToMany.class).getStringValue("mappedBy") != null) 
+            || (field.hasAnnotation(ManyToMany.class) && field.getAnnotation(ManyToMany.class).getStringValue("mappedBy") != null);
+    }
 
     public static boolean hasToOneAssociation(FieldSource<JavaClassSource> field) {
         return field.hasAnnotation(OneToOne.class) || field.hasAnnotation(ManyToOne.class);
@@ -121,7 +126,5 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
         JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
         return sourceFacet.getSourceDirectory().getFullyQualifiedName();
     }
-    
-    
    
 }

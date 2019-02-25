@@ -29,6 +29,8 @@ import javax.persistence.criteria.JoinType;
 <#if toOneFields?size != 0>
 import javax.persistence.criteria.JoinType;
 </#if>
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import static com.github.adminfaces.template.util.Assert.has;
 
 
@@ -54,6 +56,7 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
      * @param filter holds restrictions populated on the list page
      * @return a criteria populated with given restrictions 
      */ 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     protected Criteria<${entity.getName()}, ${entity.getName()}> configRestrictions(Filter<${entity.getName()}> filter) {
         Criteria<${entity.getName()}, ${entity.getName()}> criteria = criteria();
         
@@ -112,6 +115,7 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
     @Override
     public void beforeRemove(${entity.getName()} ${ccEntity}) {
 <#list toManyFields as field>
+<#if entity.isBidirectionalAssociation(field)>
         Criteria<${entity.getName()}, ${entity.getName()}> ${entity.getName()?lower_case}${field.getName()?cap_first}Criteria = criteria().
             join(${entity.getName()}_.${field.getName()}, where(${entity.getArrayType(field)}.class, JoinType.LEFT)
                 .eq(${entity.getArrayType(field)}_.${ccEntity}, ${ccEntity}));
@@ -119,6 +123,7 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
         if(count(${entity.getName()?lower_case}${field.getName()?cap_first}Criteria) > 0) {
             throw new BusinessException("Cannot remove "+${ccEntity}.get${entity.getDisplayField()?cap_first}() + " because it has ${field.getName()} associated.");
         }
+</#if>
 </#list>
 
     }
@@ -155,6 +160,7 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
 
 <#list toOneFields as field>
     <#if entity.isAutoCompleteType(field)>
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<${field.getType().getSimpleName()}> get${field.getName()?cap_first}sBy${entity.getAssociationDisplayField(field)?cap_first}(String query) {
         return criteria(${field.getType().getSimpleName()}.class)
                .likeIgnoreCase(${field.getType().getSimpleName()}_.${entity.getAssociationDisplayField(field)}, "%" + query + "%")
@@ -164,7 +170,8 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
 </#list>    
 <#list toManyFields as field>
     <#if entity.isCheckboxMenuType(field) || entity.isSelectManyMenuType(field)>
-    public List<${entity.getArrayType(field).getSimpleName()}> get${field.getName()?cap_first}ById(${nullablePrimaryKeyType} ${ccEntity}Id) {
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public List<${entity.getArrayType(field).getSimpleName()}> get${field.getName()?cap_first}By${entity.getName()}Id(${nullablePrimaryKeyType} ${ccEntity}Id) {
          return getEntityManager().createQuery("select r from ${entity.getArrayType(field).getSimpleName()} r where r.${ccEntity}.id =:id",${entity.getArrayType(field).getSimpleName()}.class)
                 .setParameter("id",${ccEntity}Id)
                 .getResultList(); 
@@ -174,8 +181,9 @@ public class ${entity.getName()}Service extends CrudService<${entity.getName()},
 
 <#if toManyFields?size != 0>
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public ${entity.getName()} findById(Serializable id) {
-        TypedQuery<${entity.getName()}> findById = getEntityManager().createQuery("select s from ${entity.getName()} s <#list toManyFields as field>left join fetch s.${field.getName()}</#list>  where s.id = :id", ${entity.getName()}.class)
+        TypedQuery<${entity.getName()}> findById = getEntityManager().createQuery("select s from ${entity.getName()} s <#list toManyFields as field>left join fetch s.${field.getName()}</#list> where s.id = :id", ${entity.getName()}.class)
             .setParameter("id", id);
         try {
             return findById.getSingleResult();

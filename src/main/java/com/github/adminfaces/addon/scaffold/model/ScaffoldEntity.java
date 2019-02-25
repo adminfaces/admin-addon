@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.roaster.Roaster;
@@ -146,6 +148,10 @@ public class ScaffoldEntity implements Serializable {
 
     public boolean hasToOneAssociation(FieldSource<JavaClassSource> field) { //just expose to freemarker
         return AdminScaffoldUtils.hasToOneAssociation(field);
+    }
+    
+    public boolean isBidirectionalAssociation(FieldSource<JavaClassSource> field) {
+        return AdminScaffoldUtils.isBidirectionalAssociation(field);
     }
 
     public Type<JavaClassSource> getArrayType(FieldSource<JavaClassSource> field) { //just expose to freemarker
