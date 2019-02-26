@@ -48,7 +48,7 @@
                                     </p:column>
                                 </p:selectManyMenu>
                         <#elseif entity.isBidirectionalAssociation(field)>
-                                <p:dataList id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" var="d"> 
+                                <p:dataList id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" var="d" paginator="${r"#{"}(not empty ${mb}.${fieldName} and ${mb}.${fieldName}.size() > 5) ? 'true':'false' }" paginatorPosition="bottom" emptyMessage="${r"#{"}msg['label.empty-list']}"> 
                                     <p:link value="${r"#{"}d.${entity.getAssociationDisplayField(field)}}" outcome="/${entity.getArrayType(field).getSimpleName()?lower_case}/${entity.getArrayType(field).getSimpleName()?lower_case}-form.xhtml"> 
                                         <f:param name="id" value="${r"#{"}d.id}"></f:param> 
                                     </p:link> 

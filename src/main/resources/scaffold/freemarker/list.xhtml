@@ -59,7 +59,7 @@
                     <p:separator/>
                     <p:dataTable widgetVar="${ccEntity}sTable" var="row" value="${r"#{"}${mb}.list}" rows="10"
                                  rowKey="${r"#{"}row.id}" lazy="true" paginator="true" sortBy="${r"#{"}row.id}"
-                                 filteredValue="${r"#{"}${mb}.filteredValue}" styleClass="no-border"
+                                 filteredValue="${r"#{"}${mb}.filteredValue}" styleClass="no-border" emptyMessage="${r"#{"}msg['label.empty-list']}"
                                  paginatorPosition="bottom" selection="${r"#{"}${mb}.selectionList}" <#if entity.isDatatableEditable()>editable="true"</#if>
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} {JumpToPageDropdown}"
                                  currentPageReportTemplate="[ {startRecord} to {endRecord} of {totalRecords} ]"
@@ -142,8 +142,8 @@
                                 <p:commandLink value="${r"#{"}msg['label.view']} ${field.getName()}" action="${r"#{"}${mb}.show${field.getName()?cap_first}Detail(row.id)}" process="@this"
                                            update="@(.ui-datatable)" style="text-decoration:underline"/>
                             </h:panelGroup>
-                            <p:dataList rendered="${r"#{"}${mb}.show${field.getName()?cap_first}DetailMap[row.id]}"
-                                    value="${r"#{"}${mb}.${ccEntity}${field.getName()?cap_first}}" var="d" styleClass="no-border">
+                            <p:dataList rendered="${r"#{"}${mb}.show${field.getName()?cap_first}DetailMap[row.id]}" emptyMessage="${r"#{"}msg['label.empty-list']}"
+                                    value="${r"#{"}${mb}.${ccEntity}${field.getName()?cap_first}}" var="d" styleClass="no-border" paginator="${r"#{"}(not empty ${mb}.${ccEntity}${field.getName()?cap_first} and ${mb}.${ccEntity}${field.getName()?cap_first}.size() > 5) ? 'true':'false' }">
                                 <p:link value="${r"#{"}d.${entity.getAssociationDisplayField(field)}}" outcome="/${entity.getArrayType(field).getSimpleName()?lower_case}/${entity.getArrayType(field).getSimpleName()?lower_case}-form.xhtml">
                                     <f:param name="id" value="${r"#{"}d.id}"></f:param>
                                 </p:link>                 

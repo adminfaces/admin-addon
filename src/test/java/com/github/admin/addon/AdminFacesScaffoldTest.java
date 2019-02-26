@@ -218,7 +218,7 @@ public class AdminFacesScaffoldTest {
         assertThat(speakerListPageFile).exists();
         assertThat(contentOf(speakerListPageFile))
             .contains("<h:panelGroup rendered=\"#{not speakerListMB.showTalksDetailMap[row.id]}\" style=\"text-align: center\">")
-            .contains("<p:dataList rendered=\"#{speakerListMB.showTalksDetailMap[row.id]}\" value=\"#{speakerListMB.speakerTalks}\" var=\"d\" styleClass=\"no-border\"> ");
+            .contains("<p:dataList rendered=\"#{speakerListMB.showTalksDetailMap[row.id]}\" value=\"#{speakerListMB.speakerTalks}\" var=\"d\" styleClass=\"no-border\" ");
         
         shellTest.execute("cd "+project.getRoot().getFullyQualifiedName());
         MavenFacet maven = project.getFacet(MavenFacet.class);
@@ -283,7 +283,7 @@ public class AdminFacesScaffoldTest {
             .contains("<p:ajax event=\"rowEdit\" listener=\"#{speakerListMB.onRowEdit}\"")
             .contains("<p:selectManyMenu id=\"talks\" value=\"#{speakerListMB.filter.entity.talks}\"")
             .contains("<h:panelGroup rendered=\"#{not speakerListMB.showTalksDetailMap[row.id]}\" style=\"text-align: center\">")
-            .contains("<p:dataList rendered=\"#{speakerListMB.showTalksDetailMap[row.id]}\" value=\"#{speakerListMB.speakerTalks}\" var=\"d\" styleClass=\"no-border\"> ");
+            .contains("<p:dataList rendered=\"#{speakerListMB.showTalksDetailMap[row.id]}\" value=\"#{speakerListMB.speakerTalks}\" var=\"d\" styleClass=\"no-border\"");
         
        FileResource<?> talkListPage = web.getWebResource("/talk/talk-list.xhtml");
         
