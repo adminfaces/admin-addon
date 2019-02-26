@@ -218,9 +218,8 @@ public class AdminFacesScaffoldTest {
         assertThat(speakerListPageFile).exists();
         assertThat(contentOf(speakerListPageFile))
             .contains("<h:panelGroup rendered=\"#{not speakerListMB.showTalksDetailMap[row.id]}\" style=\"text-align: center\">")
-            .contains("<p:dataList rendered=\"#{speakerListMB.showTalksDetailMap[row.id]}\" value=\"#{speakerListMB.speakerTalks}\" var=\"d\" styleClass=\"no-border\" ");
+            .contains("<p:dataList rendered=\"#{speakerListMB.showTalksDetailMap[row.id]}\" emptyMessage=\"#{msg['label.empty-list']}\" value=\"#{speakerListMB.speakerTalks}\" var=\"d\" styleClass=\"no-border\" ");
         
-        shellTest.execute("cd "+project.getRoot().getFullyQualifiedName());
         MavenFacet maven = project.getFacet(MavenFacet.class);
         boolean buildSuccess = maven.executeMaven(Arrays.asList("clean","package"));
         assertThat(buildSuccess).isTrue();
@@ -283,7 +282,7 @@ public class AdminFacesScaffoldTest {
             .contains("<p:ajax event=\"rowEdit\" listener=\"#{speakerListMB.onRowEdit}\"")
             .contains("<p:selectManyMenu id=\"talks\" value=\"#{speakerListMB.filter.entity.talks}\"")
             .contains("<h:panelGroup rendered=\"#{not speakerListMB.showTalksDetailMap[row.id]}\" style=\"text-align: center\">")
-            .contains("<p:dataList rendered=\"#{speakerListMB.showTalksDetailMap[row.id]}\" value=\"#{speakerListMB.speakerTalks}\" var=\"d\" styleClass=\"no-border\"");
+            .contains("<p:dataList rendered=\"#{speakerListMB.showTalksDetailMap[row.id]}\" emptyMessage=\"#{msg['label.empty-list']}\" value=\"#{speakerListMB.speakerTalks}\" var=\"d\" styleClass=\"no-border\"");
         
        FileResource<?> talkListPage = web.getWebResource("/talk/talk-list.xhtml");
         
@@ -293,7 +292,6 @@ public class AdminFacesScaffoldTest {
             .contains("<p:selectOneMenu id=\"room\" value=\"#{talkListMB.filter.entity.room}\" converter=\"entityConverter\"> ")
             .contains("<p:selectOneMenu id=\"speaker\" value=\"#{talkListMB.filter.entity.speaker}\" converter=\"entityConverter\">");
         
-        shellTest.execute("cd "+project.getRoot().getFullyQualifiedName());
         MavenFacet maven = project.getFacet(MavenFacet.class);
         boolean buildSuccess = maven.executeMaven(Arrays.asList("clean","package"));
         assertThat(buildSuccess).isTrue();
