@@ -74,7 +74,7 @@
 
         <adm:breadcrumb title="${r"#{"}empty ${mb}.id ? msg['label.new'].concat(' ${entity.getName()}') : '${entity.getName()} '.concat(${mb}.id)}" link="${ccEntity}/${ccEntity}-form.xhtml?id=${r"#{"}${mb}.id}"/>
         <h:form id="form" prependId="false">
-            <p:focus rendered="${r"#{"}empty ${mb}.id}"/>
+            <p:focus context="@form"/>
 
             <div class="box box-primary">
                 <div class="box-header with-border">
