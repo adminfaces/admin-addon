@@ -70,7 +70,8 @@ public class AdminFacesScaffoldTest {
     public static AddonArchive getDeployment() {
         return ShrinkWrap.create(AddonArchive.class).addBeansXML().addClass(TestUtil.class)
             .addPackages(true,"org.assertj.core")
-            .addAsResource("scaffold/custom-global-config.yml","custom-global-config.yml");
+            .addAsResource("scaffold/custom-global-config.yml","custom-global-config.yml")
+            .addAsResource("InitDB.java","InitDB.java");
     }
 
     @Before
@@ -87,6 +88,13 @@ public class AdminFacesScaffoldTest {
         shellTest.execute("adminfaces-setup", 60, TimeUnit.SECONDS);
         shellTest.clearScreen();
         generateEntities(); 
+        MavenFacet mavenFacet = project.getFacet(MavenFacet.class);
+        mavenFacet.getModel().setArtifactId("admin");
+        mavenFacet.getModel().setVersion("1.0");
+        mavenFacet.getModel().getBuild().setFinalName("admin");
+        JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
+        IOUtils.copy(getClass().getResourceAsStream("/InitDB.java"),
+                new FileOutputStream(new File(sourceFacet.getSourceDirectory().getFullyQualifiedName() + "/com/github/admin/addon/infra/InitDB.java")));
     }
     
     @Test
