@@ -6,9 +6,6 @@ import java.util.List;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Id;
 import javax.persistence.Transient;
 
 import org.jboss.forge.roaster.model.Type;
@@ -22,9 +19,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.roaster.Roaster;
 

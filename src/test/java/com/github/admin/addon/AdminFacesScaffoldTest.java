@@ -27,6 +27,7 @@ import org.junit.runner.RunWith;
 
 import com.github.adminfaces.addon.util.Constants;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
 import javax.inject.Inject;
@@ -41,6 +42,7 @@ import org.jboss.forge.addon.projects.facets.WebResourcesFacet;
 import org.jboss.forge.addon.resource.FileResource;
 import static org.assertj.core.api.Assertions.contentOf;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import org.jboss.forge.addon.javaee.jpa.JPAFacet_2_1;
 import org.jboss.forge.addon.maven.projects.MavenFacet;
 import org.jboss.forge.addon.projects.facets.ResourcesFacet;
 import org.jboss.forge.addon.resource.DirectoryResource;
@@ -80,18 +82,16 @@ public class AdminFacesScaffoldTest {
         globalConfigField.setAccessible(true);
         globalConfigField.set(null,null);
         project = projectFactory.createTempProject(Arrays.asList(JavaEE7Facet.class, ServletFacet_3_1.class,
-            JPAFacet.class, FacesFacet_2_0.class, JavaSourceFacet.class));
+            JPAFacet_2_1.class, FacesFacet_2_0.class, JavaSourceFacet.class));
         shellTest.getShell().setCurrentResource(project.getRoot());
         MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
         metadataFacet.setProjectGroupName("com.github.admin.addon");
         metadataFacet.setProjectName("AdminFaces");
+        metadataFacet.setProjectVersion("1.0");
+        shellTest.execute("jpa-setup --provider Hibernate --container JBOSS_EAP7 --db-type H2 --data-source-name java:jboss/datasources/ExampleDS", 30, TimeUnit.SECONDS);
         shellTest.execute("adminfaces-setup", 60, TimeUnit.SECONDS);
         shellTest.clearScreen();
         generateEntities(); 
-        MavenFacet mavenFacet = project.getFacet(MavenFacet.class);
-        mavenFacet.getModel().setArtifactId("admin");
-        mavenFacet.getModel().setVersion("1.0");
-        mavenFacet.getModel().getBuild().setFinalName("admin");
         JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
         IOUtils.copy(getClass().getResourceAsStream("/InitDB.java"),
                 new FileOutputStream(new File(sourceFacet.getSourceDirectory().getFullyQualifiedName() + "/com/github/admin/addon/infra/InitDB.java")));
