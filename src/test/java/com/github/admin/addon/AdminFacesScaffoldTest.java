@@ -217,7 +217,7 @@ public class AdminFacesScaffoldTest {
         File talkListPageFile = new File(talkListPage.getFullyQualifiedName());
         assertThat(talkListPageFile).exists();
         assertThat(contentOf(talkListPageFile))
-            .contains("<p:column headerText=\"Speaker\" sortBy=\"#{row.speaker}\">")
+            .contains("<p:column headerText=\"Speaker\" sortBy=\"#{row.speaker}\" priority=\"2\">")
             .contains("#{row.speaker.firstname}");
         
         FileResource<?> speakerListPage = web.getWebResource("/speaker/speaker-list.xhtml");

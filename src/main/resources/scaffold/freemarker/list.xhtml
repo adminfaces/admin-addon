@@ -77,7 +77,7 @@
 
  <#list fields as field>
     <#if !entity.isHidden(field)>
-			            <p:column headerText="${field.getName()?cap_first}" <#if field.hasAnnotation("javax.persistence.Id")> filterBy="${r"#{"}row.id}" </#if> <#if !entity.hasToManyAssociation(field)>sortBy="${r"#{"}row.${field.getName()}}"</#if>>
+			            <p:column headerText="${field.getName()?cap_first}" <#if field.hasAnnotation("javax.persistence.Id")> filterBy="${r"#{"}row.id}" </#if> <#if !entity.hasToManyAssociation(field)>sortBy="${r"#{"}row.${field.getName()}}"</#if> <#if entity.isRequired(field) && !field.hasAnnotation("javax.persistence.Id")>priority="2"<#elseif !field.hasAnnotation("javax.persistence.Id")>priority="3"</#if>>
 			   <#if field.hasAnnotation("javax.persistence.Id")>
 				            <p:link value="#${r"#{"}row.id}" outcome="/${ccEntity}/${ccEntity}-form.xhtml" style="font-weight:bold;text-decoration:underline">
 					            <f:param name="id" value="${r"#{"}row.id}"></f:param>
