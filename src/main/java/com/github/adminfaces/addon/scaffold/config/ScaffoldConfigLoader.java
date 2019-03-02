@@ -100,6 +100,7 @@ public class ScaffoldConfigLoader {
         }
         entityConfig.setMenuIcon(globalConfig.getMenuIcon());
         entityConfig.setDatatableEditable(globalConfig.getDatatableEditable());
+        entityConfig.setDatatableReflow(globalConfig.getDatatableReflow());
         entityConfigFile.setContents(new Yaml().dump(entityConfig));
         return entityConfig;
     }

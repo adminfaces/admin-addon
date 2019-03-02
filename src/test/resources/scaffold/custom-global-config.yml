@@ -3,5 +3,6 @@ toOneComponentType: SELECT_ONE_MENU
 toManyComponentType: SELECT_MANY_MENU
 dateComponentType: DATEPICKER
 datatableEditable: true
+datatableReflow: false
 inputSize: 30
 menuIcon: "fa fa-circle"

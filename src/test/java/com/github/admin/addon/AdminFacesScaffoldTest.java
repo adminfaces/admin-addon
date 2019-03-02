@@ -225,6 +225,8 @@ public class AdminFacesScaffoldTest {
         File speakerListPageFile = new File(speakerListPage.getFullyQualifiedName());
         assertThat(speakerListPageFile).exists();
         assertThat(contentOf(speakerListPageFile))
+            .contains("<p:dataTable widgetVar=\"speakersTable\" var=\"row\" value=\"#{speakerListMB.list}\" rows=\"10\" rowKey=\"#{row.id}\" lazy=\"true\" paginator=\"true\" sortBy=\"#{row.id}\" reflow=\"true\" ")
+            .contains("<p:column headerText=\"Firstname\" sortBy=\"#{row.firstname}\" priority=\"2\"")
             .contains("<h:panelGroup rendered=\"#{not speakerListMB.showTalksDetailMap[row.id]}\" style=\"text-align: center\">")
             .contains("<p:dataList rendered=\"#{speakerListMB.showTalksDetailMap[row.id]}\" emptyMessage=\"#{msg['label.empty-list']}\" value=\"#{speakerListMB.speakerTalks}\" var=\"d\" styleClass=\"no-border\" ");
         
@@ -287,6 +289,7 @@ public class AdminFacesScaffoldTest {
         assertThat(speakerListPageFile).exists();
         assertThat(contentOf(speakerListPageFile))
             .contains("editable=\"true\"")
+            .doesNotContain("reflow=\"true\"")
             .contains("<p:ajax event=\"rowEdit\" listener=\"#{speakerListMB.onRowEdit}\"")
             .contains("<p:selectManyMenu id=\"talks\" value=\"#{speakerListMB.filter.entity.talks}\"")
             .contains("<h:panelGroup rendered=\"#{not speakerListMB.showTalksDetailMap[row.id]}\" style=\"text-align: center\">")

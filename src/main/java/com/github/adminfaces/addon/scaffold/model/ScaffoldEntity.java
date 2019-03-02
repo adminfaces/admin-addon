@@ -216,5 +216,9 @@ public class ScaffoldEntity implements Serializable {
     public boolean isDatatableEditable() {
         return entityConfig.getDatatableEditable();
     }
+    
+    public boolean isDatatableReflow() {
+        return entityConfig.getDatatableReflow();
+    }
 
 }

@@ -59,7 +59,7 @@
 
                     <p:separator/>
                     <p:dataTable widgetVar="${ccEntity}sTable" var="row" value="${r"#{"}${mb}.list}" rows="10"
-                                 rowKey="${r"#{"}row.id}" lazy="true" paginator="true" sortBy="${r"#{"}row.id}"
+                                 rowKey="${r"#{"}row.id}" lazy="true" paginator="true" sortBy="${r"#{"}row.id}" <#if entity.isDatatableReflow()>reflow="true"</#if>
                                  filteredValue="${r"#{"}${mb}.filteredValue}" styleClass="no-border" emptyMessage="${r"#{"}msg['label.empty-list']}"
                                  paginatorPosition="bottom" selection="${r"#{"}${mb}.selectionList}" <#if entity.isDatatableEditable()>editable="true"</#if>
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} {JumpToPageDropdown}"

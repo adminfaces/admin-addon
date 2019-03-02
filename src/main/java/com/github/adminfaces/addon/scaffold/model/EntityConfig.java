@@ -12,7 +12,8 @@ public class EntityConfig {
     private List<FieldConfig> fields = new ArrayList<>();
     private String displayField;// field used in pages where this entity needs to be printed
     private String menuIcon;//font awesome icon to be used on the menu entry for this entity
-    private Boolean datatableEditable;
+    private Boolean datatableEditable; //list page datatable should be editable directly on the row?
+    private Boolean datatableReflow; //list page datatable should reflow?
     private transient Map<String, FieldConfig> fieldConfigMap;
     
     // key is a entity field which is an (JPA) association, value is the association field name to be used as a display field
@@ -52,6 +53,14 @@ public class EntityConfig {
 
     public void setMenuIcon(String menuIcon) {
         this.menuIcon = menuIcon;
+    }
+
+    public Boolean getDatatableReflow() {
+        return datatableReflow;
+    }
+
+    public void setDatatableReflow(Boolean datatableReflow) {
+        this.datatableReflow = datatableReflow;
     }
 
     public Map<String, FieldConfig> getFieldConfigMap() {

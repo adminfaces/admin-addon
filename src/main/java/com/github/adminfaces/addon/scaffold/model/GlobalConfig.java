@@ -34,6 +34,7 @@ public class GlobalConfig {
     private ComponentTypeEnum toManyComponentType;
     private ComponentTypeEnum dateComponentType;
     private Boolean datatableEditable;
+    private Boolean datatableReflow;
     private Integer inputSize;
     private String menuIcon;
 
@@ -84,4 +85,13 @@ public class GlobalConfig {
     public void setMenuIcon(String menuIcon) {
         this.menuIcon = menuIcon;
     }
+
+    public Boolean getDatatableReflow() {
+        return datatableReflow;
+    }
+
+    public void setDatatableReflow(Boolean datatableReflow) {
+        this.datatableReflow = datatableReflow;
+    }
+    
 }
