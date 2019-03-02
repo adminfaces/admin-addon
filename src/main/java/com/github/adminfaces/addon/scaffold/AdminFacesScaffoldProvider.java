@@ -608,15 +608,20 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
     private void addAppListCache(Project project) {
         MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
         JavaSourceFacet javaSource = project.getFacet(JavaSourceFacet.class);
-        try (InputStream appListsStream = Thread.currentThread().getContextClassLoader()
-            .getResourceAsStream("/bean/AppLists.java")) {
-            JavaSource<?> appLists = (JavaSource<?>) Roaster.parse(appListsStream);
-            appLists.setPackage(metadataFacet.getProjectGroupName() + "."+Constants.Packages.BEAN);
-            javaSource.saveJavaSource(appLists);
-            FileUtils.copyInputStreamToFile(appListsStream, new File(project.getRoot().getFullyQualifiedName()
-                + "/"+appLists.getPackage().replaceAll("\\.", "/")));
-        } catch (Exception e) {
-            LOG.log(Level.SEVERE, "Could not add 'AppLists'.", e);
+        boolean appListExists = new File((AdminScaffoldUtils.resolveSourceFolder(project) + "/" +
+            metadataFacet.getProjectGroupName() + "/"+Constants.Packages.BEAN+"/").replaceAll("\\.", "/")+"AppLists.java").exists();
+        
+        if(!appListExists) {
+            try (InputStream appListsStream = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("/bean/AppLists.java")) {
+                JavaSource<?> appLists = (JavaSource<?>) Roaster.parse(appListsStream);
+                appLists.setPackage(metadataFacet.getProjectGroupName() + "."+Constants.Packages.BEAN);
+                javaSource.saveJavaSource(appLists);
+                FileUtils.copyInputStreamToFile(appListsStream, new File(project.getRoot().getFullyQualifiedName()
+                    + "/"+appLists.getPackage().replaceAll("\\.", "/")));
+            } catch (Exception e) {
+                LOG.log(Level.SEVERE, "Could not add 'AppLists'.", e);
+            }
         }
     }
 

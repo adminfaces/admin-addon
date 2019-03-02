@@ -1,0 +1,7 @@
+as.name = wildfly
+as.jboss.wf.version = 9.0.2.Final
+as.jboss.wf.dist = org.wildfly:wildfly-dist:zip:9.0.2.Final
+as.jboss.wf.path = /home/rmpestano/projects/admin-addon/.wildfly
+as.jboss.wf.port = 9990
+as.jboss.wf.timeout = 90
+as.jboss.wf.jvmargs = -Xms64m,-Xmx512m,-XX:MaxPermSize=256m,-Djava.net.preferIPv4Stack=true
