@@ -343,9 +343,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
             FreemarkerTemplateProcessor.processTemplate(context, templates.getFormMBTemplate()));
         formMB.setPackage(java.getBasePackage() + "." + Constants.Packages.BEAN);
         JavaResource javaResource = java.getJavaResource(formMB);
-        if (!javaResource.exists()) {
-            generatedResources.add(createOrOverwrite(javaResource, formMB.toUnformattedString()));
-        }
+        generatedResources.add(createOrOverwrite(javaResource, formMB.toUnformattedString()));
     }
 
     /**
@@ -361,9 +359,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
             FreemarkerTemplateProcessor.processTemplate(context, templates.getListMBTemplate()));
         listMB.setPackage(java.getBasePackage() + "." + Constants.Packages.BEAN);
         JavaResource javaResource = java.getJavaResource(listMB);
-        if (!javaResource.exists()) {
-            generatedResources.add(createOrOverwrite(javaResource, listMB.toUnformattedString()));
-        }
+        generatedResources.add(createOrOverwrite(javaResource, listMB.toUnformattedString()));
     }
 
     /**
@@ -380,9 +376,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
         repository.setPackage(java.getBasePackage() + "." + Constants.Packages.REPOSITORY);
         context.put("repository", repository);
         JavaResource javaResource = java.getJavaResource(repository);
-        if (!javaResource.exists()) {
-            generatedResources.add(createOrOverwrite(javaResource, repository.toUnformattedString()));
-        }
+        generatedResources.add(createOrOverwrite(javaResource, repository.toUnformattedString()));
     }
 
     /**
@@ -400,9 +394,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
         service.setPackage(java.getBasePackage() + "." + Constants.Packages.SERVICE);
         context.put("service", service);
         JavaResource javaResource = java.getJavaResource(service);
-        if (!javaResource.exists()) {
-            generatedResources.add(createOrOverwrite(javaResource, service.toUnformattedString()));
-        }
+        generatedResources.add(createOrOverwrite(javaResource, service.toUnformattedString()));
     }
 
     /**
@@ -418,10 +410,8 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
         ScaffoldEntity entity = (ScaffoldEntity) context.get("entity");
         String entityName = entity.getName().toLowerCase();
         FileResource<?> listPageFile = web.getWebResource("/" + entityName + "/" + entityName + "-list.xhtml");
-        if (!listPageFile.exists()) {
-            generatedResources.add(createOrOverwrite(listPageFile,
-                parser.parseInput(listPage, "UTF-8").outputSettings(outputSettings).toString()));
-        }
+        generatedResources.add(createOrOverwrite(listPageFile,
+            parser.parseInput(listPage, "UTF-8").outputSettings(outputSettings).toString()));
     }
 
     /**
@@ -437,10 +427,8 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
         ScaffoldEntity entity = (ScaffoldEntity) context.get("entity");
         String entityName = entity.getName().toLowerCase();
         FileResource<?> formPageFile = web.getWebResource("/" + entityName + "/" + entityName + "-form.xhtml");
-        if (!formPageFile.exists()) {
-            generatedResources.add(createOrOverwrite(formPageFile,
-                parser.parseInput(listPage, "UTF-8").outputSettings(outputSettings).toString()));
-        }
+        generatedResources.add(createOrOverwrite(formPageFile,
+            parser.parseInput(listPage, "UTF-8").outputSettings(outputSettings).toString()));
     }
 
     void addLeftMenuEntry(Project project, ScaffoldEntity entity, List<Resource<?>> generatedResources) {

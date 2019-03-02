@@ -6,7 +6,7 @@
                 template="${r"#{"}layoutMB.template}">
     
     <ui:define name="metadata">
-        <ui:param name="title" value="${entity.getName()}s "/> <!-- Automatic create breadCrumb and page title when ui:param 'title' is provided. --> 
+        <ui:param name="title" value="${entity.getName()}s"/> <!-- Automatic create breadCrumb and page title when ui:param 'title' is provided. --> 
     </ui:define>
 
     <ui:define name="description">
@@ -89,7 +89,7 @@
                                     <h:outputText value=" ${r"#{"}row.${field.getName()}}" />
                                 </f:facet>
                                 <f:facet name="input">
-                                    <#if entity.isInputTextType(field)>
+                                    <#if entity.isInputTextType(field) || entity.isTextAreaType(field)>
                                     <p:inputText id="${field.getName()}" value="${r"#{"}row.${field.getName()}}"/>    
                                     <#elseif entity.isInputNumberType(field)>
                                     <p:inputNumber id="${field.getName()}" value="${r"#{"}row.${field.getName()}}" decimalPlaces="0" thousandSeparator="" decimalSeparator=""/>   
