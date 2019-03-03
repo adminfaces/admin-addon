@@ -71,47 +71,42 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
 <#list fields as field>
     <#if !entity.isHidden(field)>
         <#if entity.hasToManyAssociation(field)>
-            ${field.getType().getSimpleName()}<${entity.getArrayType(field).getSimpleName()}> ${field.getName()} = null;
-            if (filter.hasParam("${field.getName()}")) {
-                ${field.getName()} = (${field.getType().getSimpleName()}<${entity.getArrayType(field).getSimpleName()}>) filter.getParam("${field.getName()}");
-            } else if (has(${ccEntity}Filter.get${field.getName()?cap_first}())) {
-                ${field.getName()} = ${ccEntity}Filter.get${field.getName()?cap_first}();
+        ${field.getType().getSimpleName()}<${entity.getArrayType(field).getSimpleName()}> ${field.getName()} = null;
+        if (filter.hasParam("${field.getName()}")) {
+           ${field.getName()} = (${field.getType().getSimpleName()}<${entity.getArrayType(field).getSimpleName()}>) filter.getParam("${field.getName()}");
+        } else if (has(${ccEntity}Filter.get${field.getName()?cap_first}())) {
+            ${field.getName()} = ${ccEntity}Filter.get${field.getName()?cap_first}();
+        }
+        if (has(${field.getName()})) {<#assign s = "<b>${field.getName()}</b>:">
+            sb.append("${s} ");
+            for (${entity.getArrayType(field).getSimpleName()} ${entity.getArrayType(field).getSimpleName()?lower_case} : ${field.getName()}) {
+                sb.append(${entity.getArrayType(field).getSimpleName()?lower_case}.get${entity.getAssociationDisplayField(field)?cap_first}()).append(", ");
             }
-            if (has(${field.getName()})) {
-                <#assign s = "<b>${field.getName()}</b>:">
-                    sb.append("${s} ");
-                for (${entity.getArrayType(field).getSimpleName()} ${entity.getArrayType(field).getSimpleName()?lower_case} : ${field.getName()}) {
-                    sb.append(${entity.getArrayType(field).getSimpleName()?lower_case}.get${entity.getAssociationDisplayField(field)?cap_first}()).append(", ");
-                }
-            }
-	<#else>   
+        }
+	    <#else> <#-- end hasToManyAssociation -->     
         ${field.getType().getSimpleName()} ${field.getName()} = null;
         if (filter.hasParam("${field.getName()}")) {
             ${field.getName()} = <#if field.getType().getSimpleName() == "Integer">filter.getIntParam("${field.getName()}")<#elseif field.getType().getSimpleName() == "Long">filter.getLongParam("${field.getName()}")<#elseif field.getType().getSimpleName() == "Boolean">filter.getBooleanParam("${field.getName()}")<#elseif field.getType().getSimpleName() == "Double">filter.getDoubleParam("${field.getName()}") <#else>(${field.getType().getSimpleName()})filter.getParam("${field.getName()}")</#if>;
         } else if (has(${ccEntity}Filter.get${field.getName()?cap_first}())) {
             ${field.getName()} = ${ccEntity}Filter.get${field.getName()?cap_first}();
         }
-        if (has(${field.getName()})) {
-	     <#assign s = "<b>${field.getName()}</b>:">
+        if (has(${field.getName()})) {<#assign s = "<b>${field.getName()}</b>:">
             <#if entity.hasToOneAssociation(field)>
             sb.append("${s} ").append(${field.getName()}.get${entity.getAssociationDisplayField(field)?cap_first}()).append(", ");
-            <#else>
-	        sb.append("${s} ").append(${ccEntity}Filter.get${field.getName()?cap_first}()).append(", ");
+            <#else> <#-- non association field --> 
+	        sb.append("${s} ").append(${field.getName()}).append(", ");
             </#if>
         }
         </#if>
-        
 	</#if>
 </#list>
         int commaIndex = sb.lastIndexOf(",");
         if (commaIndex != -1) {
             sb.deleteCharAt(commaIndex);
         }
-
         if (sb.toString().trim().isEmpty()) {
             return getMessage("empty-search-criteria");
         }
-
         return sb.toString();
     }
 

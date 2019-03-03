@@ -31,11 +31,11 @@
                         </p:commandButton>
                         <p:spacer width="5"/>
                         <p:commandButton value="${r"#{"}msg['label.search']}" update="@(.ui-dialog)" styleClass="btn-info"
-                                         oncomplete="PF('searchDialog').show()" icon="fa fa-search"/>
+                                         oncomplete="PF('searchDialog').show()" icon="fa fa-search" process="@none" ignoreAutoUpdate="true"/>
 
                         <p:spacer width="5"/>
                         <p:commandButton value="${r"#{"}msg['label.clear']}" update="@(.ui-dialog, .ui-datatable)" process="@form"
-                                         action="${r"#{"}${mb}.clear}"
+                                         action="${r"#{"}${mb}.clear}" onclick="PF('${ccEntity}sTable').clearFilters()"
                                          icon="fa fa-refresh"/>
                     </div>
 
@@ -49,11 +49,11 @@
                             <p:confirm header="${r"#{"}msg['label.confirm']}" message="Are you sure?" icon="ui-icon-danger"/>
                         </p:menuitem>
                         <p:menuitem value="${r"#{"}msg['label.search']}" update="@(.ui-dialog)"
-                                    oncomplete="PF('searchDialog').show()"
+                                    oncomplete="PF('searchDialog').show()" process="@none" ignoreAutoUpdate="true"
                                     icon="fa fa-search"/>
 
                         <p:menuitem value="${r"#{"}msg['label.clear']}" update="@(.ui-dialog, .ui-datatable)" process="@form"
-                                    action="${r"#{"}${mb}.clear}"
+                                    action="${r"#{"}${mb}.clear}" onclick="PF('${ccEntity}sTable').clearFilters()"
                                     icon="fa fa-refresh"/>
                     </p:splitButton>
 
@@ -185,10 +185,10 @@
                                  ignoreAutoUpdate="true" styleClass="btn-primary"/>
                 <p:spacer height="5"/>
                 <p:commandButton value="${r"#{"}msg['label.clear']}" action="${r"#{"}${mb}.clear}" process="@this"
-                                 update="@form @(.ui-datatable, .ui-tooltip)" styleClass="btn-success"
+                                 update="@form @(.ui-datatable, .ui-tooltip)" styleClass="btn-success" onclick="PF('${ccEntity}sTable').clearFilters()"
                                  icon="fa fa-refresh"/>
                 <p:spacer height="5"/>
-                <p:commandButton value="${r"#{"}msg['label.close']}" icon="fa fa-close" oncomplete="PF('searchDialog').hide()"/>
+                <p:commandButton value="${r"#{"}msg['label.close']}" icon="fa fa-close" process="@none" ignoreAutoUpdate="true" oncomplete="PF('searchDialog').hide()"/>
                 <p:separator/>
 
                 <div class="ui-g ui-fluid">
