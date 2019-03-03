@@ -182,7 +182,7 @@
             <h:form>
                 <f:validateBean disabled="true">
                 <p:commandButton value="${r"#{"}msg['label.ok']}" update="@form @(.ui-datatable, .ui-tooltip)" icon="fa fa-check"
-                                 ignoreAutoUpdate="true" styleClass="btn-primary"/>
+                                 styleClass="btn-primary"/>
                 <p:spacer height="5"/>
                 <p:commandButton value="${r"#{"}msg['label.clear']}" action="${r"#{"}${mb}.clear}" process="@this"
                                  update="@form @(.ui-datatable, .ui-tooltip)" styleClass="btn-success" onclick="PF('${ccEntity}sTable').clearFilters()"

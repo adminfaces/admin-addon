@@ -83,7 +83,7 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
                 sb.append(${entity.getArrayType(field).getSimpleName()?lower_case}.get${entity.getAssociationDisplayField(field)?cap_first}()).append(", ");
             }
         }
-	    <#else> <#-- end hasToManyAssociation -->     
+	    <#else> <#-- end hasToManyAssociation -->
         ${field.getType().getSimpleName()} ${field.getName()} = null;
         if (filter.hasParam("${field.getName()}")) {
             ${field.getName()} = <#if field.getType().getSimpleName() == "Integer">filter.getIntParam("${field.getName()}")<#elseif field.getType().getSimpleName() == "Long">filter.getLongParam("${field.getName()}")<#elseif field.getType().getSimpleName() == "Boolean">filter.getBooleanParam("${field.getName()}")<#elseif field.getType().getSimpleName() == "Double">filter.getDoubleParam("${field.getName()}") <#else>(${field.getType().getSimpleName()})filter.getParam("${field.getName()}")</#if>;
@@ -98,14 +98,17 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
             </#if>
         }
         </#if>
-	</#if>
+    </#if>
 </#list>
         int commaIndex = sb.lastIndexOf(",");
         if (commaIndex != -1) {
             sb.deleteCharAt(commaIndex);
         }
         if (sb.toString().trim().isEmpty()) {
+            PrimeFaces.current().executeScript("jQuery('div[id=footer] .fa-filter').addClass('ui-state-disabled')");
             return getMessage("empty-search-criteria");
+        } else {
+            PrimeFaces.current().executeScript("jQuery('div[id=footer] .fa-filter').removeClass('ui-state-disabled')");
         }
         return sb.toString();
     }
