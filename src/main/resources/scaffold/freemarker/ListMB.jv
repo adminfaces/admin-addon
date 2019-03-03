@@ -18,6 +18,7 @@ import static com.github.adminfaces.template.util.Assert.has;
 import org.primefaces.event.RowEditEvent;
 </#if>
 import java.util.*;
+import org.primefaces.PrimeFaces;
 <#list fields as field>
    <#if entity.hasToManyAssociation(field)>
 import ${entity.getArrayType(field).getQualifiedName()};   
