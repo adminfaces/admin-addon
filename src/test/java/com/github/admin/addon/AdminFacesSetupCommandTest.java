@@ -1,6 +1,5 @@
 package com.github.admin.addon;
 
-import com.github.adminfaces.addon.facet.AdminFacet;
 import com.github.adminfaces.addon.util.DependencyUtil;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -39,9 +38,10 @@ import java.util.concurrent.TimeUnit;
 import static com.github.admin.addon.TestUtil.newLine;
 import static org.assertj.core.api.Assertions.contentOf;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import com.github.adminfaces.addon.facet.AdminFacesFacet;
 
 @RunWith(Arquillian.class)
-public class AdminSetupCommandTest {
+public class AdminFacesSetupCommandTest {
 
     @Inject
     private ProjectFactory projectFactory;
@@ -86,7 +86,7 @@ public class AdminSetupCommandTest {
         assertThat(results.get(0)).extracting("message").contains("AdminFaces setup completed successfully!");
 
         project = projectFactory.findProject(project.getRoot());
-        assertThat(project.hasFacet(AdminFacet.class)).isTrue();
+        assertThat(project.hasFacet(AdminFacesFacet.class)).isTrue();
         DependencyFacet dependencyFacet = project.getFacet(DependencyFacet.class);
 
         assertThat(dependencyFacet.hasDirectDependency(
@@ -118,7 +118,7 @@ public class AdminSetupCommandTest {
         assertThat(new File(web.getWebResource("WEB-INF/templates/template-top.xhtml").getFullyQualifiedName()))
             .exists();
 
-        assertThat(project.getFacet(AdminFacet.class).isInstalled()).isTrue();
+        assertThat(project.getFacet(AdminFacesFacet.class).isInstalled()).isTrue();
     }
 
     @Test

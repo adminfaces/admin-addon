@@ -7,6 +7,6 @@ import org.jboss.forge.addon.projects.ProjectFacet;
  *
  * @author <a href="mailto:rmpestano@gmail.com">Rafael Pestano</a>
  */
-public interface AdminFacet extends ProjectFacet {
+public interface AdminFacesFacet extends ProjectFacet {
 
 }

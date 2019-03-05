@@ -8,19 +8,16 @@ import org.jboss.forge.addon.projects.facets.DependencyFacet;
 import org.jboss.forge.addon.projects.facets.WebResourcesFacet;
 
 import javax.inject.Inject;
-import java.util.logging.Logger;
 
 import static com.github.adminfaces.addon.util.DependencyUtil.*;
 import static com.github.adminfaces.addon.util.Constants.WebResources.*;
 
 /**
- * The implementation of the {@link AdminFacet}
+ * The implementation of the {@link AdminFacesFacet}
  *
  * @author <a href="mailto:rmpestano@gmail.com">Rafael Pestano</a>
  */
-public class AdminFacetImpl extends AbstractFacet<Project> implements AdminFacet {
-
-    private Logger logger = Logger.getLogger(AdminFacetImpl.class.getName());
+public class AdminFacesFacetImpl extends AbstractFacet<Project> implements AdminFacesFacet {
 
     @Inject
     private DependencyUtil dependencyUtil;

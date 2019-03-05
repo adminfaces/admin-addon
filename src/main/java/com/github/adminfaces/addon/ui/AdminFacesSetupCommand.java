@@ -54,11 +54,11 @@ import org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor;
 import org.jboss.shrinkwrap.descriptor.api.webcommon31.ServletMappingType;
 import org.metawidget.util.simple.StringUtils;
 
-import com.github.adminfaces.addon.facet.AdminFacet;
 import com.github.adminfaces.addon.freemarker.FreemarkerTemplateProcessor;
 import com.github.adminfaces.addon.freemarker.TemplateFactory;
 
 import static com.github.adminfaces.addon.util.Constants.WebResources.*;
+import com.github.adminfaces.addon.facet.AdminFacesFacet;
 
 /**
  * AdminFaces: Setup command
@@ -102,7 +102,7 @@ public class AdminFacesSetupCommand extends AbstractProjectCommand {
             : getSelectedProject(context.getUIContext());
 
         boolean execute = true;
-        if (project.hasFacet(AdminFacet.class) && project.getFacet(AdminFacet.class).isInstalled()) {
+        if (project.hasFacet(AdminFacesFacet.class) && project.getFacet(AdminFacesFacet.class).isInstalled()) {
             execute = context.getPrompt().promptBoolean("AdminFaces is already installed, override it?");
         }
 
@@ -110,7 +110,7 @@ public class AdminFacesSetupCommand extends AbstractProjectCommand {
             return Results.success();
         }
         List<Result> results = new ArrayList<>();
-        AdminFacet facet = facetFactory.create(project, AdminFacet.class);
+        AdminFacesFacet facet = facetFactory.create(project, AdminFacesFacet.class);
         facetFactory.install(project, facet);
         results.add(Results.success("AdminFaces setup completed successfully!"));
 
