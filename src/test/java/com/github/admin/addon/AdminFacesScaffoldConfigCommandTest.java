@@ -27,10 +27,12 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import java.util.concurrent.TimeoutException;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.forge.addon.javaee.jpa.JPAFacet_2_1;
 import org.jboss.forge.addon.projects.facets.ResourcesFacet;
 import org.jboss.forge.addon.resource.FileResource;
 import org.jboss.forge.addon.resource.Resource;
+import org.jboss.forge.arquillian.AddonDependencies;
 import org.junit.Test;
 
 @RunWith(Arquillian.class)
@@ -44,6 +46,8 @@ public class AdminFacesScaffoldConfigCommandTest {
 
     private Project project;
 
+    @Deployment
+    @AddonDependencies
     public static AddonArchive getDeployment() {
         return ShrinkWrap.create(AddonArchive.class).addBeansXML().addClass(TestUtil.class)
             .addPackages(true, "org.assertj.core");
@@ -89,20 +93,18 @@ public class AdminFacesScaffoldConfigCommandTest {
         if (scaffoldConfigResult instanceof Failed) {
             ((Failed) scaffoldConfigResult).getException().printStackTrace();
         }
-        
         File globalConfigFile = new File(globalScaffoldConfig.getFullyQualifiedName());
         assertThat(contentOf(globalConfigFile))
             .contains("!!com.github.adminfaces.addon.scaffold.model.GlobalConfig"+ NEW_LINE
-                + "toOneComponentType: " + SELECT_ONE_MENU.name()
-                + ""+ NEW_LINE
-                + "toManyComponentType: " + SELECT_MANY_MENU.name()
-                    + ""+ NEW_LINE
-                + "dateComponentType: " + CALENDAR.name()
-                        + ""+ NEW_LINE
                 + "datatableEditable: true"+ NEW_LINE
                 + "datatableReflow: true"+ NEW_LINE
+                + "dateComponentType: " + CALENDAR.name()
+                        + ""+ NEW_LINE
                 + "inputSize: 30"+ NEW_LINE
                 + "menuIcon: fa fa-edit"+ NEW_LINE
+                + "toManyComponentType: " + SELECT_MANY_MENU.name()
+                + ""+ NEW_LINE
+                + "toOneComponentType: " + SELECT_ONE_MENU.name()
                 + "");
     }
 
