@@ -47,12 +47,23 @@ import org.jboss.forge.addon.ui.wizard.UIWizardStep;
  */
 import com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum;
 import com.github.adminfaces.addon.scaffold.model.EntityConfig;
+import com.github.adminfaces.addon.scaffold.model.FieldConfig;
 import com.github.adminfaces.addon.scaffold.model.GlobalConfig;
+import com.github.adminfaces.addon.util.AdminScaffoldUtils;
+import com.github.adminfaces.addon.util.Constants;
+import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.jboss.forge.addon.projects.Project;
+import org.jboss.forge.addon.projects.facets.MetadataFacet;
 import org.jboss.forge.addon.ui.input.UIInput;
 import org.jboss.forge.addon.ui.input.events.ValueChangeEvent;
 import org.jboss.forge.addon.ui.result.Results;
-import org.yaml.snakeyaml.DumperOptions;
+import org.jboss.forge.addon.ui.util.Metadata;
+import org.jboss.forge.roaster.Roaster;
+import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.yaml.snakeyaml.Yaml;
 
 public class AdminFacesScaffoldConfigStep extends AbstractProjectCommand implements UIWizardStep {
@@ -69,12 +80,24 @@ public class AdminFacesScaffoldConfigStep extends AbstractProjectCommand impleme
 
     private FileResource<?> scaffoldConfigFile;
 
+    private FieldConfig fieldConfig;
+
+    private UIInput<Boolean> hidden;
+
+    @Override
+    public Metadata getMetadata(UIContext context) {
+        return Metadata.from(super.getMetadata(context), getClass()).name("AdminFaces: Scaffold config")
+            .description(context.getAttributeMap().get(FileResource.class) != null ? "Configuration file:" + 
+                ((FileResource)context.getAttributeMap().get(FileResource.class)).getName() : "");
+    }
+
     @Override
     public void initializeUI(UIBuilder builder) throws Exception {
         UIContext context = builder.getUIContext();
         Map<Object, Object> attributeMap = context.getAttributeMap();
         InputComponentFactory componentFactory = builder.getInputComponentFactory();
         scaffoldConfigFile = (FileResource<?>) attributeMap.get(FileResource.class);
+        fieldConfig = null;
         if (scaffoldConfigFile.getName().endsWith("global-config.yml")) {
             try (InputStream entityConfigStream = scaffoldConfigFile.getResourceInputStream()) {
                 globalConfig = new Yaml().loadAs(entityConfigStream, GlobalConfig.class);
@@ -152,8 +175,97 @@ public class AdminFacesScaffoldConfigStep extends AbstractProjectCommand impleme
             menuIcon.addValueChangeListener((ValueChangeEvent event) -> {
                 globalConfig.setMenuIcon(event.getNewValue().toString());
             });
-        } else {
-            
+        } else { //entity config
+            try (InputStream entityConfigStream = scaffoldConfigFile.getResourceInputStream()) {
+                entityConfig = new Yaml().loadAs(entityConfigStream, EntityConfig.class);
+            }
+            Project project = getSelectedProject(builder.getUIContext());
+            String sourceFolder = AdminScaffoldUtils.resolveSourceFolder(project);
+            MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
+            String entityPackage = metadataFacet.getProjectGroupName() + "." + Constants.Packages.MODEL + "." + scaffoldConfigFile.getName().substring(0, scaffoldConfigFile.getName().indexOf("."));
+            JavaClassSource entitySource = Roaster.parse(JavaClassSource.class, new File(sourceFolder + "/" + entityPackage.replace(".", "/") + ".java"));
+            UISelectOne<String> displayField = componentFactory.createSelectOne("Display field", String.class)
+                .setDefaultValue(entityConfig.getDisplayField())
+                .setRequired(true)
+                .setDescription("Field used to display this entity on pages, e.g select one menu item label.");
+
+            List<String> availableFields = entitySource.getFields()
+                .stream()
+                .filter(f -> AdminScaffoldUtils.isValidDisplayField(f))
+                .map(f -> f.getName())
+                .collect(Collectors.toList());
+            displayField.setValueChoices(availableFields);
+            builder.add(displayField);
+
+            displayField.addValueChangeListener((ValueChangeEvent event) -> {
+                entityConfig.setDisplayField(event.getNewValue().toString());
+            });
+
+            UIInput<Boolean> datatableEditable = componentFactory.createInput("Datatable editable", Boolean.class)
+                .setDefaultValue(entityConfig.getDatatableEditable())
+                .setRequired(true)
+                .setDescription("When true, generates editable datatable in list page");
+            builder.add(datatableEditable);
+
+            datatableEditable.addValueChangeListener((ValueChangeEvent event) -> {
+                entityConfig.setDatatableEditable((Boolean) event.getNewValue());
+            });
+
+            UIInput<Boolean> datatableReflow = componentFactory.createInput("Datatable reflow", Boolean.class)
+                .setDefaultValue(entityConfig.getDatatableReflow())
+                .setRequired(true)
+                .setDescription("When true, will set datatable reflow attribute on list page");
+            builder.add(datatableReflow);
+
+            datatableReflow.addValueChangeListener((ValueChangeEvent event) -> {
+                entityConfig.setDatatableReflow((Boolean) event.getNewValue());
+            });
+
+            UIInput<String> menuIcon = componentFactory.createInput("Menu icon", String.class)
+                .setDefaultValue(entityConfig.getMenuIcon())
+                .setRequired(true)
+                .setDescription("Font awesome icon to be used in menu entries.");
+            builder.add(menuIcon);
+
+            datatableEditable.addValueChangeListener((ValueChangeEvent event) -> {
+                entityConfig.setDatatableEditable((Boolean) event.getNewValue());
+            });
+
+            //field config
+            hidden = componentFactory.createInput("Hidden", Boolean.class)
+                .setEnabled(false);
+
+            List<FieldConfig> entityFieldConfigs = new ArrayList<>();
+            entityFieldConfigs.add(null);
+            entityFieldConfigs.addAll(entityConfig.getFields());
+            UISelectOne<FieldConfig> fieldConfigList = componentFactory.createSelectOne("Choice field to change", FieldConfig.class)
+                .setDescription("Select an entity field to editits configuration.")
+                .setRequired(false)
+                .setValueChoices(entityFieldConfigs);
+
+            fieldConfigList.setItemLabelConverter((FieldConfig source) -> source == null ? "Select an option" : source.getName());
+
+            fieldConfigList.addValueChangeListener((ValueChangeEvent event) -> {
+                fieldConfig = (FieldConfig) event.getNewValue();
+                if (fieldConfig != null) {
+                    hidden.setEnabled(true)
+                        .setNote("curent field: " + fieldConfig.getName())
+                        .setDescription(String.format("When true the field '%s' will be ignored on AdminFaces scaffold.", fieldConfig.getName()))
+                        .setDefaultValue(fieldConfig.getHidden());
+
+                    hidden.addValueChangeListener((ValueChangeEvent evt) -> {
+                        fieldConfig.setHidden((Boolean) evt.getNewValue());
+                    });
+                } else {
+                    hidden.setEnabled(false)
+                        .setNote("");
+                }
+            });
+
+            //TODO remaining fields
+            builder.add(fieldConfigList);
+            builder.add(hidden);
+
         }
     }
 

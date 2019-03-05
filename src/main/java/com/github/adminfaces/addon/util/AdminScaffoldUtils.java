@@ -84,7 +84,7 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
         }
     }
     
-   private static boolean isValidDisplayField(FieldSource<JavaClassSource> field) {
+   public static boolean isValidDisplayField(FieldSource<JavaClassSource> field) {
        return field.hasAnnotation(Column.class)
             || field.hasAnnotation(Basic.class)
             || field.hasAnnotation(Embedded.class) || field.hasAnnotation(Id.class)
