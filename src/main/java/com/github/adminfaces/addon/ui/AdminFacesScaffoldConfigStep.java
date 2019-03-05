@@ -84,11 +84,17 @@ public class AdminFacesScaffoldConfigStep extends AbstractProjectCommand impleme
 
     private UIInput<Boolean> hidden;
 
+    private UIInput<Integer> length;
+    
+    private UIInput<Boolean> required;
+    
+    private UISelectOne<ComponentTypeEnum> type;
+
     @Override
     public Metadata getMetadata(UIContext context) {
         return Metadata.from(super.getMetadata(context), getClass()).name("AdminFaces: Scaffold config")
-            .description(context.getAttributeMap().get(FileResource.class) != null ? "Configuration file:" + 
-                ((FileResource)context.getAttributeMap().get(FileResource.class)).getName() : "");
+            .description(context.getAttributeMap().get(FileResource.class) != null ? "Configuration file: "
+                + ((FileResource) context.getAttributeMap().get(FileResource.class)).getName() : "");
     }
 
     @Override
@@ -235,11 +241,21 @@ public class AdminFacesScaffoldConfigStep extends AbstractProjectCommand impleme
             hidden = componentFactory.createInput("Hidden", Boolean.class)
                 .setEnabled(false);
 
+            length = componentFactory.createInput("Length", Integer.class)
+                .setEnabled(false);
+            
+            required = componentFactory.createInput("Required", Boolean.class)
+                .setEnabled(false);
+            
+            type = componentFactory.createSelectOne("Type", ComponentTypeEnum.class)
+                .setValueChoices(Arrays.stream(ComponentTypeEnum.values()).collect(Collectors.toList()))
+                .setEnabled(false);
+            
             List<FieldConfig> entityFieldConfigs = new ArrayList<>();
             entityFieldConfigs.add(null);
             entityFieldConfigs.addAll(entityConfig.getFields());
             UISelectOne<FieldConfig> fieldConfigList = componentFactory.createSelectOne("Choice field to change", FieldConfig.class)
-                .setDescription("Select an entity field to editits configuration.")
+                .setDescription("Select an entity field to edit its scaffold configuration.")
                 .setRequired(false)
                 .setValueChoices(entityFieldConfigs);
 
@@ -249,23 +265,46 @@ public class AdminFacesScaffoldConfigStep extends AbstractProjectCommand impleme
                 fieldConfig = (FieldConfig) event.getNewValue();
                 if (fieldConfig != null) {
                     hidden.setEnabled(true)
-                        .setNote("curent field: " + fieldConfig.getName())
                         .setDescription(String.format("When true the field '%s' will be ignored on AdminFaces scaffold.", fieldConfig.getName()))
-                        .setDefaultValue(fieldConfig.getHidden());
+                        .setValue(fieldConfig.getHidden());
 
                     hidden.addValueChangeListener((ValueChangeEvent evt) -> {
                         fieldConfig.setHidden((Boolean) evt.getNewValue());
                     });
+                    required.setEnabled(true)
+                        .setDescription(String.format("When true the field '%s' will be required on AdminFaces scaffold generated pages.", fieldConfig.getName()))
+                        .setValue(fieldConfig.getRequired());
+
+                    required.addValueChangeListener((ValueChangeEvent evt) -> {
+                        fieldConfig.setRequired((Boolean) evt.getNewValue());
+                    });
+                    length.setEnabled(true)
+                        .setDescription(String.format("Set field '%s' length to be used on AdminFaces scaffold generated pages.", fieldConfig.getName()))
+                        .setValue(fieldConfig.getLength());
+
+                    length.addValueChangeListener((ValueChangeEvent evt) -> {
+                        fieldConfig.setLength((Integer) evt.getNewValue());
+                    });
+                    type.setEnabled(true)
+                        .setDescription(String.format("Set field '%s' component type to be used on AdminFaces scaffold generated pages.", fieldConfig.getName()))
+                        .setValue(fieldConfig.getType());
+
+                    type.addValueChangeListener((ValueChangeEvent evt) -> {
+                        fieldConfig.setType((ComponentTypeEnum) evt.getNewValue());
+                    });
                 } else {
                     hidden.setEnabled(false)
                         .setNote("");
+                    length.setEnabled(false)
+                        .setNote("");
+                    required.setEnabled(false)
+                        .setNote("");
+                    type.setEnabled(false)
+                        .setNote("");
                 }
             });
-
-            //TODO remaining fields
-            builder.add(fieldConfigList);
-            builder.add(hidden);
-
+            builder.add(fieldConfigList)
+            .add(hidden).add(length).add(required).add(type);
         }
     }
 

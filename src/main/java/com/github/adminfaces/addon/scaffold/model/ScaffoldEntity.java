@@ -177,10 +177,6 @@ public class ScaffoldEntity implements Serializable {
         return getFieldConfig(field).getType().equals(ComponentTypeEnum.SELECT_MANY_MENU);
     }
 
-    public boolean isSelectManyCheckboxType(FieldSource<JavaClassSource> field) {
-        return getFieldConfig(field).getType().equals(ComponentTypeEnum.SELECT_MANY_CHECKBOX);
-    }
-
     public boolean isSelectOneRadioType(FieldSource<JavaClassSource> field) {
         return getFieldConfig(field).getType().equals(ComponentTypeEnum.SELECT_ONE_RADIO);
     }
