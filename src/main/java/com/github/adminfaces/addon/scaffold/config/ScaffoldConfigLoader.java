@@ -33,8 +33,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.yaml.snakeyaml.DumperOptions;
 
 public class ScaffoldConfigLoader {
+
+    public static final DumperOptions YML_DUMP_OPTIONS;
+
+    static {
+        YML_DUMP_OPTIONS = new DumperOptions();
+        YML_DUMP_OPTIONS.setExplicitEnd(false);
+        YML_DUMP_OPTIONS.setSplitLines(true);
+        YML_DUMP_OPTIONS.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        YML_DUMP_OPTIONS.setDefaultScalarStyle(DumperOptions.ScalarStyle.PLAIN);
+    }
 
     private static GlobalConfig globalConfig;
 
@@ -55,7 +66,7 @@ public class ScaffoldConfigLoader {
     public static EntityConfig createOrLoadEntityConfig(JavaClassSource entity, Project project) {
         DirectoryResource scaffoldDir = project.getFacet(ResourcesFacet.class).getResourceDirectory()
             .getChildDirectory("scaffold");
-        FileResource<?> entityConfigFile = (FileResource<?>) scaffoldDir.getChild(entity.getName() + ".yml");
+        FileResource<?> entityConfigFile = (FileResource<?>) scaffoldDir.getChild(entity.getName().toLowerCase() + ".yml");
         EntityConfig entityConfig = null;
         if (!entityConfigFile.exists()) {
             entityConfig = createEntityConfig(entity, entityConfigFile, project);
@@ -101,7 +112,7 @@ public class ScaffoldConfigLoader {
         entityConfig.setMenuIcon(globalConfig.getMenuIcon());
         entityConfig.setDatatableEditable(globalConfig.getDatatableEditable());
         entityConfig.setDatatableReflow(globalConfig.getDatatableReflow());
-        entityConfigFile.setContents(new Yaml().dump(entityConfig));
+        entityConfigFile.setContents(new Yaml(YML_DUMP_OPTIONS).dump(entityConfig));
         return entityConfig;
     }
 

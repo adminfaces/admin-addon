@@ -1,5 +1,6 @@
 package com.github.admin.addon;
 
+import static com.github.adminfaces.addon.util.Constants.NEW_LINE;
 import com.github.adminfaces.addon.util.DependencyUtil;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -35,7 +36,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.github.admin.addon.TestUtil.newLine;
 import static org.assertj.core.api.Assertions.contentOf;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import com.github.adminfaces.addon.facet.AdminFacesFacet;
@@ -54,7 +54,7 @@ public class AdminFacesSetupCommandTest {
     @Deployment
     @AddonDependencies
     public static AddonArchive getDeployment() {
-        return ShrinkWrap.create(AddonArchive.class).addBeansXML().addClass(TestUtil.class).addPackages(true,
+        return ShrinkWrap.create(AddonArchive.class).addBeansXML().addPackages(true,
             "org.assertj.core");
     }
 
@@ -95,8 +95,8 @@ public class AdminFacesSetupCommandTest {
         Resource<?> projectRoot = project.getRoot();
         File adminConfig = new File(
             projectRoot.getFullyQualifiedName() + "/src/main/resources/admin-config.properties");
-        assertThat(adminConfig).exists().hasContent("admin.renderControlSidebar=true" + newLine()
-            + "admin.controlSidebar.showOnMobile=true" + newLine() + "admin.ignoredResources=rest");
+        assertThat(adminConfig).exists().hasContent("admin.renderControlSidebar=true" + NEW_LINE
+            + "admin.controlSidebar.showOnMobile=true" + NEW_LINE + "admin.ignoredResources=rest");
         assertThat(new File(projectRoot.getFullyQualifiedName() + "/src/main/resources/messages.properties")).exists();
         WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
         assertThat(new File(web.getWebResource("index.xhtml").getFullyQualifiedName())).exists();
@@ -111,9 +111,9 @@ public class AdminFacesSetupCommandTest {
         File template = new File(web.getWebResource("WEB-INF/templates/template.xhtml").getFullyQualifiedName());
         assertThat(template).exists();
         assertThat(contentOf(template)).contains("        <title>Admin Faces</title>")
-            .contains("    <ui:define name=\"logo\">" + newLine() + "        Admin Faces" + newLine()
+            .contains("    <ui:define name=\"logo\">" + NEW_LINE + "        Admin Faces" + NEW_LINE
                 + "    </ui:define>")
-            .contains("    <ui:define name=\"logo-mini\">" + newLine() + "         Adm" + newLine()
+            .contains("    <ui:define name=\"logo-mini\">" + NEW_LINE + "         Adm" + NEW_LINE
                 + "    </ui:define>");
         assertThat(new File(web.getWebResource("WEB-INF/templates/template-top.xhtml").getFullyQualifiedName()))
             .exists();
@@ -144,12 +144,12 @@ public class AdminFacesSetupCommandTest {
         webXml.setContents("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             + "<web-app xmlns=\"http://java.sun.com/xml/ns/javaee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
             + "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd\"\n"
-            + "         version=\"3.0\">" + newLine()
-            + "<servlet-mapping>" + newLine()
-            + "        <servlet-name>Faces Servlet</servlet-name>" + newLine()
-            + "        <url-pattern>*.jsf</url-pattern>" + newLine()
-            + "    </servlet-mapping>" + newLine()
-            + "    " + newLine()
+            + "         version=\"3.0\">" + NEW_LINE
+            + "<servlet-mapping>" + NEW_LINE
+            + "        <servlet-name>Faces Servlet</servlet-name>" + NEW_LINE
+            + "        <url-pattern>*.jsf</url-pattern>" + NEW_LINE
+            + "    </servlet-mapping>" + NEW_LINE
+            + "    " + NEW_LINE
             + "</web-app>"
         );
     }

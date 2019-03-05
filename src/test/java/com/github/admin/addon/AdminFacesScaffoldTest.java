@@ -67,7 +67,7 @@ public class AdminFacesScaffoldTest {
     @Deployment
     @AddonDependencies
     public static AddonArchive getDeployment() {
-        return ShrinkWrap.create(AddonArchive.class).addBeansXML().addClass(TestUtil.class)
+        return ShrinkWrap.create(AddonArchive.class).addBeansXML()
             .addPackages(true, "org.assertj.core")
             .addAsResource("scaffold/custom-global-config.yml", "custom-global-config.yml")
             .addAsResource("InitDB.java", "InitDB.java");

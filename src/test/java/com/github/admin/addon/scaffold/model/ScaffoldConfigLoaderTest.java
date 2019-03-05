@@ -121,14 +121,14 @@ public class ScaffoldConfigLoaderTest {
         doReturn(null).when(speakerFileResourceConfigFile).setContents(anyString());
         InputStream speakerStream = getClass().getResourceAsStream("/scaffold/speaker.yml");
         doReturn(speakerStream).when(speakerFileResourceConfigFile).getResourceInputStream();
-        doReturn(speakerFileResourceConfigFile).when(scaffoldDir).getChild("Speaker.yml");
+        doReturn(speakerFileResourceConfigFile).when(scaffoldDir).getChild("speaker.yml");
         
         FileResource<?> talkFileResourceConfigFile = mock(FileResource.class);
         doReturn(true).when(talkFileResourceConfigFile).exists();
         doReturn(null).when(talkFileResourceConfigFile).setContents(anyString());
         InputStream talkStream = getClass().getResourceAsStream("/scaffold/talk.yml");
         doReturn(talkStream).when(talkFileResourceConfigFile).getResourceInputStream();
-        doReturn(talkFileResourceConfigFile).when(scaffoldDir).getChild("Talk.yml");
+        doReturn(talkFileResourceConfigFile).when(scaffoldDir).getChild("talk.yml");
         
         Project project = mock(Project.class);
         ResourcesFacet resourcesFacet = mock(ResourcesFacet.class);

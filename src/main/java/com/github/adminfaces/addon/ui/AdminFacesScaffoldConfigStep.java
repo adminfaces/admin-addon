@@ -23,6 +23,7 @@
  */
 package com.github.adminfaces.addon.ui;
 
+import static com.github.adminfaces.addon.scaffold.config.ScaffoldConfigLoader.YML_DUMP_OPTIONS;
 import java.util.Arrays;
 import java.util.Map;
 import javax.inject.Inject;
@@ -152,7 +153,7 @@ public class AdminFacesScaffoldConfigStep extends AbstractProjectCommand impleme
                 globalConfig.setMenuIcon(event.getNewValue().toString());
             });
         } else {
-            //entity config
+            
         }
     }
 
@@ -160,12 +161,9 @@ public class AdminFacesScaffoldConfigStep extends AbstractProjectCommand impleme
     public Result execute(UIExecutionContext context) throws Exception {
         String configFileContent = null;
         if (globalConfig != null) {
-            DumperOptions options = new DumperOptions();
-            options.setExplicitEnd(false);
-            options.setSplitLines(true);
-            options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-            options.setDefaultScalarStyle(DumperOptions.ScalarStyle.PLAIN);
-            configFileContent = new Yaml(options).dump(globalConfig);
+            configFileContent = new Yaml(YML_DUMP_OPTIONS).dump(globalConfig);
+        } else {
+            configFileContent = new Yaml(YML_DUMP_OPTIONS).dump(entityConfig);
         }
         scaffoldConfigFile.setContents(configFileContent);
         return Results.success(scaffoldConfigFile.getName() + " updated successfully!");
