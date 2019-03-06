@@ -197,7 +197,7 @@ public class AdminFacesScaffoldConfigStep extends AbstractProjectCommand impleme
 
             List<String> availableFields = entitySource.getFields()
                 .stream()
-                .filter(f -> AdminScaffoldUtils.isValidDisplayField(f))
+                .filter(AdminScaffoldUtils::isValidDisplayField)
                 .map(f -> f.getName())
                 .collect(Collectors.toList());
             displayField.setValueChoices(availableFields);

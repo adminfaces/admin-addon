@@ -64,7 +64,7 @@ import org.jboss.forge.addon.ui.util.Metadata;
  * @author rmpestano
  */
 @FacetConstraint(JavaSourceFacet.class)
-public class AdminFacesScaffoldConfigWizzard extends AbstractProjectCommand implements UIWizard, PrerequisiteCommandsProvider {
+public class AdminFacesScaffoldConfigWizard extends AbstractProjectCommand implements UIWizard, PrerequisiteCommandsProvider {
 
     @Inject
     private FacetFactory facetFactory;
