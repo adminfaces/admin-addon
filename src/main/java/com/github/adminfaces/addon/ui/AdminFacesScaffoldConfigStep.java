@@ -123,7 +123,7 @@ public class AdminFacesScaffoldConfigStep extends AbstractProjectCommand impleme
             UISelectOne<ComponentTypeEnum> toManyComponentType = componentFactory.createSelectOne("ToManyComponentType", ComponentTypeEnum.class)
                 .setDescription("Component type to be used in toMany entity associations.")
                 .setRequired(true)
-                .setDefaultValue(globalConfig.getToOneComponentType())
+                .setDefaultValue(globalConfig.getToManyComponentType())
                 .setValueChoices(Arrays.asList(ComponentTypeEnum.CHECKBOXMENU, ComponentTypeEnum.SELECT_MANY_MENU));
             builder.add(toManyComponentType);
 
