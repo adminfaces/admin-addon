@@ -1,10 +1,17 @@
 package com.github.adminfaces.addon.util;
 
+import com.github.adminfaces.addon.scaffold.metamodel.AdminFacesMetaModelProvider;
+import static com.github.adminfaces.addon.util.DependencyUtil.ADMIN_PERSISTENCE_COORDINATE;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
@@ -17,24 +24,39 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.maven.model.Plugin;
+import org.jboss.forge.addon.dependencies.builder.DependencyBuilder;
+import org.jboss.forge.addon.facets.FacetFactory;
+import org.jboss.forge.addon.javaee.cdi.CDIFacet;
+import org.jboss.forge.addon.javaee.jpa.PersistenceMetaModelFacet;
+import org.jboss.forge.addon.maven.projects.MavenFacet;
 import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.projects.Project;
+import org.jboss.forge.addon.projects.facets.DependencyFacet;
+import org.jboss.forge.addon.projects.facets.MetadataFacet;
+import org.jboss.forge.addon.projects.facets.ResourcesFacet;
+import org.jboss.forge.addon.resource.DirectoryResource;
+import org.jboss.forge.addon.resource.FileResource;
+import org.jboss.forge.addon.resource.Resource;
 
 import org.jboss.forge.addon.scaffold.util.ScaffoldUtil;
+import org.jboss.forge.parser.xml.Node;
+import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.Type;
 import org.jboss.forge.roaster.model.source.AnnotationSource;
 import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jboss.forge.roaster.model.source.JavaSource;
 
 /**
  * Created by pestano on 20/09/15.
  */
 public class AdminScaffoldUtils extends ScaffoldUtil {
 
-    public static final Logger log = LoggerFactory.getLogger(AdminScaffoldUtils.class.getName());
+    public static final Logger LOG = Logger.getLogger(AdminScaffoldUtils.class.getName());
 
     public static boolean hasAssociation(FieldSource<JavaClassSource> field) {
         return field.hasAnnotation(OneToMany.class) || field.hasAnnotation(OneToOne.class)
@@ -125,6 +147,94 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
     public static String resolveSourceFolder(Project project) {
         JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
         return sourceFacet.getSourceDirectory().getFullyQualifiedName();
+    }
+    
+    public static void setupAdminPersistece(Project project, DependencyUtil dependencyUtil, FacetFactory facetFactory) {
+        addAdminPersistence(project, dependencyUtil);
+        addEntityManagerProducer(project);
+        configJPAMetaModel(project, facetFactory);
+    }
+    
+    private static void configJPAMetaModel(Project project, FacetFactory facetFactory) {
+        MavenFacet pom = project.getFacet(MavenFacet.class);
+        boolean isMetaModelConfigured = false;
+        if (pom.getModel().getBuild() == null || pom.getModel().getBuild().getPlugins().isEmpty()) {
+            isMetaModelConfigured = false;
+        } else {
+            Plugin metaModelPlugin = pom.getModel().getBuild().getPluginsAsMap()
+                .get("org.bsc.maven:maven-processor-plugin");
+            if (metaModelPlugin == null) {
+                isMetaModelConfigured = false;
+            } else {
+                isMetaModelConfigured = true;
+            }
+        }
+
+        if (!isMetaModelConfigured) {
+            Iterable<PersistenceMetaModelFacet> facets = facetFactory.createFacets(project,
+                PersistenceMetaModelFacet.class);
+            for (PersistenceMetaModelFacet metaModelFacet : facets) {
+                metaModelFacet.setMetaModelProvider(new AdminFacesMetaModelProvider());
+                if (facetFactory.install(project, metaModelFacet)) {
+                    break;
+                }
+            }
+        }
+
+    }
+    
+    private static void addEntityManagerProducer(Project project) {
+        MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
+        JavaSourceFacet javaSource = project.getFacet(JavaSourceFacet.class);
+        DirectoryResource sourceDirectory = javaSource.getSourceDirectory();
+        String emProducerPath = (sourceDirectory.getFullyQualifiedName() +"/" + metadataFacet.getProjectGroupName() + "/infra/EntityManagerProducer").replaceAll("\\.", "/")+".java";
+        if(!new File(emProducerPath).exists()) {
+            try (InputStream emProducerStream = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("/infra/persistence/EntityManagerProducer.java")) {
+                JavaSource<?> entityManagerProducer = (JavaSource<?>) Roaster.parse(emProducerStream);
+                entityManagerProducer.setPackage(metadataFacet.getProjectGroupName() + ".infra");
+                javaSource.saveJavaSource(entityManagerProducer);
+                FileUtils.copyInputStreamToFile(emProducerStream, new File(project.getRoot().getFullyQualifiedName()
+                    + entityManagerProducer.getPackage().replaceAll("\\.", "/")));
+            } catch (Exception e) {
+                LOG.log(Level.SEVERE, "Could not add 'EntityManagerProducer'.", e);
+            }
+        }
+
+    }
+
+    private static void addAdminPersistence(Project project, DependencyUtil dependencyUtil) {
+        DependencyBuilder adminPersistenceDependency = DependencyBuilder.create()
+            .setCoordinate(dependencyUtil.getLatestVersion(ADMIN_PERSISTENCE_COORDINATE));
+        dependencyUtil.installDependency(project.getFacet(DependencyFacet.class), adminPersistenceDependency);
+        configDeltaSpike(project);
+    }
+
+    private static void configDeltaSpike(Project project) {
+        Resource<?> resources = project.getFacet(ResourcesFacet.class).getResourceDirectory();
+
+        if (!resources.getChild("apache-deltaspike.properties").exists()) {
+            try (InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("/apache-deltaspike.properties")) {
+                IOUtils.copy(is, new FileOutputStream(
+                    new File(resources.getFullyQualifiedName() + "/apache-deltaspike.properties")));
+            } catch (IOException e) {
+                LOG.log(Level.SEVERE, "Could not add 'apache-deltaspike.properties'.", e);
+            }
+        }
+        CDIFacet cdi = project.getFacet(CDIFacet.class);
+        FileResource<?> beansXml = cdi.getConfigFile();
+        Node node = XMLParser.parse(beansXml.getResourceInputStream());
+        Node alternativesNode = node.getOrCreate("alternatives");
+        Optional<Node> deltaspikeTransactionStrategy = alternativesNode.getChildren().stream()
+            .filter(f -> f.getName().equals("class") && f.getText().contains("BeanManagedUserTransactionStrategy"))
+            .findFirst();
+
+        if (!deltaspikeTransactionStrategy.isPresent()) {
+            alternativesNode.createChild("class")
+                .text("org.apache.deltaspike.jpa.impl.transaction.BeanManagedUserTransactionStrategy");
+            beansXml.setContents(XMLParser.toXMLInputStream(node));
+        }
     }
    
 }

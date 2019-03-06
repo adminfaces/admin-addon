@@ -19,7 +19,9 @@ public class DependencyUtil {
     public static final Coordinate ADMIN_THEME_COORDINATE = CoordinateBuilder.create().setGroupId(ADMIN_FACES_GROUP_ID).setArtifactId("admin-theme");
     public static final Coordinate ADMIN_TEMPLATE_COORDINATE = CoordinateBuilder.create().setGroupId(ADMIN_FACES_GROUP_ID).setArtifactId("admin-template");
     public static final Coordinate ADMIN_PERSISTENCE_COORDINATE = CoordinateBuilder.create().setGroupId(ADMIN_FACES_GROUP_ID).setArtifactId("admin-persistence");
-
+    public static final Coordinate HSQLSDB_COORDINATE = CoordinateBuilder.create().setGroupId("org.hsqldb").setArtifactId("hsqldb").setVersion("2.3.5");
+    public static final Coordinate JUNIT4_COORDINATE = CoordinateBuilder.create().setGroupId("junit").setArtifactId("junit");
+    public static final Coordinate DBRIDER_COORDINATE = CoordinateBuilder.create().setGroupId("com.github.database-rider").setArtifactId("rider-cdi");
     public static final Coordinate PRIMEFACES_EXTENSIONS_COORDINATE = CoordinateBuilder.create().setGroupId("org.primefaces.extensions")
         .setArtifactId("primefaces-extensions").setVersion("6.2.8");
 

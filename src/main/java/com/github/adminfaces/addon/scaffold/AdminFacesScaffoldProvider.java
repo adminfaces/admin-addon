@@ -1,7 +1,6 @@
 package com.github.adminfaces.addon.scaffold;
 
 import static com.github.adminfaces.addon.util.Constants.NEW_LINE;
-import static com.github.adminfaces.addon.util.DependencyUtil.ADMIN_PERSISTENCE_COORDINATE;
 import static com.github.adminfaces.addon.util.DependencyUtil.ADMIN_TEMPLATE_COORDINATE;
 import static org.jboss.forge.addon.scaffold.util.ScaffoldUtil.createOrOverwrite;
 
@@ -26,13 +25,11 @@ import javax.persistence.Id;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.maven.model.Plugin;
 import org.jboss.forge.addon.dependencies.builder.DependencyBuilder;
 import org.jboss.forge.addon.facets.FacetFactory;
 import org.jboss.forge.addon.javaee.cdi.CDIFacet;
 import org.jboss.forge.addon.javaee.faces.FacesFacet;
 import org.jboss.forge.addon.javaee.jpa.JPAFacet;
-import org.jboss.forge.addon.javaee.jpa.PersistenceMetaModelFacet;
 import org.jboss.forge.addon.javaee.jpa.ui.setup.JPASetupWizard;
 import org.jboss.forge.addon.javaee.servlet.ServletFacet;
 import org.jboss.forge.addon.maven.projects.MavenFacet;
@@ -77,7 +74,6 @@ import org.metawidget.util.simple.StringUtils;
 
 import com.github.adminfaces.addon.freemarker.FreemarkerTemplateProcessor;
 import com.github.adminfaces.addon.freemarker.TemplateFactory;
-import com.github.adminfaces.addon.scaffold.metamodel.AdminFacesMetaModelProvider;
 import com.github.adminfaces.addon.scaffold.model.EntityConfig;
 import com.github.adminfaces.addon.scaffold.config.ScaffoldConfigLoader;
 import com.github.adminfaces.addon.scaffold.model.ScaffoldEntity;
@@ -118,90 +114,10 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
     @Override
     public List<Resource<?>> setup(ScaffoldSetupContext setupContext) {
         Project project = setupContext.getProject();
-        addAdminPersistence(project);
-        addEntityManagerProducer(project);
-        configJPAMetaModel(project);
+        AdminScaffoldUtils.setupAdminPersistece(project,dependencyUtil, facetFactory);
         createScaffoldConfig(project);
         addAppListCache(project);
         return Collections.emptyList();
-    }
-
-    private void addEntityManagerProducer(Project project) {
-        MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
-        JavaSourceFacet javaSource = project.getFacet(JavaSourceFacet.class);
-        try (InputStream emProducerStream = Thread.currentThread().getContextClassLoader()
-            .getResourceAsStream("/infra/persistence/EntityManagerProducer.java")) {
-            JavaSource<?> entityManagerProducer = (JavaSource<?>) Roaster.parse(emProducerStream);
-            entityManagerProducer.setPackage(metadataFacet.getProjectGroupName() + ".infra");
-            javaSource.saveJavaSource(entityManagerProducer);
-            FileUtils.copyInputStreamToFile(emProducerStream, new File(project.getRoot().getFullyQualifiedName()
-                + entityManagerProducer.getPackage().replaceAll("\\.", "/")));
-        } catch (Exception e) {
-            LOG.log(Level.SEVERE, "Could not add 'EntityManagerProducer'.", e);
-        }
-
-    }
-
-    private void configJPAMetaModel(Project project) {
-        MavenFacet pom = project.getFacet(MavenFacet.class);
-        boolean isMetaModelConfigured = false;
-        if (pom.getModel().getBuild() == null || pom.getModel().getBuild().getPlugins().isEmpty()) {
-            isMetaModelConfigured = false;
-        } else {
-            Plugin metaModelPlugin = pom.getModel().getBuild().getPluginsAsMap()
-                .get("org.bsc.maven:maven-processor-plugin");
-            if (metaModelPlugin == null) {
-                isMetaModelConfigured = false;
-            } else {
-                isMetaModelConfigured = true;
-            }
-        }
-
-        if (!isMetaModelConfigured) {
-            Iterable<PersistenceMetaModelFacet> facets = facetFactory.createFacets(project,
-                PersistenceMetaModelFacet.class);
-            for (PersistenceMetaModelFacet metaModelFacet : facets) {
-                metaModelFacet.setMetaModelProvider(new AdminFacesMetaModelProvider());
-                if (facetFactory.install(project, metaModelFacet)) {
-                    break;
-                }
-            }
-        }
-
-    }
-
-    private void addAdminPersistence(Project project) {
-        DependencyBuilder adminPersistenceDependency = DependencyBuilder.create()
-            .setCoordinate(dependencyUtil.getLatestVersion(ADMIN_PERSISTENCE_COORDINATE));
-        dependencyUtil.installDependency(project.getFacet(DependencyFacet.class), adminPersistenceDependency);
-        configDeltaSpike(project);
-    }
-
-    private void configDeltaSpike(Project project) {
-        Resource<?> resources = project.getFacet(ResourcesFacet.class).getResourceDirectory();
-
-        if (!resources.getChild("apache-deltaspike.properties").exists()) {
-            try (InputStream is = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("/apache-deltaspike.properties")) {
-                IOUtils.copy(is, new FileOutputStream(
-                    new File(resources.getFullyQualifiedName() + "/apache-deltaspike.properties")));
-            } catch (IOException e) {
-                LOG.log(Level.SEVERE, "Could not add 'apache-deltaspike.properties'.", e);
-            }
-        }
-        CDIFacet cdi = project.getFacet(CDIFacet.class);
-        FileResource<?> beansXml = cdi.getConfigFile();
-        Node node = XMLParser.parse(beansXml.getResourceInputStream());
-        Node alternativesNode = node.getOrCreate("alternatives");
-        Optional<Node> deltaspikeTransactionStrategy = alternativesNode.getChildren().stream()
-            .filter(f -> f.getName().equals("class") && f.getText().contains("BeanManagedUserTransactionStrategy"))
-            .findFirst();
-
-        if (!deltaspikeTransactionStrategy.isPresent()) {
-            alternativesNode.createChild("class")
-                .text("org.apache.deltaspike.jpa.impl.transaction.BeanManagedUserTransactionStrategy");
-            beansXml.setContents(XMLParser.toXMLInputStream(node));
-        }
     }
 
     /**

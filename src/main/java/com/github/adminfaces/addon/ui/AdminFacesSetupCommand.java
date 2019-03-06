@@ -131,7 +131,7 @@ public class AdminFacesSetupCommand extends AbstractProjectCommand {
 
         MavenFacet m2 = project.getFacet(MavenFacet.class);
         MavenModelResource m2Model = m2.getModelResource();
-        
+
         Node node = XMLParser.parse(m2Model.getResourceInputStream());
         Node resourcesNode = node.getOrCreate("build").getOrCreate("resources");
         Optional<Node> resourcesFiltering = resourcesNode.get("resource").stream()
@@ -189,16 +189,16 @@ public class AdminFacesSetupCommand extends AbstractProjectCommand {
         addAdminConfig(project);
 
         // Basic pages
-        if(!web.getWebResource(INDEX_PAGE).exists()) {
-        	result.add(createOrOverwrite(web.getWebResource(INDEX_PAGE),
-        			FreemarkerTemplateProcessor.processTemplate(context, templates.getIndexTemplate())));
+        if (!web.getWebResource(INDEX_PAGE).exists()) {
+            result.add(createOrOverwrite(web.getWebResource(INDEX_PAGE),
+                FreemarkerTemplateProcessor.processTemplate(context, templates.getIndexTemplate())));
         }
-        
-        if(!web.getWebResource(LOGIN_PAGE).exists()) {
-        	result.add(createOrOverwrite(web.getWebResource(LOGIN_PAGE),
-        			FreemarkerTemplateProcessor.processTemplate(context, templates.getLoginTemplate())));
+
+        if (!web.getWebResource(LOGIN_PAGE).exists()) {
+            result.add(createOrOverwrite(web.getWebResource(LOGIN_PAGE),
+                FreemarkerTemplateProcessor.processTemplate(context, templates.getLoginTemplate())));
         }
-        
+
         // page templates
         result.add(createOrOverwrite(web.getWebResource(TEMPLATE_DEFAULT),
             FreemarkerTemplateProcessor.processTemplate(context, templates.getTemplateDefault())));
@@ -251,7 +251,7 @@ public class AdminFacesSetupCommand extends AbstractProjectCommand {
 
         createOrOverwrite(web.getWebResource("/resources/images/login-bg.jpg"),
             getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/login-bg.jpg"));
-        
+
         createOrOverwrite(web.getWebResource("/resources/images/login-bg-mobile.jpeg"),
             getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/login-bg-mobile.jpeg"));
 
