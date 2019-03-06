@@ -114,7 +114,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
     @Override
     public List<Resource<?>> setup(ScaffoldSetupContext setupContext) {
         Project project = setupContext.getProject();
-        AdminScaffoldUtils.setupAdminPersistece(project,dependencyUtil, facetFactory);
+        AdminScaffoldUtils.setupAdminPersistence(project,dependencyUtil, facetFactory);
         createScaffoldConfig(project);
         addAppListCache(project);
         return Collections.emptyList();

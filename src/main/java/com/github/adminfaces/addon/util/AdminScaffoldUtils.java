@@ -27,6 +27,7 @@ import javax.validation.constraints.NotNull;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.model.Plugin;
+import org.jboss.forge.addon.dependencies.builder.CoordinateBuilder;
 import org.jboss.forge.addon.dependencies.builder.DependencyBuilder;
 import org.jboss.forge.addon.facets.FacetFactory;
 import org.jboss.forge.addon.javaee.cdi.CDIFacet;
@@ -149,7 +150,7 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
         return sourceFacet.getSourceDirectory().getFullyQualifiedName();
     }
     
-    public static void setupAdminPersistece(Project project, DependencyUtil dependencyUtil, FacetFactory facetFactory) {
+    public static void setupAdminPersistence(Project project, DependencyUtil dependencyUtil, FacetFactory facetFactory) {
         addAdminPersistence(project, dependencyUtil);
         addEntityManagerProducer(project);
         configJPAMetaModel(project, facetFactory);
@@ -176,6 +177,11 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
             for (PersistenceMetaModelFacet metaModelFacet : facets) {
                 metaModelFacet.setMetaModelProvider(new AdminFacesMetaModelProvider());
                 if (facetFactory.install(project, metaModelFacet)) {
+                    DependencyFacet facet = project.getFacet(DependencyFacet.class);
+                    DependencyBuilder jpaModelegenDependency = DependencyBuilder.create().setCoordinate(CoordinateBuilder.create().setGroupId("org.hibernate").setArtifactId("hibernate-jpamodelgen"));
+                    if(facet.hasDirectDependency(jpaModelegenDependency)) {
+                        facet.removeDependency(jpaModelegenDependency);//not needed on direct deps
+                    }
                     break;
                 }
             }

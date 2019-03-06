@@ -24,14 +24,26 @@
 package com.github.adminfaces.addon.ui;
 
 import com.github.adminfaces.addon.facet.AdminFacesFacet;
+import com.github.adminfaces.addon.facet.AdminFacesTestHarnessFacet;
+import com.github.adminfaces.addon.util.AdminScaffoldUtils;
+import static com.github.adminfaces.addon.util.AdminScaffoldUtils.LOG;
+import com.github.adminfaces.addon.util.DependencyUtil;
+import static com.github.adminfaces.addon.util.DependencyUtil.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.logging.Level;
 import javax.inject.Inject;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.jboss.forge.addon.dependencies.Dependency;
+import org.jboss.forge.addon.dependencies.builder.DependencyBuilder;
 import org.jboss.forge.addon.facets.FacetFactory;
 import org.jboss.forge.addon.projects.ProjectFactory;
 import org.jboss.forge.addon.projects.ui.AbstractProjectCommand;
 import org.jboss.forge.addon.ui.context.UIContext;
 import org.jboss.forge.addon.ui.context.UIExecutionContext;
-import org.jboss.forge.addon.ui.context.UINavigationContext;
-import org.jboss.forge.addon.ui.result.NavigationResult;
 import org.jboss.forge.addon.ui.result.Result;
 
 /**
@@ -39,10 +51,18 @@ import org.jboss.forge.addon.ui.result.Result;
  * @author rmpestano
  */
 import org.jboss.forge.addon.facets.constraints.FacetConstraint;
+import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
+import org.jboss.forge.addon.projects.Project;
+import org.jboss.forge.addon.projects.facets.DependencyFacet;
+import org.jboss.forge.addon.projects.facets.MetadataFacet;
+import org.jboss.forge.addon.projects.facets.ResourcesFacet;
+import org.jboss.forge.addon.resource.DirectoryResource;
 import org.jboss.forge.addon.ui.metadata.UICommandMetadata;
 import org.jboss.forge.addon.ui.result.Results;
 import org.jboss.forge.addon.ui.util.Categories;
 import org.jboss.forge.addon.ui.util.Metadata;
+import org.jboss.forge.roaster.Roaster;
+import org.jboss.forge.roaster.model.source.JavaSource;
 
 @FacetConstraint(AdminFacesFacet.class)
 public class AdminFacesTestSetupCommand extends AbstractProjectCommand {
@@ -53,6 +73,9 @@ public class AdminFacesTestSetupCommand extends AbstractProjectCommand {
     @Inject
     private ProjectFactory projectFactory;
 
+    @Inject
+    private DependencyUtil dependencyUtil;
+
     @Override
     public UICommandMetadata getMetadata(UIContext context) {
         return Metadata.forCommand(getClass()).name("AdminFaces: Test harness setup").category(Categories.create("AdminFaces"))
@@ -61,10 +84,141 @@ public class AdminFacesTestSetupCommand extends AbstractProjectCommand {
 
     @Override
     public Result execute(UIExecutionContext context) throws Exception {
+        final Project project = getSelectedProject(context) != null ? getSelectedProject(context)
+            : getSelectedProject(context.getUIContext());
+
+        boolean execute = true;
+        if (project.hasFacet(AdminFacesTestHarnessFacet.class) && project.getFacet(AdminFacesTestHarnessFacet.class).isInstalled()) {
+            execute = context.getPrompt().promptBoolean("AdminFaces test harness is already installed, override it?");
+        }
+
+        if (!execute) {
+            return Results.success();
+        }
+        addAdminFacesTestDependencies(project);
+        addAdminFacesTestHarnessResources(project);
+        addTestEntityManagerProducer(project);
         return Results.success("AdminFaces test harness setup done successfully!");
     }
 
-    
+    protected void addAdminFacesTestHarnessResources(Project project) {
+        AdminScaffoldUtils.setupAdminPersistence(project, dependencyUtil, facetFactory);
+        DirectoryResource testResources = project.getFacet(ResourcesFacet.class).getTestResourceDirectory();
+        testResources.getOrCreateChildDirectory("datasets");
+        DirectoryResource testMetaInf = testResources.getOrCreateChildDirectory("META-INF");
+        if (!testMetaInf.getChild("beans.xml").exists()) {
+            try (InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("/META-INF/test-beans.xml")) {
+                IOUtils.copy(is, new FileOutputStream(
+                    new File(testMetaInf.getFullyQualifiedName() + "/beans.xml")));
+            } catch (IOException e) {
+                LOG.log(Level.SEVERE, "Could not add 'beans.xml'.", e);
+            }
+        }
+
+        if (!testMetaInf.getChild("apache-deltaspike.properties").exists()) {
+            try (InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("/META-INF/test-apache-deltaspike.properties")) {
+                IOUtils.copy(is, new FileOutputStream(
+                    new File(testMetaInf.getFullyQualifiedName() + "/apache-deltaspike.properties")));
+            } catch (IOException e) {
+                LOG.log(Level.SEVERE, "Could not add 'apache-deltaspike.properties'.", e);
+            }
+        }
+
+        if (!testMetaInf.getChild("persistence.xml").exists()) {
+            try (InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("/META-INF/test-persistence.xml")) {
+                IOUtils.copy(is, new FileOutputStream(
+                    new File(testMetaInf.getFullyQualifiedName() + "/persistence.xml")));
+            } catch (IOException e) {
+                LOG.log(Level.SEVERE, "Could not add 'persistence.xml'.", e);
+            }
+        }
+    }
+
+    protected void addAdminFacesTestDependencies(Project project) {
+        DependencyFacet dependencyFacet = project.getFacet(DependencyFacet.class);
+        DependencyBuilder junit = DependencyBuilder.create()
+            .setScopeType("test")
+            .setArtifactId(JUNIT4_COORDINATE.getArtifactId())
+            .setGroupId(JUNIT4_COORDINATE.getGroupId());
+        if (!dependencyFacet.hasDirectDependency(junit)) {
+            junit.setCoordinate(dependencyUtil.getLatestVersion(JUNIT4_COORDINATE));
+            dependencyUtil.installDependency(dependencyFacet, junit);
+        }
+        DependencyBuilder assertJ = DependencyBuilder.create()
+            .setScopeType("test")
+            .setArtifactId(ASSERTJ_COORDINATE.getArtifactId())
+            .setGroupId(ASSERTJ_COORDINATE.getGroupId());
+        if (!dependencyFacet.hasDirectDependency(assertJ)) {
+            assertJ.setVersion(ASSERTJ_COORDINATE.getVersion());
+            dependencyUtil.installDependency(dependencyFacet, assertJ);
+        }
+        DependencyBuilder hsqldb = DependencyBuilder.create()
+            .setScopeType("test")
+            .setArtifactId(HSQLSDB_COORDINATE.getArtifactId())
+            .setGroupId(HSQLSDB_COORDINATE.getGroupId());
+        if (!dependencyFacet.hasDirectDependency(hsqldb)) {
+            hsqldb.setVersion(HSQLSDB_COORDINATE.getVersion());
+            dependencyUtil.installDependency(dependencyFacet, hsqldb);
+        }
+        DependencyBuilder dbRider = DependencyBuilder.create()
+            .setScopeType("test")
+            .setArtifactId(DBRIDER_COORDINATE.getArtifactId())
+            .setGroupId(DBRIDER_COORDINATE.getGroupId());
+        if (!dependencyFacet.hasDirectDependency(dbRider)) {
+            dbRider.setCoordinate(dependencyUtil.getLatestVersion(DBRIDER_COORDINATE));
+            dependencyUtil.installDependency(dependencyFacet, dbRider);
+        }
+        DependencyBuilder deltaSpikeTestControl = DependencyBuilder.create()
+            .setScopeType("test")
+            .setArtifactId(DELTASPIKE_TESTCONTROL_COORDINATE.getArtifactId())
+            .setGroupId(DELTASPIKE_TESTCONTROL_COORDINATE.getGroupId());
+        if (!dependencyFacet.hasDirectDependency(deltaSpikeTestControl)) {
+            deltaSpikeTestControl.setVersion(DELTASPIKE_TESTCONTROL_COORDINATE.getVersion());
+            dependencyUtil.installDependency(dependencyFacet, deltaSpikeTestControl);
+        }
+        DependencyBuilder deltaSpikeCDIControl = DependencyBuilder.create()
+            .setScopeType("test")
+            .setArtifactId(DELTASPIKE_CDICONTROL_COORDINATE.getArtifactId())
+            .setGroupId(DELTASPIKE_CDICONTROL_COORDINATE.getGroupId());
+        if (!dependencyFacet.hasDirectDependency(deltaSpikeCDIControl)) {
+            deltaSpikeCDIControl.setVersion(DELTASPIKE_CDICONTROL_COORDINATE.getVersion());
+            dependencyUtil.installDependency(dependencyFacet, deltaSpikeCDIControl);
+        }
+        DependencyBuilder owb = DependencyBuilder.create()
+            .setScopeType("test")
+            .setArtifactId(OPENWEBBEANS_COORDINATE.getArtifactId())
+            .setGroupId(OPENWEBBEANS_COORDINATE.getGroupId());
+        if (!dependencyFacet.hasDirectDependency(owb)) {
+            owb.setVersion(OPENWEBBEANS_COORDINATE.getVersion());
+            dependencyUtil.installDependency(dependencyFacet, owb);
+        }
+        DependencyBuilder hibernateCore = DependencyBuilder.create()
+            .setScopeType("provided")
+            .setArtifactId(HIBERNATE_CORE_COORDINATE.getArtifactId())
+            .setGroupId(HIBERNATE_CORE_COORDINATE.getGroupId());
+        if (!dependencyFacet.hasDirectDependency(hibernateCore)) {
+            hibernateCore.setVersion(HIBERNATE_CORE_COORDINATE.getVersion());
+            dependencyUtil.installDependency(dependencyFacet, hibernateCore);
+        }
+        //enforce same version of hibernate-core and hibernate-entitymanager
+        Dependency hibernateCoreInstalled = dependencyFacet.getDirectDependency(hibernateCore);
+        DependencyBuilder hibernateEntityManager = DependencyBuilder.create()
+            .setScopeType("test")
+            .setArtifactId(HIBERNATE_ENTITYMANAGER_COORDINATE.getArtifactId())
+            .setGroupId(HIBERNATE_ENTITYMANAGER_COORDINATE.getGroupId());
+        if (!dependencyFacet.hasDirectDependency(hibernateEntityManager)) {
+            hibernateEntityManager.setVersion(hibernateCoreInstalled.getCoordinate().getVersion());
+            dependencyUtil.installDependency(dependencyFacet, hibernateEntityManager);
+        } else if (!dependencyFacet.getDirectDependency(hibernateEntityManager).getCoordinate().getVersion().equals(hibernateCoreInstalled.getCoordinate().getVersion())) {
+            hibernateEntityManager.setVersion(hibernateCoreInstalled.getCoordinate().getVersion());
+            dependencyUtil.reInstallDependency(dependencyFacet, hibernateEntityManager);
+        }
+        
+    }
+
     @Override
     protected boolean isProjectRequired() {
         return false;
@@ -73,6 +227,22 @@ public class AdminFacesTestSetupCommand extends AbstractProjectCommand {
     @Override
     protected ProjectFactory getProjectFactory() {
         return projectFactory;
+    }
+
+    private void addTestEntityManagerProducer(Project project) {
+        MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
+        JavaSourceFacet javaSource = project.getFacet(JavaSourceFacet.class);
+        try (InputStream emProducerStream = Thread.currentThread().getContextClassLoader()
+            .getResourceAsStream("/infra/persistence/TestEntityManagerProducer.java")) {
+            JavaSource<?> entityManagerProducer = (JavaSource<?>) Roaster.parse(emProducerStream);
+            entityManagerProducer.setPackage(metadataFacet.getProjectGroupName() + ".infra");
+            entityManagerProducer.addImport(metadataFacet.getProjectGroupName() + ".infra.EntityManagerProducer");
+            javaSource.saveTestJavaSource(entityManagerProducer);
+            FileUtils.copyInputStreamToFile(emProducerStream, new File(javaSource.getTestSourceDirectory().getFullyQualifiedName()
+                + "/" + entityManagerProducer.getPackage().replaceAll("\\.", "/")));
+        } catch (Exception e) {
+            LOG.log(Level.SEVERE, "Could not add 'EntityManagerProducer'.", e);
+        }
     }
 
 }
