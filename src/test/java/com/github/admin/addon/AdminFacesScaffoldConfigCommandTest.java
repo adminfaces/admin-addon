@@ -84,16 +84,16 @@ public class AdminFacesScaffoldConfigCommandTest {
         shellTest.clearScreen();
         ResourcesFacet resourcesFacet = project.getFacet(ResourcesFacet.class);
         Resource<?> scaffoldDir = resourcesFacet.getResourceDirectory().getChild("scaffold");
-        FileResource<?> globalScaffoldConfig = scaffoldDir.getChild("global-config.yml").reify(FileResource.class);
+        FileResource<?> talkScaffoldConfig = scaffoldDir.getChild("talk.yml").reify(FileResource.class);
         StringBuilder scaffoldConfigCommand = new StringBuilder("adminfaces-scaffold-config --config-file ")
-            .append(globalScaffoldConfig.getFullyQualifiedName()).append(" --input-size 30 --to-one-component-type ")
+            .append(talkScaffoldConfig.getFullyQualifiedName()).append(" --input-size 30 --to-one-component-type ")
             .append(SELECT_ONE_MENU.name()).append(" --to-many-component-type ").append(SELECT_MANY_MENU.name())
             .append(" --datatable-editable --menu-icon \"fa fa-edit\"");
         Result scaffoldConfigResult = shellTest.execute(scaffoldConfigCommand.toString(), 5, TimeUnit.MINUTES);
         if (scaffoldConfigResult instanceof Failed) {
             ((Failed) scaffoldConfigResult).getException().printStackTrace();
         }
-        File globalConfigFile = new File(globalScaffoldConfig.getFullyQualifiedName());
+        File globalConfigFile = new File(talkScaffoldConfig.getFullyQualifiedName());
         assertThat(contentOf(globalConfigFile))
             .contains("!!com.github.adminfaces.addon.scaffold.model.GlobalConfig"+ NEW_LINE
                 + "datatableEditable: true"+ NEW_LINE
@@ -106,6 +106,35 @@ public class AdminFacesScaffoldConfigCommandTest {
                 + ""+ NEW_LINE
                 + "toOneComponentType: " + SELECT_ONE_MENU.name()
                 + "");
+    }
+
+    @Test
+    public void shouldEditEntityConfigViaScaffoldConfigCommand() throws TimeoutException, IOException {
+        shellTest.clearScreen();
+        ResourcesFacet resourcesFacet = project.getFacet(ResourcesFacet.class);
+        Resource<?> scaffoldDir = resourcesFacet.getResourceDirectory().getChild("scaffold");
+        FileResource<?> globalScaffoldConfig = scaffoldDir.getChild("global-config.yml").reify(FileResource.class);
+        StringBuilder scaffoldConfigCommand = new StringBuilder("adminfaces-scaffold-config --config-file ")
+                .append(globalScaffoldConfig.getFullyQualifiedName()).append(" --input-size 30 --to-one-component-type ")
+                .append(SELECT_ONE_MENU.name()).append(" --to-many-component-type ").append(SELECT_MANY_MENU.name())
+                .append(" --datatable-editable --menu-icon \"fa fa-edit\"");
+        Result scaffoldConfigResult = shellTest.execute(scaffoldConfigCommand.toString(), 5, TimeUnit.MINUTES);
+        if (scaffoldConfigResult instanceof Failed) {
+            ((Failed) scaffoldConfigResult).getException().printStackTrace();
+        }
+        File globalConfigFile = new File(globalScaffoldConfig.getFullyQualifiedName());
+        assertThat(contentOf(globalConfigFile))
+                .contains("!!com.github.adminfaces.addon.scaffold.model.GlobalConfig"+ NEW_LINE
+                        + "datatableEditable: true"+ NEW_LINE
+                        + "datatableReflow: true"+ NEW_LINE
+                        + "dateComponentType: " + CALENDAR.name()
+                        + ""+ NEW_LINE
+                        + "inputSize: 30"+ NEW_LINE
+                        + "menuIcon: fa fa-edit"+ NEW_LINE
+                        + "toManyComponentType: " + SELECT_MANY_MENU.name()
+                        + ""+ NEW_LINE
+                        + "toOneComponentType: " + SELECT_ONE_MENU.name()
+                        + "");
     }
 
     private void generateEntities() throws TimeoutException {

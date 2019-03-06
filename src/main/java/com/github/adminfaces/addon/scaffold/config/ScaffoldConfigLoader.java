@@ -66,8 +66,8 @@ public class ScaffoldConfigLoader {
     public static EntityConfig createOrLoadEntityConfig(JavaClassSource entity, Project project) {
         DirectoryResource scaffoldDir = project.getFacet(ResourcesFacet.class).getResourceDirectory()
             .getChildDirectory("scaffold");
-        FileResource<?> entityConfigFile = (FileResource<?>) scaffoldDir.getChild(entity.getName().toLowerCase() + ".yml");
-        EntityConfig entityConfig = null;
+        FileResource<?> entityConfigFile = (FileResource<?>) scaffoldDir.getChild(entity.getName() + ".yml");
+        EntityConfig entityConfig;
         if (!entityConfigFile.exists()) {
             entityConfig = createEntityConfig(entity, entityConfigFile, project);
         } else {
@@ -148,7 +148,7 @@ public class ScaffoldConfigLoader {
         }
         Type<JavaClassSource> type = field.getType();
         if (type.isType(String.class)) {
-            if (field.getName().toLowerCase().contains("password")) {
+            if (field.getName().toLowerCase().contains("password") || field.getName().toLowerCase().contains("secret")) {
                 return PASSWORD;
             }
             if (length > globalConfig.getInputSize()) {

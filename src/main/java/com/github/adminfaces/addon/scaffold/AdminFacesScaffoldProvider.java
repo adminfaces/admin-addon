@@ -295,7 +295,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
             if (resource instanceof JavaResource) {
                 JavaResource javaResource = (JavaResource) resource;
                 try {
-                    JavaClassSource entity = (JavaClassSource) javaResource.getJavaType();
+                    JavaClassSource entity = javaResource.getJavaType();
                     entity.addImport("com.github.adminfaces.persistence.model.PersistenceEntity");
                     entity.addInterface("PersistenceEntity");
                     createOrOverwrite(java.getJavaResource(entity), entity.toString());
