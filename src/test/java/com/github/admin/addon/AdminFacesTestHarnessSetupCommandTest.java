@@ -32,6 +32,7 @@ import java.util.concurrent.TimeoutException;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.forge.addon.javaee.jpa.JPAFacet_2_1;
+import org.jboss.forge.addon.maven.projects.MavenFacet;
 import org.jboss.forge.addon.projects.facets.ResourcesFacet;
 import org.jboss.forge.addon.resource.FileResource;
 import org.jboss.forge.addon.resource.Resource;
@@ -78,7 +79,9 @@ public class AdminFacesTestHarnessSetupCommandTest {
         }
         project = projectFactory.findProject(project.getRoot());
         assertThat(project.hasFacet(AdminFacesTestHarnessFacet.class)).isTrue();
+        MavenFacet maven = project.getFacet(MavenFacet.class);
+        boolean buildSuccess = maven.executeMaven(Arrays.asList("clean", "package"));
+        assertThat(buildSuccess).isTrue();
     }
-
 
 }
