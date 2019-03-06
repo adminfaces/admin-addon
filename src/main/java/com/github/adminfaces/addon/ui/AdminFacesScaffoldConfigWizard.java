@@ -36,13 +36,9 @@ import org.jboss.forge.addon.ui.wizard.UIWizard;
 import org.jboss.forge.addon.ui.result.navigation.NavigationResultBuilder;
 import com.github.adminfaces.addon.facet.AdminFacesFacet;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
-import org.jboss.forge.addon.convert.AbstractConverter;
-import org.jboss.forge.addon.convert.Converter;
 import org.jboss.forge.addon.facets.FacetFactory;
-import org.jboss.forge.addon.parser.java.resources.JavaResource;
 import org.jboss.forge.addon.projects.ProjectFactory;
 import org.jboss.forge.addon.projects.facets.ResourcesFacet;
 import org.jboss.forge.addon.resource.DirectoryResource;
@@ -95,8 +91,7 @@ public class AdminFacesScaffoldConfigWizard extends AbstractProjectCommand imple
 
     @Override
     public NavigationResult next(UINavigationContext context) throws Exception {
-        Map<Object, Object> attributeMap = context.getUIContext().getAttributeMap();
-        attributeMap.put(FileResource.class, configFile.getValue());
+        context.getUIContext().getAttributeMap().put(FileResource.class, configFile.getValue());
         return Results.navigateTo(AdminFacesScaffoldConfigStep.class);
     }
 
@@ -104,10 +99,8 @@ public class AdminFacesScaffoldConfigWizard extends AbstractProjectCommand imple
     public NavigationResult getPrerequisiteCommands(UIContext context) {
         NavigationResultBuilder builder = NavigationResultBuilder.create();
         Project project = getSelectedProject(context);
-        if (project != null) {
-            if (!project.hasFacet(AdminFacesFacet.class)) {
-                builder.add(AdminFacesSetupCommand.class);
-            }
+        if (project != null && !project.hasFacet(AdminFacesFacet.class)) {
+            builder.add(AdminFacesSetupCommand.class);
         }
         return builder.build();
     }
@@ -122,8 +115,8 @@ public class AdminFacesScaffoldConfigWizard extends AbstractProjectCommand imple
             .map(r -> (FileResource<?>) r)
             .collect(Collectors.toList());
         configFile.setValueChoices(scaffoldConfigList);
-        configFile.setItemLabelConverter((FileResource<?> source) -> 
-            source.getFullyQualifiedName().substring(source.getFullyQualifiedName().indexOf(project.getRoot().getName())));
+        configFile.setItemLabelConverter((FileResource<?> source)
+            -> source.getFullyQualifiedName().substring(source.getFullyQualifiedName().indexOf(project.getRoot().getName())));
         int selectionIndex = -1;
         if (!selection.isEmpty()) {
             selectionIndex = scaffoldConfigList.indexOf(selection.get());

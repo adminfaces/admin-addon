@@ -78,16 +78,14 @@ public class AdminFacesScaffoldConfigStep extends AbstractProjectCommand impleme
 
     private EntityConfig entityConfig;
 
-    private FileResource<?> scaffoldConfigFile;
-
     private FieldConfig fieldConfig;
 
     private UIInput<Boolean> hidden;
 
     private UIInput<Integer> length;
-    
+
     private UIInput<Boolean> required;
-    
+
     private UISelectOne<ComponentTypeEnum> type;
 
     @Override
@@ -102,7 +100,10 @@ public class AdminFacesScaffoldConfigStep extends AbstractProjectCommand impleme
         UIContext context = builder.getUIContext();
         Map<Object, Object> attributeMap = context.getAttributeMap();
         InputComponentFactory componentFactory = builder.getInputComponentFactory();
-        scaffoldConfigFile = (FileResource<?>) attributeMap.get(FileResource.class);
+        FileResource<?> scaffoldConfigFile = (FileResource<?>) attributeMap.get(FileResource.class);
+        if (scaffoldConfigFile == null) {
+            return;
+        }
         fieldConfig = null;
         if (scaffoldConfigFile.getName().endsWith("global-config.yml")) {
             try (InputStream entityConfigStream = scaffoldConfigFile.getResourceInputStream()) {
@@ -243,14 +244,14 @@ public class AdminFacesScaffoldConfigStep extends AbstractProjectCommand impleme
 
             length = componentFactory.createInput("Length", Integer.class)
                 .setEnabled(false);
-            
+
             required = componentFactory.createInput("Required", Boolean.class)
                 .setEnabled(false);
-            
+
             type = componentFactory.createSelectOne("Type", ComponentTypeEnum.class)
                 .setValueChoices(Arrays.stream(ComponentTypeEnum.values()).collect(Collectors.toList()))
                 .setEnabled(false);
-            
+
             List<FieldConfig> entityFieldConfigs = new ArrayList<>();
             entityFieldConfigs.add(null);
             entityFieldConfigs.addAll(entityConfig.getFields());
@@ -304,7 +305,7 @@ public class AdminFacesScaffoldConfigStep extends AbstractProjectCommand impleme
                 }
             });
             builder.add(fieldConfigList)
-            .add(hidden).add(length).add(required).add(type);
+                .add(hidden).add(length).add(required).add(type);
         }
     }
 
@@ -316,6 +317,7 @@ public class AdminFacesScaffoldConfigStep extends AbstractProjectCommand impleme
         } else {
             configFileContent = new Yaml(YML_DUMP_OPTIONS).dump(entityConfig);
         }
+        FileResource<?> scaffoldConfigFile = (FileResource<?>) context.getUIContext().getAttributeMap().get(FileResource.class);
         scaffoldConfigFile.setContents(configFileContent);
         return Results.success(scaffoldConfigFile.getName() + " updated successfully!");
     }
