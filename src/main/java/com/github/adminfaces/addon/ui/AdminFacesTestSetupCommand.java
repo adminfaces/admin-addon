@@ -29,10 +29,12 @@ import com.github.adminfaces.addon.util.AdminScaffoldUtils;
 import static com.github.adminfaces.addon.util.AdminScaffoldUtils.LOG;
 import com.github.adminfaces.addon.util.DependencyUtil;
 import static com.github.adminfaces.addon.util.DependencyUtil.*;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 import java.util.logging.Level;
 import javax.inject.Inject;
 import org.apache.commons.io.FileUtils;
@@ -51,6 +53,8 @@ import org.jboss.forge.addon.ui.result.Result;
  * @author rmpestano
  */
 import org.jboss.forge.addon.facets.constraints.FacetConstraint;
+import org.jboss.forge.addon.maven.projects.MavenFacet;
+import org.jboss.forge.addon.maven.resources.MavenModelResource;
 import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.facets.DependencyFacet;
@@ -61,6 +65,8 @@ import org.jboss.forge.addon.ui.metadata.UICommandMetadata;
 import org.jboss.forge.addon.ui.result.Results;
 import org.jboss.forge.addon.ui.util.Categories;
 import org.jboss.forge.addon.ui.util.Metadata;
+import org.jboss.forge.parser.xml.Node;
+import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
@@ -98,7 +104,8 @@ public class AdminFacesTestSetupCommand extends AbstractProjectCommand {
         addAdminFacesTestDependencies(project);
         addAdminFacesTestHarnessResources(project);
         addTestEntityManagerProducer(project);
-        return Results.success("AdminFaces test harness setup done successfully!");
+        addMavenTestsProfile(project);
+        return Results.success("AdminFaces test harness setup finished successfully!");
     }
 
     protected void addAdminFacesTestHarnessResources(Project project) {
@@ -133,6 +140,21 @@ public class AdminFacesTestSetupCommand extends AbstractProjectCommand {
                     new File(testMetaInf.getFullyQualifiedName() + "/persistence.xml")));
             } catch (IOException e) {
                 LOG.log(Level.SEVERE, "Could not add 'persistence.xml'.", e);
+            }
+        }
+
+        //add beans.xml to meta-inf in sources (nneded by deltaspike test control)
+        DirectoryResource metaInf = project.getFacet(ResourcesFacet.class).getResourceDirectory().getChildDirectory("META-INF");
+        if (!metaInf.getChild("beans.xml").exists()) {
+            try (InputStream is = new ByteArrayInputStream(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<beans xmlns=\"http://java.sun.com/xml/ns/javaee\"\n"
+                + "       xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "       xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd\">\n"
+                + "</beans>").getBytes())) {
+                IOUtils.copy(is, new FileOutputStream(
+                    new File(metaInf.getFullyQualifiedName() + "/beans.xml")));
+            } catch (Exception e) {
+                LOG.log(Level.SEVERE, "Could not add 'beans.xml'.", e);
             }
         }
     }
@@ -216,7 +238,14 @@ public class AdminFacesTestSetupCommand extends AbstractProjectCommand {
             hibernateEntityManager.setVersion(hibernateCoreInstalled.getCoordinate().getVersion());
             dependencyUtil.reInstallDependency(dependencyFacet, hibernateEntityManager);
         }
-        
+        DependencyBuilder servletApi = DependencyBuilder.create()
+            .setScopeType("test")
+            .setArtifactId("javax.servlet-api")
+            .setGroupId("javax.servlet");
+        if (!dependencyFacet.hasDirectDependency(servletApi)) {
+            servletApi.setVersion("3.1.0");
+            dependencyUtil.installDependency(dependencyFacet, servletApi);
+        }
     }
 
     @Override
@@ -236,12 +265,35 @@ public class AdminFacesTestSetupCommand extends AbstractProjectCommand {
             .getResourceAsStream("/infra/persistence/TestEntityManagerProducer.java")) {
             JavaSource<?> entityManagerProducer = (JavaSource<?>) Roaster.parse(emProducerStream);
             entityManagerProducer.setPackage(metadataFacet.getProjectGroupName() + ".infra");
-            entityManagerProducer.addImport(metadataFacet.getProjectGroupName() + ".infra.EntityManagerProducer");
             javaSource.saveTestJavaSource(entityManagerProducer);
             FileUtils.copyInputStreamToFile(emProducerStream, new File(javaSource.getTestSourceDirectory().getFullyQualifiedName()
                 + "/" + entityManagerProducer.getPackage().replaceAll("\\.", "/")));
         } catch (Exception e) {
             LOG.log(Level.SEVERE, "Could not add 'EntityManagerProducer'.", e);
+        }
+    }
+
+    private void addMavenTestsProfile(Project project) {
+        MavenFacet m2 = project.getFacet(MavenFacet.class);
+        MavenModelResource m2Model = m2.getModelResource();
+        Node node = XMLParser.parse(m2Model.getResourceInputStream());
+        Node profiles = node.getOrCreate("profiles");
+        Optional<Node> itTestsProfile = profiles.get("profile")
+            .stream().filter(p -> p.getName().equals("id") && p.getText().equalsIgnoreCase("it-tests"))
+            .findFirst();
+
+        if (!itTestsProfile.isPresent()) {
+            Node itTests = profiles.createChild("profile");
+            itTests.createChild("id").text("it-tests");
+            Node sureFirePlugin = itTests.createChild("build")
+                .createChild("plugins").createChild("plugin");
+            sureFirePlugin.createChild("artifactId")
+                .text("maven-surefire-plugin");
+            sureFirePlugin.createChild("version")
+                .text("2.22.1");
+            sureFirePlugin.createChild("configuration")
+                .createChild("includes").text("**/*It.java");
+            m2Model.setContents(XMLParser.toXMLInputStream(node));
         }
     }
 

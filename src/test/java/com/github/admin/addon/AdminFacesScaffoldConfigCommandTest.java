@@ -172,7 +172,6 @@ public class AdminFacesScaffoldConfigCommandTest {
         shellTest.execute("constraint-add --on-property title --constraint NotNull", 10, TimeUnit.SECONDS);
         shellTest.execute("constraint-add --on-property description --constraint Size --max 2000", 10, TimeUnit.SECONDS);
         shellTest.execute("constraint-add --on-property date --constraint NotNull", 10, TimeUnit.SECONDS);
-
     }
 
 }
