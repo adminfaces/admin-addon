@@ -27,7 +27,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.forge.addon.javaee.jpa.JPAFacet_2_1;
 import org.jboss.forge.addon.maven.projects.MavenFacet;
-import org.jboss.forge.addon.ui.result.CompositeResult;
 import org.jboss.forge.arquillian.AddonDependencies;
 import org.junit.Test;
 
