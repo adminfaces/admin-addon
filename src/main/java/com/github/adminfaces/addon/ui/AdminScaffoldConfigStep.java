@@ -66,7 +66,7 @@ import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.yaml.snakeyaml.Yaml;
 
-public class AdminFacesScaffoldConfigStep extends AbstractProjectCommand implements UIWizardStep {
+public class AdminScaffoldConfigStep extends AbstractProjectCommand implements UIWizardStep {
 
     @Inject
     private FacetFactory facetFactory;

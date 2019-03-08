@@ -1,5 +1,7 @@
 package com.github.adminfaces.addon.scaffold;
 
+import static com.github.adminfaces.addon.util.AdminScaffoldUtils.resolveToManyAssociationFields;
+import static com.github.adminfaces.addon.util.AdminScaffoldUtils.resolveToOneAssociationFields;
 import static com.github.adminfaces.addon.util.Constants.NEW_LINE;
 import static com.github.adminfaces.addon.util.DependencyUtil.ADMIN_TEMPLATE_COORDINATE;
 import static org.jboss.forge.addon.scaffold.util.ScaffoldUtil.createOrOverwrite;
@@ -77,7 +79,7 @@ import com.github.adminfaces.addon.freemarker.TemplateFactory;
 import com.github.adminfaces.addon.scaffold.model.EntityConfig;
 import com.github.adminfaces.addon.scaffold.config.ScaffoldConfigLoader;
 import com.github.adminfaces.addon.scaffold.model.ScaffoldEntity;
-import com.github.adminfaces.addon.ui.AdminFacesSetupCommand;
+import com.github.adminfaces.addon.ui.AdminSetupCommand;
 import com.github.adminfaces.addon.util.AdminScaffoldUtils;
 import com.github.adminfaces.addon.util.Constants;
 import com.github.adminfaces.addon.util.DependencyUtil;
@@ -85,9 +87,9 @@ import org.jboss.forge.roaster.model.source.FieldSource;
 
 public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 
-    private static final Logger LOG = Logger.getLogger(AdminFacesSetupCommand.class.getName());
+    private static final Logger LOG = Logger.getLogger(AdminSetupCommand.class.getName());
 
-    private final Document.OutputSettings outputSettings = new Document.OutputSettings().prettyPrint(true)
+    private static final Document.OutputSettings outputSettings = new Document.OutputSettings().prettyPrint(true)
         .charset("UTF-8").indentAmount(4).syntax(Document.OutputSettings.Syntax.xml);
 
     private final Parser parser = Parser.xmlParser().settings(new ParseSettings(true, true));
@@ -344,7 +346,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
         String entityName = entity.getName().toLowerCase();
         FileResource<?> formPageFile = web.getWebResource("/" + entityName + "/" + entityName + "-form.xhtml");
         generatedResources.add(createOrOverwrite(formPageFile,
-            parser.parseInput(listPage, "UTF-8").outputSettings(outputSettings).toString()));
+                parser.parseInput(listPage, "UTF-8").outputSettings(outputSettings).toString()));
     }
 
     void addLeftMenuEntry(Project project, ScaffoldEntity entity, List<Resource<?>> generatedResources) {
@@ -487,26 +489,6 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
         context.put("primaryKeyCC", StringUtils.capitalize(pkName));
         context.put("primaryKeyType", pkType);
         context.put("nullablePrimaryKeyType", nullablePkType);
-    }
-
-    private List<FieldSource<JavaClassSource>> resolveToManyAssociationFields(List<FieldSource<JavaClassSource>> fields) {
-        List<FieldSource<JavaClassSource>> toManyFields = new ArrayList<>();
-        for (FieldSource<JavaClassSource> field : fields) {
-            if (AdminScaffoldUtils.hasToManyAssociation(field)) {
-                toManyFields.add(field);
-            }
-        }
-        return toManyFields;
-    }
-
-    private List<FieldSource<JavaClassSource>> resolveToOneAssociationFields(List<FieldSource<JavaClassSource>> fields) {
-        List<FieldSource<JavaClassSource>> toOneFields = new ArrayList<>();
-        for (FieldSource<JavaClassSource> field : fields) {
-            if (AdminScaffoldUtils.hasToOneAssociation(field)) {
-                toOneFields.add(field);
-            }
-        }
-        return toOneFields;
     }
 
     private void addAppListCache(Project project) {

@@ -60,7 +60,7 @@ import org.jboss.forge.addon.ui.util.Metadata;
  * @author rmpestano
  */
 @FacetConstraint(JavaSourceFacet.class)
-public class AdminFacesScaffoldConfigWizard extends AbstractProjectCommand implements UIWizard, PrerequisiteCommandsProvider {
+public class AdminScaffoldConfigWizard extends AbstractProjectCommand implements UIWizard, PrerequisiteCommandsProvider {
 
     @Inject
     private FacetFactory facetFactory;
@@ -92,7 +92,7 @@ public class AdminFacesScaffoldConfigWizard extends AbstractProjectCommand imple
     @Override
     public NavigationResult next(UINavigationContext context) throws Exception {
         context.getUIContext().getAttributeMap().put(FileResource.class, configFile.getValue());
-        return Results.navigateTo(AdminFacesScaffoldConfigStep.class);
+        return Results.navigateTo(AdminScaffoldConfigStep.class);
     }
 
     @Override
@@ -100,7 +100,7 @@ public class AdminFacesScaffoldConfigWizard extends AbstractProjectCommand imple
         NavigationResultBuilder builder = NavigationResultBuilder.create();
         Project project = getSelectedProject(context);
         if (project != null && !project.hasFacet(AdminFacesFacet.class)) {
-            builder.add(AdminFacesSetupCommand.class);
+            builder.add(AdminSetupCommand.class);
         }
         return builder.build();
     }

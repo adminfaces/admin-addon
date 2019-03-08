@@ -8,10 +8,10 @@ import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.inject.Inject;
 
-import com.github.admin.addon.model.Address;
+import com.github.adminfaces.addon.model.Address;
 import com.github.admin.addon.model.Room;
-import com.github.admin.addon.model.Speaker;
-import com.github.admin.addon.model.Talk;
+import com.github.adminfaces.addon.model.Speaker;
+import com.github.adminfaces.addon.model.Talk;
 import com.github.adminfaces.persistence.service.CrudService;
 import com.github.adminfaces.persistence.service.Service;
 

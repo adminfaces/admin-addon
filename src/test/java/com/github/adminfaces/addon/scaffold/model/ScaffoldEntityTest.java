@@ -21,9 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.github.admin.addon.scaffold.model;
+package com.github.adminfaces.addon.scaffold.model;
 
-import com.github.adminfaces.addon.scaffold.model.ScaffoldEntity;
 import java.nio.file.Paths;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
@@ -60,7 +59,7 @@ public class ScaffoldEntityTest {
      
     @Test
     public void shouldGetAssociationDisplayFieldFromToMany() {
-        JavaClassSource entity = Roaster.parse(JavaClassSource.class, ScaffoldConfigLoaderTest.class.getResourceAsStream("/com/github/admin/addon/model/Speaker.java"));
+        JavaClassSource entity = Roaster.parse(JavaClassSource.class, ScaffoldConfigLoaderTest.class.getResourceAsStream("/com/github/adminfaces/addon/model/Speaker.java"));
         ScaffoldEntity scaffoldEntity = new ScaffoldEntity(entity, null, project);
         String associationDisplayField = scaffoldEntity.getAssociationDisplayField(entity.getField("talks"));
         assertThat(associationDisplayField).isNotEmpty().isNotBlank();
@@ -69,7 +68,7 @@ public class ScaffoldEntityTest {
     
      @Test
     public void shouldGetAssociationDisplayFieldFromToOne() {
-        JavaClassSource entity = Roaster.parse(JavaClassSource.class, ScaffoldConfigLoaderTest.class.getResourceAsStream("/com/github/admin/addon/model/Talk.java"));
+        JavaClassSource entity = Roaster.parse(JavaClassSource.class, ScaffoldConfigLoaderTest.class.getResourceAsStream("/com/github/adminfaces/addon/model/Talk.java"));
         ScaffoldEntity scaffoldEntity = new ScaffoldEntity(entity, null, project);
         String associationDisplayField = scaffoldEntity.getAssociationDisplayField(entity.getField("speaker"));
         assertThat(associationDisplayField).isNotEmpty().isNotBlank();

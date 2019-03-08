@@ -124,6 +124,21 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
             .forEach(fields::add);
         return fields;
     }
+
+    public static List<FieldSource<JavaClassSource>> extractEntityRequiredFields(JavaClassSource entity) {
+        List<FieldSource<JavaClassSource>> fields = new ArrayList<>();
+        entity.getFields().stream()
+                .filter(f -> (!f.hasAnnotation(Id.class) || !f.hasAnnotation(EmbeddedId.class)) && (f.hasAnnotation(Column.class) && resolveRequiredAttribute(f))
+                        || hasAssociation(f) || f.hasAnnotation(Basic.class))
+                .forEach(fields::add);
+
+        extractEmbeddedFields(entity)
+                .stream()
+                .filter(f -> resolveRequiredAttribute(f))
+                .forEach(fields::add);
+
+        return fields;
+    }
    
     public static List<FieldSource<JavaClassSource>> extractEmbeddedFields(JavaClassSource entity) {
         List<FieldSource<JavaClassSource>> fields = new ArrayList<>();
@@ -149,11 +164,31 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
         JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
         return sourceFacet.getSourceDirectory().getFullyQualifiedName();
     }
-    
+
     public static void setupAdminPersistence(Project project, DependencyUtil dependencyUtil, FacetFactory facetFactory) {
         addAdminPersistence(project, dependencyUtil);
         addEntityManagerProducer(project);
         configJPAMetaModel(project, facetFactory);
+    }
+
+    public static List<FieldSource<JavaClassSource>> resolveToManyAssociationFields(List<FieldSource<JavaClassSource>> fields) {
+        List<FieldSource<JavaClassSource>> toManyFields = new ArrayList<>();
+        for (FieldSource<JavaClassSource> field : fields) {
+            if (AdminScaffoldUtils.hasToManyAssociation(field)) {
+                toManyFields.add(field);
+            }
+        }
+        return toManyFields;
+    }
+
+    public static List<FieldSource<JavaClassSource>> resolveToOneAssociationFields(List<FieldSource<JavaClassSource>> fields) {
+        List<FieldSource<JavaClassSource>> toOneFields = new ArrayList<>();
+        for (FieldSource<JavaClassSource> field : fields) {
+            if (AdminScaffoldUtils.hasToOneAssociation(field)) {
+                toOneFields.add(field);
+            }
+        }
+        return toOneFields;
     }
     
     private static void configJPAMetaModel(Project project, FacetFactory facetFactory) {

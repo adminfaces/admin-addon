@@ -66,9 +66,9 @@ import com.github.adminfaces.addon.facet.AdminFacesFacet;
  * @author <a href="mailto:rmpestano@gmail.com">Rafael Pestano</a>
  */
 @FacetConstraint({JavaEE7Facet.class, WebResourcesFacet.class})
-public class AdminFacesSetupCommand extends AbstractProjectCommand {
+public class AdminSetupCommand extends AbstractProjectCommand {
 
-    private static final Logger LOG = Logger.getLogger(AdminFacesSetupCommand.class.getName());
+    private static final Logger LOG = Logger.getLogger(AdminSetupCommand.class.getName());
 
     @Inject
     private FacetFactory facetFactory;

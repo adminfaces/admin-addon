@@ -1,4 +1,4 @@
-package com.github.admin.addon.model;
+package com.github.adminfaces.addon.model;
 
 import javax.persistence.Id;
 import javax.persistence.GeneratedValue;
@@ -7,7 +7,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import java.io.Serializable;
 import javax.persistence.Version;
-import com.github.admin.addon.model.Talk;
 import java.util.Set;
 import java.util.HashSet;
 import javax.persistence.OneToMany;

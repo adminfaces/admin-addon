@@ -1,4 +1,4 @@
-package com.github.admin.addon;
+package com.github.adminfaces.addon;
 
 import static com.github.adminfaces.addon.util.Constants.NEW_LINE;
 import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.*;
@@ -36,7 +36,7 @@ import org.jboss.forge.arquillian.AddonDependencies;
 import org.junit.Test;
 
 @RunWith(Arquillian.class)
-public class AdminFacesScaffoldConfigCommandTest {
+public class AdminScaffoldConfigCommandTest {
 
     @Inject
     private ProjectFactory projectFactory;

@@ -1,4 +1,4 @@
-package com.github.admin.addon;
+package com.github.adminfaces.addon;
 
 import com.github.adminfaces.addon.facet.AdminFacesTestHarnessFacet;
 import org.jboss.arquillian.junit.Arquillian;
@@ -31,7 +31,7 @@ import org.jboss.forge.arquillian.AddonDependencies;
 import org.junit.Test;
 
 @RunWith(Arquillian.class)
-public class AdminFacesTestHarnessSetupCommandTest {
+public class AdminTestHarnessSetupCommandTest {
 
     @Inject
     private ProjectFactory projectFactory;

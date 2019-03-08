@@ -1,0 +1,65 @@
+<#macro generateFieldValue field>
+    <#if field.getType().getSimpleName() == "String">
+    UUID.randomUUID().toString()
+    <#elseif field.getType().getSimpleName().equals("Integer") || field.getType().getQualifiedName().equals("int")>
+    new Random().nextInt()
+    <#elseif field.getType().getSimpleName().equals("Long") || field.getType().getQualifiedName().equals("long")>
+    new Random().nextLong()
+    <#elseif field.getType().getSimpleName().equals("Double") || field.getType().getQualifiedName().equals("double")>
+    new Random().nextDouble()
+    <#elseif field.getType().getSimpleName().equals("Float") || field.getType().getQualifiedName().equals("float")>
+    new Random().nextFloat()
+    <#elseif field.getType().getSimpleName().equals("Short") || field.getType().getQualifiedName().equals("short")>
+    new Short((short) 42)
+    <#elseif field.getType().getSimpleName().equals("Calendar")>
+    Calendar.getInstance()
+    <#elseif field.getType().getSimpleName().equals("Date")>
+    new Date()
+    <#elseif field.getType().getSimpleName().equals("LocalDate")>
+    java.time.LocalDate.now()
+    <#else field.getType().getSimpleName().equals("LocalDateTime")>
+    java.time.LocalDateTime.now()
+    <#/if>
+</#macro>
+package com.github.adminfaces.starter.bean;
+
+import ${entity.getQualifiedName()};
+import ${entity.getQualifiedName()}_;
+import ${service.getQualifiedName()};
+import com.github.database.rider.cdi.api.DBUnitInterceptor;
+import com.github.database.rider.core.api.dataset.DataSet;
+import javax.inject.Inject;
+import org.apache.deltaspike.jpa.api.transaction.Transactional;
+import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
+import static org.assertj.core.api.Assertions.assertThat;
+import java.util.*;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+ 
+@RunWith(CdiTestRunner.class)
+@DataSet(cleanBefore = true)
+@DBUnitInterceptor
+@Transactional
+public class ${service.getName()}It {
+
+    @Inject
+    ${service.getName()} ${ccService};
+
+    @Test
+    public void shouldInset${entity.getName()}() {
+        ${entity.getName()} ${ccEntity} = new ${entity.getName()}();
+        
+<#list requiredFields as field>
+    <#if entity.hasToManyAssociation(field)>
+
+    <#elseif entity.hasToOneAssociation(field)>
+
+    <#else>
+        ${ccEntity}.set${field.getName()?cap_first}(<@generateFieldValue field=field/>);
+    </#if>
+
+</#list>
+        ${entity.getName()} saved${entity.getName()} = ${ccService}.saveOrUpdate(${ccEntity});
+        assertThat(saved${entity.getName()}.getId()).isNotNull();
+    } 
+}

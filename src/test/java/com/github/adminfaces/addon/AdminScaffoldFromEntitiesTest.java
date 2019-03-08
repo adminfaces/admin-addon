@@ -1,4 +1,4 @@
-package com.github.admin.addon;
+package com.github.adminfaces.addon;
 
 import com.github.adminfaces.addon.scaffold.config.ScaffoldConfigLoader;
 import static com.github.adminfaces.addon.util.Constants.NEW_LINE;
@@ -54,7 +54,7 @@ import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
  * @author <a href="github.com/rmpestano">Rafael Pestano</a>
  */
 @RunWith(Arquillian.class)
-public class AdminFacesScaffoldTest {
+public class AdminScaffoldFromEntitiesTest {
 
     @Inject
     ProjectFactory projectFactory;
@@ -105,7 +105,6 @@ public class AdminFacesScaffoldTest {
 
         JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
         String entityPackageName = sourceFacet.getBasePackage() + ".model";
-        Resource<?> src = sourceFacet.getSourceDirectory();
 
         Result scaffoldGenerate1 = shellTest
             .execute(("scaffold-generate --entities " + entityPackageName + ".*"), 10, TimeUnit.MINUTES);
@@ -115,6 +114,7 @@ public class AdminFacesScaffoldTest {
         }
         assertThat(scaffoldGenerate1).isNotInstanceOf(Failed.class);
 
+        Resource<?> src = sourceFacet.getSourceDirectory();
         Resource<?> repository = src
             .getChild(sourceFacet.getBasePackage().replaceAll("\\.", "/"))
             .getChild(Constants.Packages.REPOSITORY + "/SpeakerRepository.java");
@@ -319,7 +319,7 @@ public class AdminFacesScaffoldTest {
         shellTest.execute("jpa-new-field --named name --length 20", 10, TimeUnit.SECONDS);
         shellTest.execute("jpa-new-field --named capacity --type java.lang.Short", 10, TimeUnit.SECONDS);
         shellTest.execute("jpa-new-field --named hasWifi --type java.lang.Boolean", 10, TimeUnit.SECONDS);
-        shellTest.execute("jpa-new-field --named talks --type com.github.admin.addon.model.Talk --relationship-type One-to-Many", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named talks --type Talk --relationship-type One-to-Many", 10, TimeUnit.SECONDS);
 
         shellTest.execute("constraint-add --on-property name --constraint NotNull", 10, TimeUnit.SECONDS);
         shellTest.execute("constraint-add --on-property capacity --constraint NotNull", 10, TimeUnit.SECONDS);
@@ -336,15 +336,15 @@ public class AdminFacesScaffoldTest {
         shellTest.execute("jpa-new-field --named bio --length 2000", 10, TimeUnit.SECONDS);
         shellTest.execute("jpa-new-field --named twitter", 10, TimeUnit.SECONDS);
 
-        shellTest.execute("jpa-new-field --named talks --type com.github.admin.addon.model.Talk --relationship-type One-to-Many --inverse-field-name speaker", 10, TimeUnit.SECONDS);
-        shellTest.execute("jpa-new-field --named address --entity --type com.github.admin.addon.model.Address --relationship-type Embedded", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named talks --type Talk --relationship-type One-to-Many --inverse-field-name speaker", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named address --entity --type Address --relationship-type Embedded", 10, TimeUnit.SECONDS);
 
         shellTest.execute("constraint-add --on-property firstname --constraint NotNull", 10, TimeUnit.SECONDS);
         shellTest.execute("constraint-add --on-property surname --constraint NotNull", 10, TimeUnit.SECONDS);
         shellTest.execute("constraint-add --on-property bio --constraint Size --max 2000", 10, TimeUnit.SECONDS);
 
         shellTest.execute("cd ../Talk.java", 15, TimeUnit.SECONDS);
-        //shellTest.execute("jpa-new-field --named speaker --type com.github.admin.addon.model.Speaker --relationship-type Many-to-One", 10, TimeUnit.SECONDS); 
+        //shellTest.execute("jpa-new-field --named speaker --type Speaker --relationship-type Many-to-One", 10, TimeUnit.SECONDS);
         shellTest.execute("jpa-new-field --named room --type com.github.admin.addon.model.Room --relationship-type Many-to-One", 10, TimeUnit.SECONDS);
         shellTest.execute("constraint-add --on-property speaker --constraint NotNull", 10, TimeUnit.SECONDS);
         shellTest.execute("constraint-add --on-property room --constraint NotNull", 10, TimeUnit.SECONDS);

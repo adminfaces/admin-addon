@@ -128,7 +128,6 @@ public class AdminFacesEntitySelectionWizard extends AbstractProjectCommand impl
                 }
             }
             javaSourceFacet.saveJavaSource(javaSource);
-
         }
 
         return null;

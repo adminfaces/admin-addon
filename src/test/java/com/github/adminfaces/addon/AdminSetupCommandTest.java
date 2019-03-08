@@ -1,4 +1,4 @@
-package com.github.admin.addon;
+package com.github.adminfaces.addon;
 
 import static com.github.adminfaces.addon.util.Constants.NEW_LINE;
 import com.github.adminfaces.addon.util.DependencyUtil;
@@ -41,7 +41,7 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import com.github.adminfaces.addon.facet.AdminFacesFacet;
 
 @RunWith(Arquillian.class)
-public class AdminFacesSetupCommandTest {
+public class AdminSetupCommandTest {
 
     @Inject
     private ProjectFactory projectFactory;

@@ -1,4 +1,4 @@
-package com.github.admin.addon.model;
+package com.github.adminfaces.addon.model;
 
 import javax.persistence.Embeddable;
 import java.io.Serializable;

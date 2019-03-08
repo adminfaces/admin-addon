@@ -1,4 +1,4 @@
-package com.github.admin.addon.model;
+package com.github.adminfaces.addon.model;
 
 import javax.persistence.Id;
 import javax.persistence.GeneratedValue;
@@ -7,12 +7,10 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import java.io.Serializable;
 import javax.persistence.Version;
-import java.util.Calendar;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import com.github.admin.addon.model.Speaker;
 import javax.persistence.ManyToOne;
 import com.github.adminfaces.persistence.model.PersistenceEntity;
 import java.util.Date;

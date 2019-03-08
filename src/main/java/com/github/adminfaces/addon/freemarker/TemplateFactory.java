@@ -29,6 +29,10 @@ public class TemplateFactory implements Serializable {
     
     private static final String FORM_PAGE_TEMPLATE = "scaffold/freemarker/form.xhtml";
 
+    private static final String DATASET_TEMPLATE = "scaffold/freemarker/dataset.yml";
+
+    private static final String SERVICE_TEST_TEMPLATE = "scaffold/freemarker/ServiceTest.jv";
+
     private Template indexTemplate;
 
     private Template loginTemplate;
@@ -49,6 +53,10 @@ public class TemplateFactory implements Serializable {
     
     private Template formPageTemplate;
 
+    private Template dataSetTemplate;
+
+    private Template serviceTestTemplate;
+
     @PostConstruct
     public void loadTemplates() {
         indexTemplate = FreemarkerTemplateProcessor.getTemplate(INDEX_TEMPLATE);
@@ -61,6 +69,8 @@ public class TemplateFactory implements Serializable {
         formMBTemplate = FreemarkerTemplateProcessor.getTemplate(FORM_MB_TEMPLATE);
         listPageTemplate = FreemarkerTemplateProcessor.getTemplate(LIST_PAGE_TEMPLATE);
         formPageTemplate = FreemarkerTemplateProcessor.getTemplate(FORM_PAGE_TEMPLATE);
+        dataSetTemplate = FreemarkerTemplateProcessor.getTemplate(DATASET_TEMPLATE);
+        serviceTestTemplate = FreemarkerTemplateProcessor.getTemplate(SERVICE_TEST_TEMPLATE);
     }
 
     public Template getIndexTemplate() {
@@ -103,4 +113,11 @@ public class TemplateFactory implements Serializable {
         return formPageTemplate;
     }
 
+    public Template getDataSetTemplate() {
+        return dataSetTemplate;
+    }
+
+    public Template getServiceTestTemplate() {
+        return serviceTestTemplate;
+    }
 }

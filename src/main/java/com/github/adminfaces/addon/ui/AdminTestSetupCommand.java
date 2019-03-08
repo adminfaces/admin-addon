@@ -71,7 +71,7 @@ import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
 @FacetConstraint(AdminFacesFacet.class)
-public class AdminFacesTestSetupCommand extends AbstractProjectCommand {
+public class AdminTestSetupCommand extends AbstractProjectCommand {
 
     @Inject
     private FacetFactory facetFactory;

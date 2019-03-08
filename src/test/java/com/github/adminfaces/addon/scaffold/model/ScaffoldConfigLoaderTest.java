@@ -21,12 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.github.admin.addon.scaffold.model;
+package com.github.adminfaces.addon.scaffold.model;
 
-import com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum;
 import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.*;
-import com.github.adminfaces.addon.scaffold.model.EntityConfig;
-import com.github.adminfaces.addon.scaffold.model.GlobalConfig;
 import static org.mockito.Mockito.*;
 import com.github.adminfaces.addon.scaffold.config.ScaffoldConfigLoader;
 import java.io.InputStream;
@@ -105,10 +102,10 @@ public class ScaffoldConfigLoaderTest {
         doReturn(directoryResource).when(resourcesFacet).getResourceDirectory();
         doReturn(scaffoldDir).when(directoryResource).getChildDirectory("scaffold");
         doReturn(resourcesFacet).when(project).getFacet(ResourcesFacet.class);
-        JavaClassSource entity = Roaster.parse(JavaClassSource.class, ScaffoldConfigLoaderTest.class.getResourceAsStream("/com/github/admin/addon/model/Speaker.java"));
+        JavaClassSource entity = Roaster.parse(JavaClassSource.class, ScaffoldConfigLoaderTest.class.getResourceAsStream("/com/github/adminfaces/addon/model/Speaker.java"));
         EntityConfig entityConfig = ScaffoldConfigLoader.createOrLoadEntityConfig(entity, project);
         assertSpeakerEntityConfig(entityConfig);
-        entity = Roaster.parse(JavaClassSource.class, ScaffoldConfigLoaderTest.class.getResourceAsStream("/com/github/admin/addon/model/Talk.java"));
+        entity = Roaster.parse(JavaClassSource.class, ScaffoldConfigLoaderTest.class.getResourceAsStream("/com/github/adminfaces/addon/model/Talk.java"));
         entityConfig = ScaffoldConfigLoader.createOrLoadEntityConfig(entity, project);
         assertTalkEntityConfig(entityConfig);
     }
@@ -136,10 +133,10 @@ public class ScaffoldConfigLoaderTest {
         doReturn(directoryResource).when(resourcesFacet).getResourceDirectory();
         doReturn(scaffoldDir).when(directoryResource).getChildDirectory("scaffold");
         doReturn(resourcesFacet).when(project).getFacet(anyObject());
-        JavaClassSource entity = Roaster.parse(JavaClassSource.class, ScaffoldConfigLoaderTest.class.getResourceAsStream("/com/github/admin/addon/model/Speaker.java"));
+        JavaClassSource entity = Roaster.parse(JavaClassSource.class, ScaffoldConfigLoaderTest.class.getResourceAsStream("/com/github/adminfaces/addon/model/Speaker.java"));
         EntityConfig entityConfig = ScaffoldConfigLoader.createOrLoadEntityConfig(entity, project);
         assertSpeakerEntityConfig(entityConfig);
-        entity = Roaster.parse(JavaClassSource.class, ScaffoldConfigLoaderTest.class.getResourceAsStream("/com/github/admin/addon/model/Talk.java"));
+        entity = Roaster.parse(JavaClassSource.class, ScaffoldConfigLoaderTest.class.getResourceAsStream("/com/github/adminfaces/addon/model/Talk.java"));
         entityConfig = ScaffoldConfigLoader.createOrLoadEntityConfig(entity, project);
         assertTalkEntityConfig(entityConfig);
     }
@@ -167,7 +164,7 @@ public class ScaffoldConfigLoaderTest {
         doReturn(directoryResource).when(resourcesFacet).getResourceDirectory();
         doReturn(scaffoldDir).when(directoryResource).getChildDirectory("scaffold");
         doReturn(resourcesFacet).when(project).getFacet(ResourcesFacet.class);
-        JavaClassSource entity = Roaster.parse(JavaClassSource.class, ScaffoldConfigLoaderTest.class.getResourceAsStream("/com/github/admin/addon/model/Speaker.java"));
+        JavaClassSource entity = Roaster.parse(JavaClassSource.class, ScaffoldConfigLoaderTest.class.getResourceAsStream("/com/github/adminfaces/addon/model/Speaker.java"));
         EntityConfig entityConfig = ScaffoldConfigLoader.createOrLoadEntityConfig(entity, project);
         assertThat(entityConfig).isNotNull()
             .extracting("displayField", "menuIcon").contains("firstname", "fa fa-circle");
@@ -223,7 +220,7 @@ public class ScaffoldConfigLoaderTest {
         
         assertThat(entityConfig.getDatatableEditable()).isTrue();
         
-        entity = Roaster.parse(JavaClassSource.class, ScaffoldConfigLoaderTest.class.getResourceAsStream("/com/github/admin/addon/model/Talk.java"));
+        entity = Roaster.parse(JavaClassSource.class, ScaffoldConfigLoaderTest.class.getResourceAsStream("/com/github/adminfaces/addon/model/Talk.java"));
         entityConfig = ScaffoldConfigLoader.createOrLoadEntityConfig(entity, project);
         
         assertThat(entityConfig).isNotNull()
