@@ -1,25 +1,26 @@
 <#macro generateFieldValue field>
     <#if field.getType().getSimpleName() == "String">
-    UUID.randomUUID().toString()
+<#assign value = UUID.randomUUID().toString()>
     <#elseif field.getType().getSimpleName().equals("Integer") || field.getType().getQualifiedName().equals("int")>
-    new Random().nextInt()
+<#assign value = new Random().nextInt()>
     <#elseif field.getType().getSimpleName().equals("Long") || field.getType().getQualifiedName().equals("long")>
-    new Random().nextLong()
+<#assign value = new Random().nextLong()>
     <#elseif field.getType().getSimpleName().equals("Double") || field.getType().getQualifiedName().equals("double")>
-    new Random().nextDouble()
+<#assign value = new Random().nextDouble()>
     <#elseif field.getType().getSimpleName().equals("Float") || field.getType().getQualifiedName().equals("float")>
-    new Random().nextFloat()
+<#assign value = new Random().nextFloat()>
     <#elseif field.getType().getSimpleName().equals("Short") || field.getType().getQualifiedName().equals("short")>
-    new Short((short) 42)
+<#assign value = new Short((short) 42)>
     <#elseif field.getType().getSimpleName().equals("Calendar")>
-    Calendar.getInstance()
+<#assign value = Calendar.getInstance()>
     <#elseif field.getType().getSimpleName().equals("Date")>
-    new Date()
+<#assign value = new Date()>
     <#elseif field.getType().getSimpleName().equals("LocalDate")>
-    java.time.LocalDate.now()
+<#assign value = java.time.LocalDate.now()>
     <#elseif field.getType().getSimpleName().equals("LocalDateTime")>
-    java.time.LocalDateTime.now()
+<#assign value = java.time.LocalDateTime.now()>
     </#if>
+${value}
 </#macro>
 package com.github.adminfaces.starter.bean;
 
