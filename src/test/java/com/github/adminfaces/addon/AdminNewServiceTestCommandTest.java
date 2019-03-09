@@ -103,12 +103,11 @@ public class AdminNewServiceTestCommandTest {
 
     @Test
     public void shouldCreateServiceTests() throws IOException, TimeoutException {
-        shellTest.clearScreen();
         JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
         String servicePackageName = sourceFacet.getBasePackage() + ".service";
-
+        shellTest.clearScreen();
         Result testHarnessSetupResult = shellTest
-            .execute("adminfaces-new-service-test --target-services " + servicePackageName + ".*", 1, TimeUnit.MINUTES);
+            .execute("adminfaces-new-service-test --target-services " + servicePackageName + ".*", 10, TimeUnit.MINUTES);
         if (testHarnessSetupResult instanceof Failed) {
             ((Failed) testHarnessSetupResult).getException().printStackTrace();
         }

@@ -25,7 +25,6 @@ import org.jboss.forge.addon.resource.visit.VisitContext;
 import org.jboss.forge.addon.ui.context.UIBuilder;
 import org.jboss.forge.addon.ui.context.UIContext;
 import org.jboss.forge.addon.ui.context.UIExecutionContext;
-import org.jboss.forge.addon.ui.hints.InputType;
 import org.jboss.forge.addon.ui.input.UISelectMany;
 import org.jboss.forge.addon.ui.metadata.UICommandMetadata;
 import org.jboss.forge.addon.ui.metadata.WithAttributes;
@@ -35,8 +34,6 @@ import org.jboss.forge.addon.ui.util.Categories;
 import org.jboss.forge.addon.ui.util.Metadata;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.JavaType;
-import org.jboss.forge.roaster.model.Type;
-import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.metawidget.util.simple.StringUtils;
 
@@ -52,6 +49,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.github.adminfaces.addon.util.AdminScaffoldUtils.*;
+import java.util.Optional;
+import org.jboss.forge.roaster.model.source.Import;
 
 @FacetConstraint(AdminFacesTestHarnessFacet.class)
 public class AdminNewServiceTestCommand extends AbstractProjectCommand {
@@ -98,8 +97,7 @@ public class AdminNewServiceTestCommand extends AbstractProjectCommand {
         List<Resource<?>> generatedResources = new ArrayList<>();
         results.add(Results.success("Service test(s) created successfully!"));
         for (JavaClassSource service : targetServices.getValue()) {
-            JavaClassSource entity = null;
-            ScaffoldEntity scaffoldEntity = resolveServiceEntity(service, entity, project);
+            ScaffoldEntity scaffoldEntity = resolveServiceEntity(service, project);
             String ccEntity = StringUtils.decapitalize(scaffoldEntity.getName());
             String ccService = StringUtils.decapitalize(service.getName());
             Map<Object, Object> freemarkerContext = new HashMap<>();
@@ -107,7 +105,7 @@ public class AdminNewServiceTestCommand extends AbstractProjectCommand {
             freemarkerContext.put("service",service);
             freemarkerContext.put("ccService",ccService);
             freemarkerContext.put("ccEntity", ccEntity);
-            freemarkerContext.put("requiredFields", extractEntityRequiredFields(entity));
+            freemarkerContext.put("requiredFields", extractEntityRequiredFields(scaffoldEntity));
             freemarkerContext.put("datasetValue",new GenerateDataSetValueFromField());
             freemarkerContext.put("toManyFields", resolveToManyAssociationFields(scaffoldEntity.getFields()));
             freemarkerContext.put("toOneFields", resolveToOneAssociationFields(scaffoldEntity.getFields()));
@@ -139,14 +137,18 @@ public class AdminNewServiceTestCommand extends AbstractProjectCommand {
         generatedResources.add(createOrOverwrite(datasetFile,dataset));
     }
 
-    private ScaffoldEntity resolveServiceEntity(JavaClassSource service, JavaClassSource entity, Project project) {
+    private ScaffoldEntity resolveServiceEntity(JavaClassSource service, Project project) throws FileNotFoundException {
         JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
+        String entityName = service.getSuperType().substring(service.getSuperType().indexOf("<")+1,service.getSuperType().indexOf(","));
+        Optional<Import> entityImport = service.getImports().stream().filter(i -> i.getQualifiedName().endsWith(entityName))
+            .findFirst();
+        if(!entityImport.isPresent()) {
+            throw new RuntimeException("Could not find entity of service "+service.getQualifiedName() + ". Does the service extends CrudService<Entity, PK>?");
+        }
+        String entityQualifiedName = entityImport.get().getQualifiedName();
         String sourceFolder = sourceFacet.getSourceDirectory().getFullyQualifiedName();
-        FieldSource<JavaClassSource> entityClassField = service.getField("entityClass");
-        Type<JavaClassSource> javaClassSourceType = entityClassField.getType().getTypeArguments().get(0);
-        String entityQualifiedName = javaClassSourceType.getQualifiedName();
         try {
-            entity = Roaster.parse(JavaClassSource.class, new File(sourceFolder + "/" + entityQualifiedName.replace(".", "/") + ".java"));
+            JavaClassSource entity = Roaster.parse(JavaClassSource.class, new File(sourceFolder + "/" + entityQualifiedName.replace(".", "/") + ".java"));
             EntityConfig entityConfig = ScaffoldConfigLoader.createOrLoadEntityConfig(entity, project);
             return new ScaffoldEntity(entity, entityConfig, project);
         } catch (Exception e) {

@@ -17,7 +17,7 @@
     new Date()
     <#elseif field.getType().getSimpleName().equals("LocalDate")>
     java.time.LocalDate.now()
-    <#else field.getType().getSimpleName().equals("LocalDateTime")>
+    <#elseif field.getType().getSimpleName().equals("LocalDateTime")>
     java.time.LocalDateTime.now()
     </#if>
 </#macro>

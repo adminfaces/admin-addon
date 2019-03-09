@@ -1,6 +1,7 @@
 package com.github.adminfaces.addon.util;
 
 import com.github.adminfaces.addon.scaffold.metamodel.AdminFacesMetaModelProvider;
+import com.github.adminfaces.addon.scaffold.model.ScaffoldEntity;
 import static com.github.adminfaces.addon.util.DependencyUtil.ADMIN_PERSISTENCE_COORDINATE;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -125,19 +126,19 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
         return fields;
     }
 
-    public static List<FieldSource<JavaClassSource>> extractEntityRequiredFields(JavaClassSource entity) {
-        List<FieldSource<JavaClassSource>> fields = new ArrayList<>();
+    public static List<FieldSource<JavaClassSource>> extractEntityRequiredFields(ScaffoldEntity entity) {
+        List<FieldSource<JavaClassSource>> requiredFields = new ArrayList<>();
         entity.getFields().stream()
                 .filter(f -> (!f.hasAnnotation(Id.class) || !f.hasAnnotation(EmbeddedId.class)) && (f.hasAnnotation(Column.class) && resolveRequiredAttribute(f))
                         || hasAssociation(f) || f.hasAnnotation(Basic.class))
-                .forEach(fields::add);
+                .forEach(requiredFields::add);
 
-        extractEmbeddedFields(entity)
+        entity.getEmbeddedFields()
                 .stream()
                 .filter(f -> resolveRequiredAttribute(f))
-                .forEach(fields::add);
+                .forEach(requiredFields::add);
 
-        return fields;
+        return requiredFields;
     }
    
     public static List<FieldSource<JavaClassSource>> extractEmbeddedFields(JavaClassSource entity) {
