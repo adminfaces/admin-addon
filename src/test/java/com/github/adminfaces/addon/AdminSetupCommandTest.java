@@ -77,6 +77,10 @@ public class AdminSetupCommandTest {
     public void shouldSetupAdminFaces() throws Exception {
         shellTest.getShell().setCurrentResource(project.getRoot());
         Result result = shellTest.execute("adminfaces-setup", 60, TimeUnit.SECONDS);
+
+        if (result instanceof Failed) {
+            ((Failed) result).getException().printStackTrace();
+        }
         assertThat(result).isNotNull().isNotInstanceOf(Failed.class);
 
         List<Result> results = ((CompositeResult) result).getResults();

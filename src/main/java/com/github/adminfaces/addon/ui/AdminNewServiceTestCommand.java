@@ -68,7 +68,7 @@ public class AdminNewServiceTestCommand extends AbstractProjectCommand {
     private TemplateFactory templates;
 
     @Inject
-    @WithAttributes(label = "Target services", description = "Select services to create the integration tests.", required = true, type = InputType.CHECKBOX)
+    @WithAttributes(label = "Target services", description = "Select services to create the integration tests.", required = true)
     private UISelectMany<JavaClassSource> targetServices;
 
 

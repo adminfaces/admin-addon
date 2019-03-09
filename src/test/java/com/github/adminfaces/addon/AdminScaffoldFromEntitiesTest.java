@@ -86,7 +86,11 @@ public class AdminScaffoldFromEntitiesTest {
         metadataFacet.setProjectName("AdminFaces");
         metadataFacet.setProjectVersion("1.0");
         shellTest.execute("jpa-setup --provider Hibernate --container JBOSS_EAP7 --db-type H2 --data-source-name java:jboss/datasources/ExampleDS", 30, TimeUnit.SECONDS);
-        shellTest.execute("adminfaces-setup", 60, TimeUnit.SECONDS);
+        Result result = shellTest.execute("adminfaces-setup", 60, TimeUnit.SECONDS);
+        if (result instanceof Failed) {
+            ((Failed) result).getException().printStackTrace();
+            throw new RuntimeException("AdminFaces setup command failed.");
+        }
         shellTest.clearScreen();
         generateEntities();
         JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
@@ -319,7 +323,7 @@ public class AdminScaffoldFromEntitiesTest {
         shellTest.execute("jpa-new-field --named name --length 20", 10, TimeUnit.SECONDS);
         shellTest.execute("jpa-new-field --named capacity --type java.lang.Short", 10, TimeUnit.SECONDS);
         shellTest.execute("jpa-new-field --named hasWifi --type java.lang.Boolean", 10, TimeUnit.SECONDS);
-        shellTest.execute("jpa-new-field --named talks --type Talk --relationship-type One-to-Many", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named talks --type com.github.admin.addon.model.Talk --relationship-type One-to-Many", 10, TimeUnit.SECONDS);
 
         shellTest.execute("constraint-add --on-property name --constraint NotNull", 10, TimeUnit.SECONDS);
         shellTest.execute("constraint-add --on-property capacity --constraint NotNull", 10, TimeUnit.SECONDS);
@@ -336,15 +340,15 @@ public class AdminScaffoldFromEntitiesTest {
         shellTest.execute("jpa-new-field --named bio --length 2000", 10, TimeUnit.SECONDS);
         shellTest.execute("jpa-new-field --named twitter", 10, TimeUnit.SECONDS);
 
-        shellTest.execute("jpa-new-field --named talks --type Talk --relationship-type One-to-Many --inverse-field-name speaker", 10, TimeUnit.SECONDS);
-        shellTest.execute("jpa-new-field --named address --entity --type Address --relationship-type Embedded", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named talks --type com.github.admin.addon.model.Talk --relationship-type One-to-Many --inverse-field-name speaker", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named address --entity --type com.github.admin.addon.model.Address --relationship-type Embedded", 10, TimeUnit.SECONDS);
 
         shellTest.execute("constraint-add --on-property firstname --constraint NotNull", 10, TimeUnit.SECONDS);
         shellTest.execute("constraint-add --on-property surname --constraint NotNull", 10, TimeUnit.SECONDS);
         shellTest.execute("constraint-add --on-property bio --constraint Size --max 2000", 10, TimeUnit.SECONDS);
 
         shellTest.execute("cd ../Talk.java", 15, TimeUnit.SECONDS);
-        //shellTest.execute("jpa-new-field --named speaker --type Speaker --relationship-type Many-to-One", 10, TimeUnit.SECONDS);
+        //shellTest.execute("jpa-new-field --named speaker --type com.github.admin.addon.model.Speaker --relationship-type Many-to-One", 10, TimeUnit.SECONDS); 
         shellTest.execute("jpa-new-field --named room --type com.github.admin.addon.model.Room --relationship-type Many-to-One", 10, TimeUnit.SECONDS);
         shellTest.execute("constraint-add --on-property speaker --constraint NotNull", 10, TimeUnit.SECONDS);
         shellTest.execute("constraint-add --on-property room --constraint NotNull", 10, TimeUnit.SECONDS);

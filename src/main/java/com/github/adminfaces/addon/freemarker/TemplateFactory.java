@@ -57,67 +57,88 @@ public class TemplateFactory implements Serializable {
 
     private Template serviceTestTemplate;
 
-    @PostConstruct
-    public void loadTemplates() {
-        indexTemplate = FreemarkerTemplateProcessor.getTemplate(INDEX_TEMPLATE);
-        loginTemplate = FreemarkerTemplateProcessor.getTemplate(LOGIN_TEMPLATE);
-        templateDefault = FreemarkerTemplateProcessor.getTemplate(TEMPLATE_DEFAULT_TEMPLATE);
-        templateTop = FreemarkerTemplateProcessor.getTemplate(TEMPLATE_TOP_TEMPLATE);
-        serviceTemplate = FreemarkerTemplateProcessor.getTemplate(SERVICE_TEMPLATE);
-        repositoryTemplate = FreemarkerTemplateProcessor.getTemplate(REPOSITORY_TEMPLATE);
-        listMBTemplate = FreemarkerTemplateProcessor.getTemplate(LIST_MB_TEMPLATE);
-        formMBTemplate = FreemarkerTemplateProcessor.getTemplate(FORM_MB_TEMPLATE);
-        listPageTemplate = FreemarkerTemplateProcessor.getTemplate(LIST_PAGE_TEMPLATE);
-        formPageTemplate = FreemarkerTemplateProcessor.getTemplate(FORM_PAGE_TEMPLATE);
-        dataSetTemplate = FreemarkerTemplateProcessor.getTemplate(DATASET_TEMPLATE);
-        serviceTestTemplate = FreemarkerTemplateProcessor.getTemplate(SERVICE_TEST_TEMPLATE);
-    }
 
     public Template getIndexTemplate() {
+        if(indexTemplate == null) {
+            indexTemplate = FreemarkerTemplateProcessor.getTemplate(INDEX_TEMPLATE);
+        }
         return indexTemplate;
     }
 
     public Template getTemplateTop() {
+        if(templateTop == null) {
+            templateTop = FreemarkerTemplateProcessor.getTemplate(TEMPLATE_TOP_TEMPLATE);
+        }
         return templateTop;
     }
 
     public Template getTemplateDefault() {
+        if(templateDefault == null) {
+            templateDefault = FreemarkerTemplateProcessor.getTemplate(TEMPLATE_DEFAULT_TEMPLATE);
+        }
         return templateDefault;
     }
 
     public Template getLoginTemplate() {
+        if(loginTemplate == null) {
+            loginTemplate = FreemarkerTemplateProcessor.getTemplate(LOGIN_TEMPLATE);
+        }
         return loginTemplate;
     }
 
     public Template getServiceTemplate() {
+        if(serviceTemplate == null) {
+            serviceTemplate = FreemarkerTemplateProcessor.getTemplate(SERVICE_TEMPLATE);
+        }
         return serviceTemplate;
     }
 
     public Template getRepositoryTemplate() {
+        if(repositoryTemplate == null) {
+            repositoryTemplate = FreemarkerTemplateProcessor.getTemplate(REPOSITORY_TEMPLATE);
+        }
         return repositoryTemplate;
     }
 
     public Template getListMBTemplate() {
+        if(listMBTemplate == null) {
+            listMBTemplate = FreemarkerTemplateProcessor.getTemplate(LIST_MB_TEMPLATE);
+        }
         return listMBTemplate;
     }
 
     public Template getFormMBTemplate() {
+        if(formMBTemplate == null) {
+            formMBTemplate = FreemarkerTemplateProcessor.getTemplate(FORM_MB_TEMPLATE);
+        }
         return formMBTemplate;
     }
 
     public Template getListPageTemplate() {
+        if(listPageTemplate == null) {
+            listPageTemplate = FreemarkerTemplateProcessor.getTemplate(LIST_PAGE_TEMPLATE);
+        }
         return listPageTemplate;
     }
 
     public Template getFormPageTemplate() {
+        if(formPageTemplate == null) {
+            formPageTemplate = FreemarkerTemplateProcessor.getTemplate(FORM_PAGE_TEMPLATE);
+        }
         return formPageTemplate;
     }
 
     public Template getDataSetTemplate() {
+        if(dataSetTemplate == null) {
+            dataSetTemplate = FreemarkerTemplateProcessor.getTemplate(DATASET_TEMPLATE);
+        }
         return dataSetTemplate;
     }
 
     public Template getServiceTestTemplate() {
+        if(serviceTestTemplate == null) {
+            serviceTestTemplate = FreemarkerTemplateProcessor.getTemplate(SERVICE_TEST_TEMPLATE);
+        }
         return serviceTestTemplate;
     }
 }

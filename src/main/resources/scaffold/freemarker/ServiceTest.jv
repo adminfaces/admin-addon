@@ -19,7 +19,7 @@
     java.time.LocalDate.now()
     <#else field.getType().getSimpleName().equals("LocalDateTime")>
     java.time.LocalDateTime.now()
-    <#/if>
+    </#if>
 </#macro>
 package com.github.adminfaces.starter.bean;
 
