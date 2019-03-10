@@ -1,5 +1,7 @@
 ${entity.getName()}:
   id: -1 #avoid conflict with hibernate sequences
 <#list requiredFields as field>
+<#if !entity.hasToOneAssociation(field)>
   ${field.getName()}: ${datasetValue(field)}
+ </#if> 
 </#list>

@@ -27,7 +27,6 @@ ${value}
 package com.github.adminfaces.starter.bean;
 
 import ${entity.getQualifiedName()};
-import ${entity.getQualifiedName()}_;
 import ${service.getQualifiedName()};
 <#list toOneFields as field>
 import ${field.getType().getQualifiedName()};  

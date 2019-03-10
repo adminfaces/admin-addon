@@ -64,6 +64,8 @@ public class GenerateDataSetValueFromField implements TemplateMethodModelEx {
             return new Random().nextDouble()+"";
         } else if (field.getType().getSimpleName().equals("Float") || field.getType().getQualifiedName().equals("float")) {
             return new Random().nextFloat()+"";
+        } else if (field.getType().getSimpleName().equals("Short") || field.getType().getQualifiedName().equals("short")) {
+            return (short)42+"";    
         } else if (field.getType().getSimpleName().equals("Calendar")) {
             return SDF.format(Calendar.getInstance().getTime());
         } else if (field.getType().getSimpleName().equals("Date")) {

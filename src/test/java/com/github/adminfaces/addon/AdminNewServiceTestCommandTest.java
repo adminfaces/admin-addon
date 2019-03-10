@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import org.jboss.forge.addon.javaee.jpa.JPAFacet_2_1;
@@ -105,14 +106,22 @@ public class AdminNewServiceTestCommandTest {
     public void shouldCreateServiceTests() throws IOException, TimeoutException {
         JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
         String servicePackageName = sourceFacet.getBasePackage() + ".service";
+        shellTest.execute("cd "+project.getRoot().getFullyQualifiedName());
         shellTest.clearScreen();
+        project = projectFactory.findProject(project.getRoot());
         Result testHarnessSetupResult = shellTest
-            .execute("adminfaces-new-service-test --target-services " + servicePackageName + ".*", 4, TimeUnit.MINUTES);
+            .execute("adminfaces-new-service-test --target-services " + servicePackageName + ".*", 1, TimeUnit.MINUTES);
         if (testHarnessSetupResult instanceof Failed) {
             ((Failed) testHarnessSetupResult).getException().printStackTrace();
         }
-        assertThat(testHarnessSetupResult).isInstanceOf(Result.class).extracting("message")
-            .contains("Service test(s) created successfully!");
+        assertThat(testHarnessSetupResult).isInstanceOf(CompositeResult.class).extracting("message")
+            .contains("***SUCCESS*** Service test(s) created successfully!")
+            .contains("room.yml")
+            .contains("talk.yml")
+            .contains("speaker.yml")
+            .contains("RoomServiceIt.java")
+            .contains("TalkServiceIt.java")
+            .contains("SpeakerServiceIt.javal");
     }
 
     @After
