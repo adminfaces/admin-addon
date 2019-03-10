@@ -110,7 +110,6 @@ public class FreemarkerTemplatesTest {
         AssertionsForClassTypes.assertThat(result).contains("package com.github.adminfaces.starter.bean;\n" +
 "\n" +
 "import Person;\n" +
-"import Person_;\n" +
 "import com.github.adminfaces.addon.service.SimpleService;\n" +
 "import com.github.adminfaces.addon.model.Speaker;  \n" +
 "import com.github.database.rider.cdi.api.DBUnitInterceptor;\n" +
