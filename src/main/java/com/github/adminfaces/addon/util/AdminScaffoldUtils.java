@@ -129,8 +129,8 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
     public static List<FieldSource<JavaClassSource>> extractEntityRequiredFields(ScaffoldEntity entity) {
         List<FieldSource<JavaClassSource>> requiredFields = new ArrayList<>();
         entity.getFields().stream()
-                .filter(f -> (!f.hasAnnotation(Id.class) || !f.hasAnnotation(EmbeddedId.class)) && (f.hasAnnotation(Column.class) && resolveRequiredAttribute(f))
-                        || hasAssociation(f) || f.hasAnnotation(Basic.class))
+                .filter(f -> (f.hasAnnotation(Column.class) && !f.hasAnnotation(Id.class) && !f.hasAnnotation(EmbeddedId.class) && resolveRequiredAttribute(f))
+                        || hasToOneAssociation(f))
                 .forEach(requiredFields::add);
 
         entity.getEmbeddedFields()

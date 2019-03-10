@@ -1,32 +1,37 @@
 <#macro generateFieldValue field>
-    <#if field.getType().getSimpleName() == "String">
-<#assign value = UUID.randomUUID().toString()>
-    <#elseif field.getType().getSimpleName().equals("Integer") || field.getType().getQualifiedName().equals("int")>
-<#assign value = new Random().nextInt()>
-    <#elseif field.getType().getSimpleName().equals("Long") || field.getType().getQualifiedName().equals("long")>
-<#assign value = new Random().nextLong()>
-    <#elseif field.getType().getSimpleName().equals("Double") || field.getType().getQualifiedName().equals("double")>
-<#assign value = new Random().nextDouble()>
-    <#elseif field.getType().getSimpleName().equals("Float") || field.getType().getQualifiedName().equals("float")>
-<#assign value = new Random().nextFloat()>
-    <#elseif field.getType().getSimpleName().equals("Short") || field.getType().getQualifiedName().equals("short")>
-<#assign value = new Short((short) 42)>
-    <#elseif field.getType().getSimpleName().equals("Calendar")>
-<#assign value = Calendar.getInstance()>
-    <#elseif field.getType().getSimpleName().equals("Date")>
-<#assign value = new Date()>
-    <#elseif field.getType().getSimpleName().equals("LocalDate")>
-<#assign value = java.time.LocalDate.now()>
-    <#elseif field.getType().getSimpleName().equals("LocalDateTime")>
-<#assign value = java.time.LocalDateTime.now()>
+<#if field.getType().getSimpleName() == "String">
+<#assign value ='UUID.randomUUID().toString()'>
+    <#elseif field.getType().getSimpleName() == "Integer" || field.getType().getQualifiedName() == "int">
+<#assign value ='new Random().nextInt()'>
+    <#elseif field.getType().getSimpleName() == "Long" || field.getType().getQualifiedName() == "long">
+<#assign value ='new Random().nextLong()'>
+    <#elseif field.getType().getSimpleName() == "Double" || field.getType().getQualifiedName() == "double">
+<#assign value ='new Random().nextDouble()'>
+    <#elseif field.getType().getSimpleName() == "Float" || field.getType().getQualifiedName() == "float">
+<#assign value ='new Random().nextFloat()'>
+    <#elseif field.getType().getSimpleName() == "Short" || field.getType().getQualifiedName() == "short">
+<#assign value = 'new Short((short) 42)'>
+    <#elseif field.getType().getSimpleName() == "Calendar">
+<#assign value ='Calendar.getInstance()'>
+    <#elseif field.getType().getSimpleName() == "Date">
+<#assign value ='new Date()'>
+    <#elseif field.getType().getSimpleName() == "LocalDate">
+<#assign value ='java.time.LocalDate.now()'>
+    <#elseif field.getType().getSimpleName() == "LocalDateTime">
+<#assign value ='java.time.LocalDateTime.now()'>
     </#if>
+<#compress>
 ${value}
+</#compress>
 </#macro>
 package com.github.adminfaces.starter.bean;
 
 import ${entity.getQualifiedName()};
 import ${entity.getQualifiedName()}_;
 import ${service.getQualifiedName()};
+<#list toOneFields as field>
+import ${field.getType().getQualifiedName()};  
+</#list>
 import com.github.database.rider.cdi.api.DBUnitInterceptor;
 import com.github.database.rider.core.api.dataset.DataSet;
 import javax.inject.Inject;
@@ -38,7 +43,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
  
 @RunWith(CdiTestRunner.class)
-@DataSet(cleanBefore = true)
 @DBUnitInterceptor
 @Transactional
 public class ${service.getName()}It {
@@ -46,15 +50,23 @@ public class ${service.getName()}It {
     @Inject
     ${service.getName()} ${ccService};
 
+
     @Test
+    @DataSet(value="${ccEntity}.yml")
+    public void shouldFind${entity.getName()}() {
+        ${entity.getName()} ${ccEntity} = ${ccService}.findById(-1);
+        assertThat(${ccEntity}).isNotNull();
+    } 
+
+    @Test
+    @DataSet(cleanBefore = true, disableConstraints = true)
     public void shouldInset${entity.getName()}() {
         ${entity.getName()} ${ccEntity} = new ${entity.getName()}();
         
 <#list requiredFields as field>
-    <#if entity.hasToManyAssociation(field)>
-
-    <#elseif entity.hasToOneAssociation(field)>
-
+    <#if entity.hasToOneAssociation(field)>
+        ${field.getType().getSimpleName()} ${field.getName()} = new ${field.getType().getSimpleName()}();
+        ${ccEntity}.set${field.getName()?cap_first}(${field.getName()});
     <#else>
         ${ccEntity}.set${field.getName()?cap_first}(<@generateFieldValue field=field/>);
     </#if>
@@ -63,4 +75,34 @@ public class ${service.getName()}It {
         ${entity.getName()} saved${entity.getName()} = ${ccService}.saveOrUpdate(${ccEntity});
         assertThat(saved${entity.getName()}.getId()).isNotNull();
     } 
+
+    @Test
+    @DataSet(value="${ccEntity}.yml")
+    public void shouldRemove${entity.getName()}() {
+        assertThat(${ccService}.count()).isEqualTo(1L);
+        ${entity.getName()} ${ccEntity} = ${ccService}.findById(-1);
+        assertThat(${ccEntity}).isNotNull();
+        ${ccService}.remove(${ccEntity});
+        assertThat(${ccService}.count()).isEqualTo(0L);
+    }
+
+    @Test
+    @DataSet(value="${ccEntity}.yml", disableConstraints = true)
+    public void shouldUpdate${entity.getName()}() {
+        ${entity.getName()} ${ccEntity} = ${ccService}.findById(-1);
+        assertThat(${ccEntity}).isNotNull();
+<#list requiredFields as field>
+    <#if !entity.hasToOneAssociation(field)>
+        ${field.getType().getSimpleName()} ${field.getName()} = <@generateFieldValue field=field/>;
+        ${ccEntity}.set${field.getName()?cap_first}(${field.getName()});
+    </#if>
+</#list>
+        ${ccEntity} = ${ccService}.saveOrUpdate(${ccEntity});
+<#list requiredFields as field>
+    <#if !entity.hasToOneAssociation(field)>
+        assertThat(${ccEntity}.get${field.getName()?cap_first}()).isEqualTo(${field.getName()});
+    </#if>
+</#list>
+    }
+
 }

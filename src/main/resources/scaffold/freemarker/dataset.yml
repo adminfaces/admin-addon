@@ -1,4 +1,4 @@
-${entity.getName()}
+${entity.getName()}:
   id: -1 #avoid conflict with hibernate sequences
 <#list requiredFields as field>
   ${field.getName()}: ${datasetValue(field)}

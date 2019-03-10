@@ -107,7 +107,6 @@ public class AdminNewServiceTestCommand extends AbstractProjectCommand {
             freemarkerContext.put("ccEntity", ccEntity);
             freemarkerContext.put("requiredFields", extractEntityRequiredFields(scaffoldEntity));
             freemarkerContext.put("datasetValue",new GenerateDataSetValueFromField());
-            freemarkerContext.put("toManyFields", resolveToManyAssociationFields(scaffoldEntity.getFields()));
             freemarkerContext.put("toOneFields", resolveToOneAssociationFields(scaffoldEntity.getFields()));
             createServiceTest(freemarkerContext, service, project, generatedResources);
             createTestDataSet(freemarkerContext, project, generatedResources);
