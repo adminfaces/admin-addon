@@ -86,6 +86,7 @@ public class AdminScaffoldFromEntitiesTest {
         TestUtils.unzip(getClass().getResourceAsStream("/app-with-adminfaces-setup.zip"), project.getRoot().getFullyQualifiedName());
         shellTest.getShell().setCurrentResource(project.getRoot());
         shellTest.clearScreen();
+        project = projectFactory.findProject(project.getRoot());
         generateEntities();
         JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
         IOUtils.copy(getClass().getResourceAsStream("/InitDB.java"),
