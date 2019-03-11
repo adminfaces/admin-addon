@@ -555,7 +555,7 @@ public class AdminFacesForgeTests {
             .contains("Added /src/test/java/com/github/admin/addon/service/SpeakerServiceIt.java");
         
         ResourcesFacet resourcesFacet = project.getFacet(ResourcesFacet.class);
-        FileResource testPersistenceXML = resourcesFacet.getTestResourceDirectory().getChild("META-INF").getChild("persistence.xml").reify(FileResource.class);
+        FileResource<?> testPersistenceXML = resourcesFacet.getTestResourceDirectory().getChild("META-INF").getChild("persistence.xml").reify(FileResource.class);
         File persistenceXmlFile = new File(testPersistenceXML.getFullyQualifiedName());
         assertThat(contentOf(persistenceXmlFile))
             .contains("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n" +
@@ -576,6 +576,10 @@ public class AdminFacesForgeTests {
 "    </properties>\n" +
 "  </persistence-unit>\n" +
 "</persistence>");
+        
+        MavenFacet maven = project.getFacet(MavenFacet.class);
+        boolean buildSuccess = maven.executeMaven(Arrays.asList("clean", "package", "-Pit-tests"));
+        assertThat(buildSuccess).isTrue();
     }
 
     @After
