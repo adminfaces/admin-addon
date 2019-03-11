@@ -537,7 +537,7 @@ public class AdminFacesForgeTests {
         JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
         String servicePackageName = sourceFacet.getBasePackage() + ".service";
         Result newServicetestResult = shellTest
-            .execute("adminfaces-new-service-test --target-services " + servicePackageName + ".*", 1, TimeUnit.MINUTES);
+            .execute("adminfaces-new-service-test --target-services " + servicePackageName + ".*", 2, TimeUnit.MINUTES);
         if (newServicetestResult instanceof Failed) {
             Failed failedResult = (Failed) newServicetestResult;
             failedResult.getException().printStackTrace();
