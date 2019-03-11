@@ -115,7 +115,7 @@ public class AdminNewServiceTestCommandTest {
             ((Failed) testHarnessSetupResult).getException().printStackTrace();
         }
         assertThat(testHarnessSetupResult).isInstanceOf(CompositeResult.class).extracting("message")
-            .contains("***SUCCESS*** Service test(s) created successfully!")
+            .contains("Service test(s) created successfully!")
             .contains("room.yml")
             .contains("talk.yml")
             .contains("speaker.yml")
