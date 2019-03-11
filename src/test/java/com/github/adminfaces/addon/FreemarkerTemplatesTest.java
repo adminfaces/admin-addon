@@ -103,14 +103,13 @@ public class FreemarkerTemplatesTest {
         context.put("service", service);
         context.put("ccService", ccService);
         context.put("ccEntity", ccEntity);
-        context.put("requiredFields", extractEntityRequiredFields(scaffoldEntity));
+        context.put("requiredFields", extractEntityRequiredFields(scaffoldEntity, project));
         context.put("toManyFields", resolveToManyAssociationFields(scaffoldEntity.getFields()));
         context.put("toOneFields", resolveToOneAssociationFields(scaffoldEntity.getFields()));
         String result = FreemarkerTemplateProcessor.processTemplate(context, serviceTestTemplate);
         AssertionsForClassTypes.assertThat(result).contains("package com.github.adminfaces.starter.bean;\n" +
 "\n" +
 "import Person;\n" +
-"import Person_;\n" +
 "import com.github.adminfaces.addon.service.SimpleService;\n" +
 "import com.github.adminfaces.addon.model.Speaker;  \n" +
 "import com.github.database.rider.cdi.api.DBUnitInterceptor;\n" +
@@ -131,7 +130,6 @@ public class FreemarkerTemplatesTest {
 "    @Inject\n" +
 "    SimpleService simpleService;\n" +
 "\n" +
-"\n" +
 "    @Test\n" +
 "    @DataSet(value=\"person.yml\")\n" +
 "    public void shouldFindPerson() {\n" +
@@ -141,16 +139,12 @@ public class FreemarkerTemplatesTest {
 "\n" +
 "    @Test\n" +
 "    @DataSet(cleanBefore = true, disableConstraints = true)\n" +
-"    public void shouldInsetPerson() {\n" +
+"    public void shouldInsertPerson() {\n" +
 "        Person person = new Person();\n" +
-"        \n" +
 "        person.setAge(new Random().nextInt());\n" +
-"\n" +
 "        person.setFirstname(UUID.randomUUID().toString());\n" +
-"\n" +
 "        Speaker speaker = new Speaker();\n" +
 "        person.setSpeaker(speaker);\n" +
-"\n" +
 "        Person savedPerson = simpleService.saveOrUpdate(person);\n" +
 "        assertThat(savedPerson.getId()).isNotNull();\n" +
 "    } \n" +
@@ -197,7 +191,7 @@ public class FreemarkerTemplatesTest {
         context.put("service", service);
         context.put("ccService", ccService);
         context.put("ccEntity", ccEntity);
-        context.put("requiredFields", extractEntityRequiredFields(scaffoldEntity));
+        context.put("requiredFields", extractEntityRequiredFields(scaffoldEntity,project));
         context.put("datasetValue", new GenerateDataSetValueFromField());
         context.put("toManyFields", resolveToManyAssociationFields(scaffoldEntity.getFields()));
         context.put("toOneFields", resolveToOneAssociationFields(scaffoldEntity.getFields()));

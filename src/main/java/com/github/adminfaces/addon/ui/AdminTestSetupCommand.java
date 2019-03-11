@@ -193,6 +193,14 @@ public class AdminTestSetupCommand extends AbstractProjectCommand {
             dbRider.setCoordinate(dependencyUtil.getLatestVersion(DBRIDER_COORDINATE));
             dependencyUtil.installDependency(dependencyFacet, dbRider);
         }
+        DependencyBuilder deltaspikeCoreAPi = DependencyBuilder.create()
+            .setScopeType("provided")
+            .setArtifactId(DELTASPIKE_CORE_API_COORDINATE.getArtifactId())
+            .setGroupId(DELTASPIKE_CORE_API_COORDINATE.getGroupId());
+        if (!dependencyFacet.hasDirectDependency(deltaspikeCoreAPi)) {
+            deltaspikeCoreAPi.setVersion(DELTASPIKE_CORE_API_COORDINATE.getVersion());
+            dependencyUtil.installDependency(dependencyFacet, deltaspikeCoreAPi);
+        }
         DependencyBuilder deltaSpikeTestControl = DependencyBuilder.create()
             .setScopeType("test")
             .setArtifactId(DELTASPIKE_TESTCONTROL_COORDINATE.getArtifactId())

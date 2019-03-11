@@ -126,17 +126,26 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
         return fields;
     }
 
-    public static List<FieldSource<JavaClassSource>> extractEntityRequiredFields(ScaffoldEntity entity) {
+    public static List<FieldSource<JavaClassSource>> extractEntityRequiredFields(ScaffoldEntity entity, Project project) {
         List<FieldSource<JavaClassSource>> requiredFields = new ArrayList<>();
         entity.getFields().stream()
                 .filter(f -> (f.hasAnnotation(Column.class) && !f.hasAnnotation(Id.class) && !f.hasAnnotation(EmbeddedId.class) && resolveRequiredAttribute(f))
                         || hasToOneAssociation(f))
                 .forEach(requiredFields::add);
-
+             
+        //adds required fields inside a embedded field
         entity.getEmbeddedFields()
-                .stream()
-                .filter(f -> resolveRequiredAttribute(f))
-                .forEach(requiredFields::add);
+            .stream()
+            .forEach(f -> {
+                try {
+                    AdminScaffoldUtils.getFieldsFromEmbeddedField(f, project)
+                        .stream()
+                        .filter(f2 -> resolveRequiredAttribute(f2))
+                        .forEach(requiredFields::add);
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(AdminScaffoldUtils.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
 
         return requiredFields;
     }

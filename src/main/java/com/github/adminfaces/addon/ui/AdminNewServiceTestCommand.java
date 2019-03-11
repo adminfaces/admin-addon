@@ -50,6 +50,9 @@ import java.util.logging.Logger;
 
 import static com.github.adminfaces.addon.util.AdminScaffoldUtils.*;
 import java.util.Optional;
+import org.jboss.forge.addon.resource.DirectoryResource;
+import org.jboss.forge.parser.xml.Node;
+import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.roaster.model.source.Import;
 
 @FacetConstraint(AdminFacesTestHarnessFacet.class)
@@ -105,7 +108,7 @@ public class AdminNewServiceTestCommand extends AbstractProjectCommand {
             freemarkerContext.put("service",service);
             freemarkerContext.put("ccService",ccService);
             freemarkerContext.put("ccEntity", ccEntity);
-            freemarkerContext.put("requiredFields", extractEntityRequiredFields(scaffoldEntity));
+            freemarkerContext.put("requiredFields", extractEntityRequiredFields(scaffoldEntity,project));
             freemarkerContext.put("datasetValue",new GenerateDataSetValueFromField());
             freemarkerContext.put("toOneFields", resolveToOneAssociationFields(scaffoldEntity.getFields()));
             createServiceTest(freemarkerContext, service, project, generatedResources);
@@ -148,6 +151,7 @@ public class AdminNewServiceTestCommand extends AbstractProjectCommand {
         String sourceFolder = sourceFacet.getSourceDirectory().getFullyQualifiedName();
         try {
             JavaClassSource entity = Roaster.parse(JavaClassSource.class, new File(sourceFolder + "/" + entityQualifiedName.replace(".", "/") + ".java"));
+            addEntityClassToPersistenceXml(entityQualifiedName, project);
             EntityConfig entityConfig = ScaffoldConfigLoader.createOrLoadEntityConfig(entity, project);
             return new ScaffoldEntity(entity, entityConfig, project);
         } catch (Exception e) {
@@ -198,5 +202,23 @@ public class AdminNewServiceTestCommand extends AbstractProjectCommand {
     @Override
     protected boolean isProjectRequired() {
         return true;
+    }
+
+    private void addEntityClassToPersistenceXml(String entityQualifiedName, Project project) {
+        DirectoryResource resourceDirectory = project.getFacet(ResourcesFacet.class).getTestResourceDirectory();
+        FileResource persistenceXMLFile = resourceDirectory.getChildDirectory("META-INF").getChild("persistence.xml").reify(FileResource.class);
+        Node node = XMLParser.parse(persistenceXMLFile.getResourceInputStream());
+        
+        Node persistenceUnitNode = node.getOrCreate("persistence").getOrCreate("persistence-unit");
+        Optional<Node> entityClassNode = persistenceUnitNode
+            .getChildren().stream()
+            .filter(n -> n.getName().equals("class") && n.getText().equals(entityQualifiedName))
+            .findFirst();
+        
+        if(!entityClassNode.isPresent()) {
+            persistenceUnitNode.createChild("class")
+                .text(entityQualifiedName);
+        }
+        persistenceXMLFile.setContents(XMLParser.toXMLInputStream(node));
     }
 }

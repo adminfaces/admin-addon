@@ -49,7 +49,6 @@ public class ${service.getName()}It {
     @Inject
     ${service.getName()} ${ccService};
 
-
     @Test
     @DataSet(value="${ccEntity}.yml")
     public void shouldFind${entity.getName()}() {
@@ -59,9 +58,8 @@ public class ${service.getName()}It {
 
     @Test
     @DataSet(cleanBefore = true, disableConstraints = true)
-    public void shouldInset${entity.getName()}() {
+    public void shouldInsert${entity.getName()}() {
         ${entity.getName()} ${ccEntity} = new ${entity.getName()}();
-        
 <#list requiredFields as field>
     <#if entity.hasToOneAssociation(field)>
         ${field.getType().getSimpleName()} ${field.getName()} = new ${field.getType().getSimpleName()}();
@@ -69,7 +67,6 @@ public class ${service.getName()}It {
     <#else>
         ${ccEntity}.set${field.getName()?cap_first}(<@generateFieldValue field=field/>);
     </#if>
-
 </#list>
         ${entity.getName()} saved${entity.getName()} = ${ccService}.saveOrUpdate(${ccEntity});
         assertThat(saved${entity.getName()}.getId()).isNotNull();

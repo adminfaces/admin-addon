@@ -1,6 +1,5 @@
 package com.github.adminfaces.addon.facet;
 
-import com.github.adminfaces.addon.util.DependencyUtil;
 import org.jboss.forge.addon.dependencies.builder.DependencyBuilder;
 import org.jboss.forge.addon.facets.AbstractFacet;
 import org.jboss.forge.addon.projects.Project;
@@ -29,7 +28,7 @@ public class AdminFacesTestHarnessFacetImpl extends AbstractFacet<Project> imple
     public boolean install() {
         return isInstalled();
     }
-
+    
     @Override
     public boolean isInstalled() {
         DependencyFacet dependencyFacet = getFaceted().getFacet(DependencyFacet.class);
