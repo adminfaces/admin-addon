@@ -39,6 +39,7 @@ import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.facets.DependencyFacet;
 import org.jboss.forge.addon.projects.facets.MetadataFacet;
 import org.jboss.forge.addon.projects.facets.ResourcesFacet;
+import org.jboss.forge.addon.projects.facets.WebResourcesFacet;
 import org.jboss.forge.addon.resource.DirectoryResource;
 import org.jboss.forge.addon.resource.FileResource;
 import org.jboss.forge.addon.resource.Resource;
@@ -273,8 +274,8 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
                 LOG.log(Level.SEVERE, "Could not add 'apache-deltaspike.properties'.", e);
             }
         }
-        CDIFacet cdi = project.getFacet(CDIFacet.class);
-        FileResource<?> beansXml = cdi.getConfigFile();
+        WebResourcesFacet webResources = project.getFacet(WebResourcesFacet.class);
+        FileResource<?> beansXml = webResources.getWebRootDirectory().getChildDirectory("WEB-INF").getChild("beans.xml").reify(FileResource.class);
         Node node = XMLParser.parse(beansXml.getResourceInputStream());
         Node alternativesNode = node.getOrCreate("alternatives");
         Optional<Node> deltaspikeTransactionStrategy = alternativesNode.getChildren().stream()

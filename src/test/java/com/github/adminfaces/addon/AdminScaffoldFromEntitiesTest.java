@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.github.adminfaces.addon.util.Constants;
+import com.github.adminfaces.addon.util.TestUtils;
 import java.io.File;
 import java.io.FileOutputStream;
 
@@ -47,6 +48,7 @@ import org.jboss.forge.addon.resource.DirectoryResource;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
+import org.junit.Assert;
 
 /**
  * Test class for {@link com.github.adminfaces.addon.scaffold.AdminFacesScaffoldProvider}
@@ -70,7 +72,9 @@ public class AdminScaffoldFromEntitiesTest {
         return ShrinkWrap.create(AddonArchive.class).addBeansXML()
             .addPackages(true, "org.assertj.core")
             .addAsResource("scaffold/custom-global-config.yml", "custom-global-config.yml")
-            .addAsResource("InitDB.java", "InitDB.java");
+            .addAsResource("InitDB.java", "InitDB.java")
+            .addClass(TestUtils.class)
+            .addAsResource(AdminScaffoldFromEntitiesTest.class.getResource("/app-with-adminfaces-setup.zip"), "app-with-adminfaces-setup.zip");
     }
 
     @Before
@@ -78,19 +82,9 @@ public class AdminScaffoldFromEntitiesTest {
         Field globalConfigField = ScaffoldConfigLoader.class.getDeclaredField("globalConfig");
         globalConfigField.setAccessible(true);
         globalConfigField.set(null, null);
-        project = projectFactory.createTempProject(Arrays.asList(JavaEE7Facet.class, ServletFacet_3_1.class,
-            JPAFacet_2_1.class, FacesFacet_2_0.class, JavaSourceFacet.class));
+        project = projectFactory.createTempProject();
+        TestUtils.unzip(getClass().getResourceAsStream("/app-with-adminfaces-setup.zip"), project.getRoot().getFullyQualifiedName());
         shellTest.getShell().setCurrentResource(project.getRoot());
-        MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
-        metadataFacet.setProjectGroupName("com.github.admin.addon");
-        metadataFacet.setProjectName("AdminFaces");
-        metadataFacet.setProjectVersion("1.0");
-        shellTest.execute("jpa-setup --provider Hibernate --container JBOSS_EAP7 --db-type H2 --data-source-name java:jboss/datasources/ExampleDS", 30, TimeUnit.SECONDS);
-        Result result = shellTest.execute("adminfaces-setup", 60, TimeUnit.SECONDS);
-        if (result instanceof Failed) {
-            ((Failed) result).getException().printStackTrace();
-            throw new RuntimeException("AdminFaces setup command failed.");
-        }
         shellTest.clearScreen();
         generateEntities();
         JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
@@ -100,9 +94,14 @@ public class AdminScaffoldFromEntitiesTest {
 
     @Test
     public void shouldScaffoldFromEntities() throws Exception {
+        project = projectFactory.findProject(project.getRoot());
+        shellTest.clearScreen();
+        project.getFacets();
         Result result = shellTest.execute("scaffold-setup --provider AdminFaces", 10, TimeUnit.MINUTES);
         if (result instanceof Failed) {
-            ((Failed) result).getException().printStackTrace();
+            Failed failedResult = (Failed) result;
+            failedResult.getException().printStackTrace();
+            Assert.fail(failedResult.getMessage());
         }
         assertThat(result).isInstanceOf(CompositeResult.class).extracting("message")
             .contains("***SUCCESS*** Scaffold was setup successfully.");

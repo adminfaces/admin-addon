@@ -39,6 +39,9 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.contentOf;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import com.github.adminfaces.addon.facet.AdminFacesFacet;
+import java.util.concurrent.TimeoutException;
+import org.jboss.forge.addon.javaee.cdi.CDIFacet_1_1;
+import org.jboss.forge.addon.javaee.jpa.JPAFacet_2_1;
 
 @RunWith(Arquillian.class)
 public class AdminSetupCommandTest {
@@ -59,12 +62,15 @@ public class AdminSetupCommandTest {
     }
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws IOException, TimeoutException {
         project = projectFactory.createTempProject(Arrays.asList(JavaEE7Facet.class, ServletFacet_3_1.class,
-            JPAFacet.class, FacesFacet_2_0.class, JavaSourceFacet.class));
+            JPAFacet_2_1.class, FacesFacet_2_0.class, CDIFacet_1_1.class, JavaSourceFacet.class));
         MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
         metadataFacet.setProjectGroupName("com.github.admin.addon");
         metadataFacet.setProjectName("AdminFaces");
+        metadataFacet.setProjectVersion("1.0");
+        shellTest.getShell().setCurrentResource(project.getRoot());
+        shellTest.execute("jpa-setup --provider Hibernate --container JBOSS_EAP7 --db-type H2 --data-source-name java:jboss/datasources/ExampleDS", 30, TimeUnit.SECONDS);
         shellTest.clearScreen();
     }
 

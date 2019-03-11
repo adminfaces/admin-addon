@@ -2,17 +2,13 @@ package com.github.adminfaces.addon;
 
 import static com.github.adminfaces.addon.util.Constants.NEW_LINE;
 import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.*;
+import com.github.adminfaces.addon.util.TestUtils;
 import static org.assertj.core.api.Assertions.contentOf;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import java.io.File;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.forge.addon.javaee.faces.FacesFacet_2_0;
-import org.jboss.forge.addon.javaee.facets.JavaEE7Facet;
-import org.jboss.forge.addon.javaee.servlet.ServletFacet_3_1;
-import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.ProjectFactory;
-import org.jboss.forge.addon.projects.facets.MetadataFacet;
 import org.jboss.forge.addon.shell.test.ShellTest;
 import org.jboss.forge.addon.ui.result.Failed;
 import org.jboss.forge.addon.ui.result.Result;
@@ -23,12 +19,10 @@ import org.junit.runner.RunWith;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import java.util.concurrent.TimeoutException;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.forge.addon.javaee.jpa.JPAFacet_2_1;
 import org.jboss.forge.addon.projects.facets.ResourcesFacet;
 import org.jboss.forge.addon.resource.FileResource;
 import org.jboss.forge.addon.resource.Resource;
@@ -50,38 +44,21 @@ public class AdminScaffoldConfigCommandTest {
     @AddonDependencies
     public static AddonArchive getDeployment() {
         return ShrinkWrap.create(AddonArchive.class).addBeansXML()
-            .addPackages(true, "org.assertj.core");
+            .addPackages(true, "org.assertj.core").addClass(TestUtils.class)
+            .addAsResource(AdminScaffoldConfigCommandTest.class.getResource("/scaffolded-app.zip"), "scaffolded-app.zip");
     }
 
     @Before
     public void setUp() throws IOException, TimeoutException, NoSuchFieldException, IllegalArgumentException, IllegalArgumentException, IllegalAccessException, IllegalAccessException {
-        project = projectFactory.createTempProject(Arrays.asList(JavaEE7Facet.class, ServletFacet_3_1.class,
-            JPAFacet_2_1.class, FacesFacet_2_0.class, JavaSourceFacet.class));
+        project = projectFactory.createTempProject();
+        TestUtils.unzip(getClass().getResourceAsStream("/scaffolded-app.zip"), project.getRoot().getFullyQualifiedName());
         shellTest.getShell().setCurrentResource(project.getRoot());
-        MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
-        metadataFacet.setProjectGroupName("com.github.admin.addon");
-        metadataFacet.setProjectName("AdminFaces");
-        metadataFacet.setProjectVersion("1.0");
-        shellTest.execute("jpa-setup --provider Hibernate --container JBOSS_EAP7 --db-type H2 --data-source-name java:jboss/datasources/ExampleDS", 30, TimeUnit.SECONDS);
-        shellTest.execute("adminfaces-setup", 60, TimeUnit.SECONDS);
         shellTest.clearScreen();
-        generateEntities();
-        Result result = shellTest.execute("scaffold-setup --provider AdminFaces", 10, TimeUnit.MINUTES);
-        if (result instanceof Failed) {
-            ((Failed) result).getException().printStackTrace();
-        }
-        JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
-        String entityPackageName = sourceFacet.getBasePackage() + ".model";
-        Result scaffoldGenerate1 = shellTest
-            .execute(("scaffold-generate --entities " + entityPackageName + ".*"), 1, TimeUnit.MINUTES);
-        if (scaffoldGenerate1 instanceof Failed) {
-            ((Failed) scaffoldGenerate1).getException().printStackTrace();
-        }
     }
 
     @Test
     public void shouldEditGlobalConfigViaScaffoldConfigCommand() throws TimeoutException, IOException {
-        shellTest.clearScreen();
+        project = projectFactory.findProject(project.getRoot());
         ResourcesFacet resourcesFacet = project.getFacet(ResourcesFacet.class);
         Resource<?> scaffoldDir = resourcesFacet.getResourceDirectory().getChild("scaffold");
         FileResource<?> globalScaffoldConfig = scaffoldDir.getChild("global-config.yml").reify(FileResource.class);
@@ -111,6 +88,7 @@ public class AdminScaffoldConfigCommandTest {
     @Test
     public void shouldEditEntityConfigViaScaffoldConfigCommand() throws TimeoutException, IOException {
         shellTest.clearScreen();
+        project = projectFactory.findProject(project.getRoot());
         ResourcesFacet resourcesFacet = project.getFacet(ResourcesFacet.class);
         Resource<?> scaffoldDir = resourcesFacet.getResourceDirectory().getChild("scaffold");
         FileResource<?> talkScaffoldConfig = scaffoldDir.getChild("Talk.yml").reify(FileResource.class);
@@ -131,47 +109,47 @@ public class AdminScaffoldConfigCommandTest {
 
         File talkEntityConfigFile = new File(talkScaffoldConfig.getFullyQualifiedName());
         assertThat(contentOf(talkEntityConfigFile))
-            .contains("!!com.github.adminfaces.addon.scaffold.model.EntityConfig" + NEW_LINE
-                + "datatableEditable: true" + NEW_LINE
-                + "datatableReflow: true" + NEW_LINE
-                + "displayField: title" + NEW_LINE
-                + "fields:" + NEW_LINE
-                + "- hidden: false" + NEW_LINE
-                + "  length: 100" + NEW_LINE
-                + "  name: id" + NEW_LINE
-                + "  required: true" + NEW_LINE
-                + "  type: INPUT_NUMBER" + NEW_LINE
-                + "- hidden: false" + NEW_LINE
-                + "  length: 100" + NEW_LINE
-                + "  name: version" + NEW_LINE
-                + "  required: false" + NEW_LINE
-                + "  type: INPUT_NUMBER" + NEW_LINE
-                + "- hidden: false" + NEW_LINE
-                + "  length: 100" + NEW_LINE
-                + "  name: title" + NEW_LINE
-                + "  required: true" + NEW_LINE
-                + "  type: INPUT_TEXT" + NEW_LINE
-                + "- hidden: false" + NEW_LINE
-                + "  length: 2000" + NEW_LINE
-                + "  name: description" + NEW_LINE
-                + "  required: true" + NEW_LINE
-                + "  type: TEXT_AREA" + NEW_LINE
-                + "- hidden: false" + NEW_LINE
-                + "  length: 100" + NEW_LINE
-                + "  name: date" + NEW_LINE
-                + "  required: true" + NEW_LINE
-                + "  type: DATEPICKER" + NEW_LINE
-                + "menuIcon: fa fa-circle-o");
-    }
-
-    private void generateEntities() throws TimeoutException {
-        shellTest.execute("jpa-new-entity --named Talk", 10, TimeUnit.SECONDS);
-        shellTest.execute("jpa-new-field --named title", 10, TimeUnit.SECONDS);
-        shellTest.execute("jpa-new-field --named description --length 2000", 10, TimeUnit.SECONDS);
-        shellTest.execute("jpa-new-field --named date --type java.util.Date --temporal-type DATE", 10, TimeUnit.SECONDS);
-        shellTest.execute("constraint-add --on-property title --constraint NotNull", 10, TimeUnit.SECONDS);
-        shellTest.execute("constraint-add --on-property description --constraint Size --max 2000", 10, TimeUnit.SECONDS);
-        shellTest.execute("constraint-add --on-property date --constraint NotNull", 10, TimeUnit.SECONDS);
+            .contains("!!com.github.adminfaces.addon.scaffold.model.EntityConfig"+NEW_LINE +
+"datatableEditable: true"+NEW_LINE +
+"datatableReflow: true"+NEW_LINE +
+"displayField: title"+NEW_LINE +
+"fields:"+NEW_LINE +
+"- hidden: false"+NEW_LINE +
+"  length: 100"+NEW_LINE +
+"  name: id"+NEW_LINE +
+"  required: true"+NEW_LINE +
+"  type: INPUT_NUMBER"+NEW_LINE +
+"- hidden: false"+NEW_LINE +
+"  length: 100"+NEW_LINE +
+"  name: version"+NEW_LINE +
+"  required: false"+NEW_LINE +
+"  type: INPUT_NUMBER"+NEW_LINE +
+"- hidden: false"+NEW_LINE +
+"  length: 100"+NEW_LINE +
+"  name: title"+NEW_LINE +
+"  required: true"+NEW_LINE +
+"  type: INPUT_TEXT"+NEW_LINE +
+"- hidden: false"+NEW_LINE +
+"  length: 2000"+NEW_LINE +
+"  name: description"+NEW_LINE +
+"  required: true"+NEW_LINE +
+"  type: TEXT_AREA"+NEW_LINE +
+"- hidden: false"+NEW_LINE +
+"  length: 100"+NEW_LINE +
+"  name: date"+NEW_LINE +
+"  required: true"+NEW_LINE +
+"  type: DATEPICKER"+NEW_LINE +
+"- hidden: false"+NEW_LINE +
+"  length: 100"+NEW_LINE +
+"  name: speaker"+NEW_LINE +
+"  required: true"+NEW_LINE +
+"  type: AUTOCOMPLETE"+NEW_LINE +
+"- hidden: false"+NEW_LINE +
+"  length: 100"+NEW_LINE +
+"  name: room"+NEW_LINE +
+"  required: true"+NEW_LINE +
+"  type: AUTOCOMPLETE"+NEW_LINE +
+"menuIcon: fa fa-circle-o");
     }
 
 }

@@ -53,7 +53,7 @@ import java.util.Optional;
 import org.jboss.forge.addon.resource.DirectoryResource;
 import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
-import org.jboss.forge.roaster.model.source.Import;
+import org.jboss.forge.roaster.model.util.Types;
 
 @FacetConstraint(AdminFacesTestHarnessFacet.class)
 public class AdminNewServiceTestCommand extends AbstractProjectCommand {
@@ -72,7 +72,6 @@ public class AdminNewServiceTestCommand extends AbstractProjectCommand {
     @Inject
     @WithAttributes(label = "Target services", description = "Select services to create the integration tests.", required = true)
     private UISelectMany<JavaClassSource> targetServices;
-
 
     @Override
     public UICommandMetadata getMetadata(UIContext context) {
@@ -104,12 +103,12 @@ public class AdminNewServiceTestCommand extends AbstractProjectCommand {
             String ccEntity = StringUtils.decapitalize(scaffoldEntity.getName());
             String ccService = StringUtils.decapitalize(service.getName());
             Map<Object, Object> freemarkerContext = new HashMap<>();
-            freemarkerContext.put("entity",scaffoldEntity);
-            freemarkerContext.put("service",service);
-            freemarkerContext.put("ccService",ccService);
+            freemarkerContext.put("entity", scaffoldEntity);
+            freemarkerContext.put("service", service);
+            freemarkerContext.put("ccService", ccService);
             freemarkerContext.put("ccEntity", ccEntity);
-            freemarkerContext.put("requiredFields", extractEntityRequiredFields(scaffoldEntity,project));
-            freemarkerContext.put("datasetValue",new GenerateDataSetValueFromField());
+            freemarkerContext.put("requiredFields", extractEntityRequiredFields(scaffoldEntity, project));
+            freemarkerContext.put("datasetValue", new GenerateDataSetValueFromField());
             freemarkerContext.put("toOneFields", resolveToOneAssociationFields(scaffoldEntity.getFields()));
             createServiceTest(freemarkerContext, service, project, generatedResources);
             createTestDataSet(freemarkerContext, project, generatedResources);
@@ -124,7 +123,7 @@ public class AdminNewServiceTestCommand extends AbstractProjectCommand {
     private void createServiceTest(Map<Object, Object> context, JavaClassSource service, Project project, List<Resource<?>> generatedResources) {
         JavaSourceFacet java = project.getFacet(JavaSourceFacet.class);
         JavaClassSource serviceTest = Roaster.parse(JavaClassSource.class,
-                FreemarkerTemplateProcessor.processTemplate(context, templates.getServiceTestTemplate()));
+            FreemarkerTemplateProcessor.processTemplate(context, templates.getServiceTestTemplate()));
         serviceTest.setPackage(service.getPackage());
         JavaResource javaResource = java.getTestJavaResource(serviceTest);
         generatedResources.add(createOrOverwrite(javaResource, serviceTest.toUnformattedString()));
@@ -134,20 +133,15 @@ public class AdminNewServiceTestCommand extends AbstractProjectCommand {
         String dataset = FreemarkerTemplateProcessor.processTemplate(context, templates.getDataSetTemplate());
         ResourcesFacet resourcesFacet = project.getFacet(ResourcesFacet.class);
         Resource<?> datasetsDir = resourcesFacet.getTestResourceDirectory()
-                .getChild("datasets");
-        FileResource<?> datasetFile = datasetsDir.getChild(context.get("ccEntity")+".yml").reify(FileResource.class);
-        generatedResources.add(createOrOverwrite(datasetFile,dataset));
+            .getChild("datasets");
+        FileResource<?> datasetFile = datasetsDir.getChild(context.get("ccEntity") + ".yml").reify(FileResource.class);
+        generatedResources.add(createOrOverwrite(datasetFile, dataset));
     }
 
     private ScaffoldEntity resolveServiceEntity(JavaClassSource service, Project project) throws FileNotFoundException {
         JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
-        String entityName = service.getSuperType().substring(service.getSuperType().indexOf("<")+1,service.getSuperType().indexOf(","));
-        Optional<Import> entityImport = service.getImports().stream().filter(i -> i.getQualifiedName().endsWith(entityName))
-            .findFirst();
-        if(!entityImport.isPresent()) {
-            throw new RuntimeException("Could not find entity of service "+service.getQualifiedName() + ". Does the service extends CrudService<Entity, PK>?");
-        }
-        String entityQualifiedName = entityImport.get().getQualifiedName();
+        String firstType = Types.splitGenerics(service.getSuperType())[0];
+        String entityQualifiedName = service.resolveType(firstType);
         String sourceFolder = sourceFacet.getSourceDirectory().getFullyQualifiedName();
         try {
             JavaClassSource entity = Roaster.parse(JavaClassSource.class, new File(sourceFolder + "/" + entityQualifiedName.replace(".", "/") + ".java"));
@@ -155,11 +149,10 @@ public class AdminNewServiceTestCommand extends AbstractProjectCommand {
             EntityConfig entityConfig = ScaffoldConfigLoader.createOrLoadEntityConfig(entity, project);
             return new ScaffoldEntity(entity, entityConfig, project);
         } catch (Exception e) {
-            LOG.log(Level.SEVERE, String.format("Could not extract entity from service %s ", service.getQualifiedName()),e);
-            throw new RuntimeException("Could not resolve entity from service "+service.getQualifiedName(),e);
+            LOG.log(Level.SEVERE, String.format("Could not extract entity from service %s ", service.getQualifiedName()), e);
+            throw new RuntimeException("Could not resolve entity from service " + service.getQualifiedName(), e);
         }
     }
-
 
     public List<JavaClassSource> getAllServices(Project project) {
         final List<JavaClassSource> result = new ArrayList<>();
@@ -179,9 +172,9 @@ public class AdminNewServiceTestCommand extends AbstractProjectCommand {
             public void visit(VisitContext context, JavaResource resource) {
                 try {
                     JavaType<?> type = resource.getJavaType();
-                    if (type.isClass() && type.hasAnnotation(Stateless.class) && !currentServiceTests.contains(type.getName()+"It")) {
+                    if (type.isClass() && type.hasAnnotation(Stateless.class) && !currentServiceTests.contains(type.getName() + "It")) {
                         JavaClassSource classSource = (JavaClassSource) type;
-                        if (classSource.hasImport("com.github.adminfaces.persistence.service.CrudService") || classSource.hasMethodSignature("configRestrictions","com.github.adminfaces.persistence.model.Filter")) {
+                        if (classSource.hasImport("com.github.adminfaces.persistence.service.CrudService") || classSource.hasMethodSignature("configRestrictions", "com.github.adminfaces.persistence.model.Filter")) {
                             result.add((JavaClassSource) type);
                         }
                     }
@@ -208,16 +201,31 @@ public class AdminNewServiceTestCommand extends AbstractProjectCommand {
         DirectoryResource resourceDirectory = project.getFacet(ResourcesFacet.class).getTestResourceDirectory();
         FileResource persistenceXMLFile = resourceDirectory.getChildDirectory("META-INF").getChild("persistence.xml").reify(FileResource.class);
         Node node = XMLParser.parse(persistenceXMLFile.getResourceInputStream());
-        
+
         Node persistenceUnitNode = node.getSingle("persistence-unit");
         Optional<Node> entityClassNode = persistenceUnitNode
             .getChildren().stream()
             .filter(n -> n.getName().equals("class") && n.getText().equals(entityQualifiedName))
             .findFirst();
-        
-        if(!entityClassNode.isPresent()) {
+
+        if (!entityClassNode.isPresent()) {
+            Optional<Node> persistenceUnitProperties = persistenceUnitNode.getChildren()
+                .stream()
+                .filter(n -> n.getName().equals("properties"))
+                .findFirst();
+            if (persistenceUnitProperties.isPresent()) {
+                persistenceUnitNode.removeChild("properties");
+            }
             persistenceUnitNode.createChild("class")
                 .text(entityQualifiedName);
+            if (persistenceUnitProperties.isPresent()) {
+                Node newPropertiesNode = persistenceUnitNode.createChild("properties");
+                persistenceUnitProperties.get().getChildren()
+                    .forEach(c -> newPropertiesNode.createChild("property")
+                         .attribute("name", c.getAttribute("name"))
+                         .attribute("value", c.getAttribute("value")));
+
+            }
         }
         persistenceXMLFile.setContents(XMLParser.toXMLInputStream(node));
     }
