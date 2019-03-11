@@ -25,8 +25,10 @@ import org.junit.runner.RunWith;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -103,25 +105,28 @@ public class AdminNewServiceTestCommandTest {
     }
 
     @Test
-    public void shouldCreateServiceTests() throws IOException, TimeoutException {
+    public void shouldCreateServiceTests() throws IOException, TimeoutException, InterruptedException {
         JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
         String servicePackageName = sourceFacet.getBasePackage() + ".service";
         shellTest.execute("cd "+project.getRoot().getFullyQualifiedName());
         shellTest.clearScreen();
         project = projectFactory.findProject(project.getRoot());
-        Result testHarnessSetupResult = shellTest
+        Thread.sleep(5000);
+        Result newServicetestResult = shellTest
             .execute("adminfaces-new-service-test --target-services " + servicePackageName + ".*", 1, TimeUnit.MINUTES);
-        if (testHarnessSetupResult instanceof Failed) {
-            ((Failed) testHarnessSetupResult).getException().printStackTrace();
+        if (newServicetestResult instanceof Failed) {
+            ((Failed) newServicetestResult).getException().printStackTrace();
         }
-        assertThat(testHarnessSetupResult).isInstanceOf(CompositeResult.class).extracting("message")
-            .contains("Service test(s) created successfully!")
-            .contains("room.yml")
-            .contains("talk.yml")
-            .contains("speaker.yml")
-            .contains("RoomServiceIt.java")
-            .contains("TalkServiceIt.java")
-            .contains("SpeakerServiceIt.javal");
+        List<Result> results = ((CompositeResult) newServicetestResult).getResults();
+        assertThat(results).hasSize(7);
+        assertThat(results).extracting("message")
+            .contains(tuple("Added /src/test/resources/datasets/room.yml"))
+            .contains(tuple("***SUCCESS*** Service test(s) created successfully!"))
+            .contains(tuple("Added /src/test/resources/datasets/talk.yml"))
+            .contains(tuple("Added /src/test/resources/datasets/speaker.yml"))
+            .contains(tuple("Added /src/test/java/com/github/admin/addon/service/RoomServiceIt.java"))
+            .contains(tuple("Added /src/test/java/com/github/admin/addon/service/TalkServiceIt.java"))
+            .contains(tuple("Added /src/test/java/com/github/admin/addon/service/SpeakerServiceIt.javal"));
     }
 
     @After

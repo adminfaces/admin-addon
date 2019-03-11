@@ -209,7 +209,7 @@ public class AdminNewServiceTestCommand extends AbstractProjectCommand {
         FileResource persistenceXMLFile = resourceDirectory.getChildDirectory("META-INF").getChild("persistence.xml").reify(FileResource.class);
         Node node = XMLParser.parse(persistenceXMLFile.getResourceInputStream());
         
-        Node persistenceUnitNode = node.getOrCreate("persistence").getOrCreate("persistence-unit");
+        Node persistenceUnitNode = node.getSingle("persistence-unit");
         Optional<Node> entityClassNode = persistenceUnitNode
             .getChildren().stream()
             .filter(n -> n.getName().equals("class") && n.getText().equals(entityQualifiedName))
