@@ -549,7 +549,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
                 .setStringValue("value",methodName);
             
             methodName = "clear"+entity.getName()+"s";//Room becomes clearRooms()
-            method = appListsSource.addMethod()
+            appListsSource.addMethod()
                 .setPublic()
                 .setName(methodName)
                 .setReturnTypeVoid()

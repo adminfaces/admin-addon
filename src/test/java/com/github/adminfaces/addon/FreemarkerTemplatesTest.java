@@ -23,20 +23,19 @@
  */
 package com.github.adminfaces.addon;
 
-import com.github.adminfaces.addon.freemarker.FreemarkerTemplateProcessor;
-import com.github.adminfaces.addon.freemarker.GenerateDataSetValueFromField;
-import com.github.adminfaces.addon.freemarker.TemplateFactory;
-import com.github.adminfaces.addon.scaffold.config.ScaffoldConfigLoader;
-import com.github.adminfaces.addon.scaffold.model.EntityConfig;
-import com.github.adminfaces.addon.scaffold.model.ScaffoldEntity;
-import static com.github.adminfaces.addon.util.AdminScaffoldUtils.extractEntityRequiredFields;
-import static com.github.adminfaces.addon.util.AdminScaffoldUtils.resolveToManyAssociationFields;
 import static com.github.adminfaces.addon.util.AdminScaffoldUtils.resolveToOneAssociationFields;
-import freemarker.template.Template;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.github.adminfaces.addon.util.AdminScaffoldUtils;
 import org.assertj.core.api.AssertionsForClassTypes;
+import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.facets.ResourcesFacet;
 import org.jboss.forge.addon.resource.DirectoryResource;
@@ -50,9 +49,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.metawidget.util.simple.StringUtils;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
+
+import com.github.adminfaces.addon.freemarker.FreemarkerTemplateProcessor;
+import com.github.adminfaces.addon.freemarker.GenerateDataSetValueFromField;
+import com.github.adminfaces.addon.freemarker.TemplateFactory;
+import com.github.adminfaces.addon.scaffold.config.ScaffoldConfigLoader;
+import com.github.adminfaces.addon.scaffold.model.EntityConfig;
+import com.github.adminfaces.addon.scaffold.model.ScaffoldEntity;
+
+import freemarker.template.Template;
 
 /**
  *
@@ -72,6 +77,11 @@ public class FreemarkerTemplatesTest {
 
     @Before
     public void tearUp() {
+    	JavaSourceFacet sourceFacet = mock(JavaSourceFacet.class);
+        String sourceDirPath = Paths.get("target/test-classes/").toAbsolutePath().toString();
+        DirectoryResource sourceDir = mock(DirectoryResource.class);
+        doReturn(sourceDirPath).when(sourceDir).getFullyQualifiedName();
+        doReturn(sourceDir).when(sourceFacet).getSourceDirectory();
         FileResource<?> entityConfigFile = mock(FileResource.class);
         doReturn(false).when(entityConfigFile).exists();
         doReturn(null).when(entityConfigFile).setContents(anyString());
@@ -86,6 +96,7 @@ public class FreemarkerTemplatesTest {
         doReturn(directoryResource).when(resourcesFacet).getResourceDirectory();
         doReturn(scaffoldDir).when(directoryResource).getChildDirectory("scaffold");
         doReturn(resourcesFacet).when(project).getFacet(ResourcesFacet.class);
+        doReturn(sourceFacet).when(project).getFacet(JavaSourceFacet.class);
     }
 
     @Test
@@ -103,77 +114,99 @@ public class FreemarkerTemplatesTest {
         context.put("service", service);
         context.put("ccService", ccService);
         context.put("ccEntity", ccEntity);
-        context.put("requiredFields", extractEntityRequiredFields(scaffoldEntity, project));
-        context.put("toManyFields", resolveToManyAssociationFields(scaffoldEntity.getFields()));
+        context.put("fields", scaffoldEntity.getFields());
+        context.put("embeddedFields", scaffoldEntity.getEmbeddedFields());
         context.put("toOneFields", resolveToOneAssociationFields(scaffoldEntity.getFields()));
         String result = FreemarkerTemplateProcessor.processTemplate(context, serviceTestTemplate);
-        AssertionsForClassTypes.assertThat(result).contains("package com.github.adminfaces.starter.bean;\n" +
-"\n" +
-"import Person;\n" +
-"import com.github.adminfaces.addon.service.SimpleService;\n" +
-"import com.github.adminfaces.addon.model.Speaker;  \n" +
-"import com.github.database.rider.cdi.api.DBUnitInterceptor;\n" +
-"import com.github.database.rider.core.api.dataset.DataSet;\n" +
-"import javax.inject.Inject;\n" +
-"import org.apache.deltaspike.jpa.api.transaction.Transactional;\n" +
-"import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;\n" +
-"import static org.assertj.core.api.Assertions.assertThat;\n" +
-"import java.util.*;\n" +
-"import org.junit.Test;\n" +
-"import org.junit.runner.RunWith;\n" +
-" \n" +
-"@RunWith(CdiTestRunner.class)\n" +
-"@DBUnitInterceptor\n" +
-"@Transactional\n" +
-"public class SimpleServiceIt {\n" +
-"\n" +
-"    @Inject\n" +
-"    SimpleService simpleService;\n" +
-"\n" +
-"    @Test\n" +
-"    @DataSet(value=\"person.yml\")\n" +
-"    public void shouldFindPerson() {\n" +
-"        Person person = simpleService.findById(-1);\n" +
-"        assertThat(person).isNotNull();\n" +
-"    } \n" +
-"\n" +
-"    @Test\n" +
-"    @DataSet(cleanBefore = true, disableConstraints = true)\n" +
-"    public void shouldInsertPerson() {\n" +
-"        Person person = new Person();\n" +
-"        person.setAge(new Random().nextInt());\n" +
-"        person.setFirstname(UUID.randomUUID().toString());\n" +
-"        Speaker speaker = new Speaker();\n" +
-"        person.setSpeaker(speaker);\n" +
-"        Person savedPerson = simpleService.saveOrUpdate(person);\n" +
-"        assertThat(savedPerson.getId()).isNotNull();\n" +
-"    } \n" +
-"\n" +
-"    @Test\n" +
-"    @DataSet(value=\"person.yml\")\n" +
-"    public void shouldRemovePerson() {\n" +
-"        assertThat(simpleService.count()).isEqualTo(1L);\n" +
-"        Person person = simpleService.findById(-1);\n" +
-"        assertThat(person).isNotNull();\n" +
-"        simpleService.remove(person);\n" +
-"        assertThat(simpleService.count()).isEqualTo(0L);\n" +
-"    }\n" +
-"\n" +
-"    @Test\n" +
-"    @DataSet(value=\"person.yml\", disableConstraints = true)\n" +
-"    public void shouldUpdatePerson() {\n" +
-"        Person person = simpleService.findById(-1);\n" +
-"        assertThat(person).isNotNull();\n" +
-"        Integer age = new Random().nextInt();\n" +
-"        person.setAge(age);\n" +
-"        String firstname = UUID.randomUUID().toString();\n" +
-"        person.setFirstname(firstname);\n" +
-"        person = simpleService.saveOrUpdate(person);\n" +
-"        assertThat(person.getAge()).isEqualTo(age);\n" +
-"        assertThat(person.getFirstname()).isEqualTo(firstname);\n" +
-"    }\n" +
-"\n" +
-"}");
+        AssertionsForClassTypes.assertThat(result).contains("package com.github.adminfaces.starter.bean;\n" + 
+        		"\n" + 
+        		"import Person;\n" + 
+        		"import com.github.adminfaces.addon.service.SimpleService;\n" + 
+        		"import com.github.adminfaces.addon.model.Address;  \n" + 
+        		"import com.github.adminfaces.addon.model.Speaker;  \n" + 
+        		"import com.github.database.rider.cdi.api.DBUnitInterceptor;\n" + 
+        		"import com.github.database.rider.core.api.dataset.DataSet;\n" + 
+        		"import javax.inject.Inject;\n" + 
+        		"import org.apache.deltaspike.jpa.api.transaction.Transactional;\n" + 
+        		"import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;\n" + 
+        		"import static org.assertj.core.api.Assertions.assertThat;\n" + 
+        		"import java.util.*;\n" + 
+        		"import org.junit.Test;\n" + 
+        		"import org.junit.runner.RunWith;\n" + 
+        		" \n" + 
+        		"@RunWith(CdiTestRunner.class)\n" + 
+        		"@DBUnitInterceptor\n" + 
+        		"@Transactional\n" + 
+        		"public class SimpleServiceIt {\n" + 
+        		"\n" + 
+        		"    @Inject\n" + 
+        		"    SimpleService simpleService;\n" + 
+        		"\n" + 
+        		"    @Test\n" + 
+        		"    @DataSet(value=\"person.yml\")\n" + 
+        		"    public void shouldFindPerson() {\n" + 
+        		"        Person person = simpleService.findById(-1);\n" + 
+        		"        assertThat(person).isNotNull();\n" + 
+        		"    } \n" + 
+        		"\n" + 
+        		"    @Test\n" + 
+        		"    @DataSet(cleanBefore = true, disableConstraints = true)\n" + 
+        		"    public void shouldInsertPerson() {\n" + 
+        		"        Person person = new Person();\n" + 
+        		"        person.setId(new Random().nextInt());\n" + 
+        		"        person.setAge(new Random().nextInt());\n" + 
+        		"        person.setFirstname(randomString(100));\n" + 
+        		"        Address address = new Address();\n" + 
+        		"        address.setStreet(randomString(50));\n" + 
+        		"        address.setCity(randomString(50));\n" + 
+        		"        address.setZipcode(new Random().nextInt());\n" + 
+        		"        person.setAddress(address);\n" + 
+        		"        Person savedPerson = simpleService.saveOrUpdate(person);\n" + 
+        		"        assertThat(savedPerson.getId()).isNotNull();\n" + 
+        		"    } \n" + 
+        		"\n" + 
+        		"    @Test\n" + 
+        		"    @DataSet(value=\"person.yml\")\n" + 
+        		"    public void shouldRemovePerson() {\n" + 
+        		"        assertThat(simpleService.count()).isEqualTo(1L);\n" + 
+        		"        Person person = simpleService.findById(-1);\n" + 
+        		"        assertThat(person).isNotNull();\n" + 
+        		"        simpleService.remove(person);\n" + 
+        		"        assertThat(simpleService.count()).isEqualTo(0L);\n" + 
+        		"    }\n" + 
+        		"\n" + 
+        		"    @Test\n" + 
+        		"    @DataSet(value=\"person.yml\", disableConstraints = true)\n" + 
+        		"    public void shouldUpdatePerson() {\n" + 
+        		"        Person person = simpleService.findById(-1);\n" + 
+        		"        assertThat(person).isNotNull();\n" + 
+        		"        Integer age = new Random().nextInt();\n" + 
+        		"        person.setAge(age);\n" + 
+        		"        String firstname = randomString(100);\n" + 
+        		"        person.setFirstname(firstname);\n" + 
+        		"        String addressStreet = randomString(50);\n" + 
+        		"        person.getAddress().setStreet(addressStreet); \n" + 
+        		"        String addressCity = randomString(50);\n" + 
+        		"        person.getAddress().setCity(addressCity); \n" + 
+        		"        Integer addressZipcode = new Random().nextInt();\n" + 
+        		"        person.getAddress().setZipcode(addressZipcode); \n" + 
+        		"        person = simpleService.saveOrUpdate(person);\n" + 
+        		"        assertThat(person.getAge()).isEqualTo(age);\n" + 
+        		"        assertThat(person.getFirstname()).isEqualTo(firstname);\n" + 
+        		"        assertThat(person.getAddress().getStreet()).isEqualTo(addressStreet);\n" + 
+        		"        assertThat(person.getAddress().getCity()).isEqualTo(addressCity);\n" + 
+        		"        assertThat(person.getAddress().getZipcode()).isEqualTo(addressZipcode);\n" + 
+        		"    }\n" + 
+        		"    \n" + 
+        		"    public String randomString(int size) {\n" + 
+        		"        String value = UUID.randomUUID().toString();\n" + 
+        		"        if(value.length() > size) {\n" + 
+        		"            value = value.substring(0,size-1);\n" + 
+        		"        }\n" + 
+        		"        return value;    \n" + 
+        		"    }\n" + 
+        		"\n" + 
+        		"}");
     }
     
     @Test
@@ -190,14 +223,16 @@ public class FreemarkerTemplatesTest {
         context.put("entity", scaffoldEntity);
         context.put("service", service);
         context.put("ccService", ccService);
+		context.put("utils", AdminScaffoldUtils.class);
         context.put("ccEntity", ccEntity);
-        context.put("requiredFields", extractEntityRequiredFields(scaffoldEntity,project));
+        context.put("fields", scaffoldEntity.getFields());
+        context.put("embeddedFields", scaffoldEntity.getEmbeddedFields());
         context.put("datasetValue", new GenerateDataSetValueFromField());
-        context.put("toManyFields", resolveToManyAssociationFields(scaffoldEntity.getFields()));
         context.put("toOneFields", resolveToOneAssociationFields(scaffoldEntity.getFields()));
         String result = FreemarkerTemplateProcessor.processTemplate(context, datasetTemplate);
         AssertionsForClassTypes.assertThat(result).startsWith("Person:\n" +
-"  id: -1");
-    }
+				"  - id: -1")
+                .contains("version: 0");
+	}
 
 }

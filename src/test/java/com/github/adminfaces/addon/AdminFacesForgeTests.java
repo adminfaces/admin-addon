@@ -188,7 +188,7 @@ public class AdminFacesForgeTests {
         IOUtils.copy(getClass().getResourceAsStream("/InitDB.java"),
             new FileOutputStream(new File(sourceFacet.getSourceDirectory().getFullyQualifiedName() + "/com/github/admin/addon/infra/InitDB.java")));
         shellTest.clearScreen();
-        Result result = shellTest.execute("scaffold-setup --provider AdminFaces", 10, TimeUnit.MINUTES);
+        Result result = shellTest.execute("scaffold-setup --provider AdminFaces", 1, TimeUnit.MINUTES);
         if (result instanceof Failed) {
             Failed failedResult = (Failed) result;
             failedResult.getException().printStackTrace();
@@ -200,7 +200,7 @@ public class AdminFacesForgeTests {
         String entityPackageName = sourceFacet.getBasePackage() + ".model";
 
         Result scaffoldGenerate1 = shellTest
-            .execute(("scaffold-generate --entities " + entityPackageName + ".*"), 10, TimeUnit.MINUTES);
+            .execute(("scaffold-generate --entities " + entityPackageName + ".*"), 1, TimeUnit.MINUTES);
 
         if (scaffoldGenerate1 instanceof Failed) {
             ((Failed) scaffoldGenerate1).getException().printStackTrace();
@@ -419,7 +419,7 @@ public class AdminFacesForgeTests {
             .append(globalScaffoldConfig.getFullyQualifiedName()).append(" --input-size 30 --to-one-component-type ")
             .append(SELECT_ONE_MENU.name()).append(" --to-many-component-type ").append(SELECT_MANY_MENU.name())
             .append(" --datatable-editable --menu-icon \"fa fa-edit\"");
-        Result scaffoldConfigResult = shellTest.execute(scaffoldConfigCommand.toString(), 5, TimeUnit.MINUTES);
+        Result scaffoldConfigResult = shellTest.execute(scaffoldConfigCommand.toString(), 1, TimeUnit.MINUTES);
         if (scaffoldConfigResult instanceof Failed) {
             ((Failed) scaffoldConfigResult).getException().printStackTrace();
         }
@@ -450,7 +450,7 @@ public class AdminFacesForgeTests {
         StringBuilder scaffoldConfigCommand = new StringBuilder("adminfaces-scaffold-config --config-file ")
             .append(talkScaffoldConfig.getFullyQualifiedName()).append(" --choice-field-to-change date --type ").append(DATEPICKER.name())
             .append(" --datatable-editable --menu-icon \"fa fa-edit\"");
-        Result scaffoldConfigResult = shellTest.execute(scaffoldConfigCommand.toString(), 5, TimeUnit.MINUTES);
+        Result scaffoldConfigResult = shellTest.execute(scaffoldConfigCommand.toString(), 1, TimeUnit.MINUTES);
         if (scaffoldConfigResult instanceof Failed) {
             ((Failed) scaffoldConfigResult).getException().printStackTrace();
         }
@@ -537,7 +537,7 @@ public class AdminFacesForgeTests {
         JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
         String servicePackageName = sourceFacet.getBasePackage() + ".service";
         Result newServicetestResult = shellTest
-            .execute("adminfaces-new-service-test --target-services " + servicePackageName + ".*", 2, TimeUnit.MINUTES);
+            .execute("adminfaces-new-service-test --target-services " + servicePackageName + ".*", 1, TimeUnit.MINUTES);
         if (newServicetestResult instanceof Failed) {
             Failed failedResult = (Failed) newServicetestResult;
             failedResult.getException().printStackTrace();

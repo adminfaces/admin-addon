@@ -15,6 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.Basic;
 import javax.persistence.Column;
+import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Id;
@@ -74,6 +75,10 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
         return (field.hasAnnotation(OneToMany.class) && field.getAnnotation(OneToMany.class).getStringValue("mappedBy") != null) 
             || (field.hasAnnotation(ManyToMany.class) && field.getAnnotation(ManyToMany.class).getStringValue("mappedBy") != null);
     }
+    
+    public static boolean isEmbeddedField(FieldSource<JavaClassSource> field) {
+        return field.hasAnnotation(Embedded.class) || field.getOrigin().hasAnnotation(Embeddable.class);
+    }
 
     public static boolean hasToOneAssociation(FieldSource<JavaClassSource> field) {
         return field.hasAnnotation(OneToOne.class) || field.hasAnnotation(ManyToOne.class);
@@ -93,7 +98,6 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
                 required = true;
             }
         }
-
         return required;
     }
 
@@ -127,29 +131,6 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
         return fields;
     }
 
-    public static List<FieldSource<JavaClassSource>> extractEntityRequiredFields(ScaffoldEntity entity, Project project) {
-        List<FieldSource<JavaClassSource>> requiredFields = new ArrayList<>();
-        entity.getFields().stream()
-                .filter(f -> (f.hasAnnotation(Column.class) && !f.hasAnnotation(Id.class) && !f.hasAnnotation(EmbeddedId.class) && resolveRequiredAttribute(f))
-                        || hasToOneAssociation(f))
-                .forEach(requiredFields::add);
-             
-        //adds required fields inside a embedded field
-        entity.getEmbeddedFields()
-            .stream()
-            .forEach(f -> {
-                try {
-                    AdminScaffoldUtils.getFieldsFromEmbeddedField(f, project)
-                        .stream()
-                        .filter(f2 -> resolveRequiredAttribute(f2))
-                        .forEach(requiredFields::add);
-                } catch (FileNotFoundException ex) {
-                    Logger.getLogger(AdminScaffoldUtils.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            });
-
-        return requiredFields;
-    }
    
     public static List<FieldSource<JavaClassSource>> extractEmbeddedFields(JavaClassSource entity) {
         List<FieldSource<JavaClassSource>> fields = new ArrayList<>();
@@ -170,7 +151,7 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
             .forEach(fields::add);
         return fields;
     }
-
+    
     public static String resolveSourceFolder(Project project) {
         JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
         return sourceFacet.getSourceDirectory().getFullyQualifiedName();
@@ -225,9 +206,9 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
                 if (facetFactory.install(project, metaModelFacet)) {
                     DependencyFacet facet = project.getFacet(DependencyFacet.class);
                     DependencyBuilder jpaModelegenDependency = DependencyBuilder.create().setCoordinate(CoordinateBuilder.create().setGroupId("org.hibernate").setArtifactId("hibernate-jpamodelgen"));
-                    if(facet.hasDirectDependency(jpaModelegenDependency)) {
+                   /* if(facet.hasDirectDependency(jpaModelegenDependency)) {
                         facet.removeDependency(jpaModelegenDependency);//not needed on direct deps
-                    }
+                    }*/
                     break;
                 }
             }

@@ -1,7 +1,31 @@
 ${entity.getName()}:
-  id: -1 #avoid conflict with hibernate sequences
-<#list requiredFields as field>
-<#if !entity.hasToOneAssociation(field)>
-  ${field.getName()}: ${datasetValue(field)}
- </#if> 
+  - id: -1 #avoid conflict with hibernate sequences
+<#list fields as field>
+     <#if entity.isRequired(field) && !field.hasAnnotation("javax.persistence.Id") && !entity.hasAssociation(field)>
+    ${field.getName()}: ${datasetValue(field)}
+     </#if>
 </#list>
+<#if entity.hasVersionField()>
+    version: 0
+</#if>
+<#list embeddedFields as field>
+    <#list entity.getFieldsFromEmbeddedField(field) as embeddedField>
+        <#if entity.isRequired(embeddedField)>
+    ${embeddedField.getName()}: ${datasetValue(embeddedField)}     
+        </#if>
+    </#list>
+</#list>
+<#list toOneFields as field>
+    ${field.getName()}: -1
+</#list>
+
+<#list toOneFields as field>
+${field.getType().getSimpleName()}:
+  - id: -1
+    <#list entity.getRequiredFieldsFromAssociationField(field) as associationField> 
+        <#if (associationField.hasAnnotation("javax.persistence.Column") || associationField.hasAnnotation("javax.persistence.Basic")) && !associationField.hasAnnotation("javax.persistence.Id") && !associationField.hasAnnotation("javax.persistence.Embedded") && !associationField.hasAnnotation("javax.persistence.Version")>
+    ${associationField.getName()}: ${datasetValue(associationField)}
+        </#if>
+    </#list> 
+</#list>
+

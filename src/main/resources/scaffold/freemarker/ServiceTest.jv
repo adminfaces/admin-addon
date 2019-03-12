@@ -1,6 +1,6 @@
-<#macro generateFieldValue field>
+<#macro generateFieldValue field entity>
 <#if field.getType().getSimpleName() == "String">
-<#assign value ='UUID.randomUUID().toString()'>
+<#assign value ='randomString(${entity.getSize(field)})'>
     <#elseif field.getType().getSimpleName() == "Integer" || field.getType().getQualifiedName() == "int">
 <#assign value ='new Random().nextInt()'>
     <#elseif field.getType().getSimpleName() == "Long" || field.getType().getQualifiedName() == "long">
@@ -24,10 +24,29 @@
 ${value}
 </#compress>
 </#macro>
+<#macro generateIdValue field>
+    <#if field.getType().getSimpleName() == "Integer" || field.getType().getQualifiedName() == "int">
+<#assign value ='-1'>
+    <#elseif field.getType().getSimpleName() == "Long" || field.getType().getQualifiedName() == "Long">
+<#assign value ='-1L'>
+    <#elseif field.getType().getSimpleName() == "Double" || field.getType().getQualifiedName() == "double">
+<#assign value ='-1D'>
+    <#elseif field.getType().getSimpleName() == "Float" || field.getType().getQualifiedName() == "float">
+<#assign value ='-1F'>
+    <#elseif field.getType().getSimpleName() == "String">
+<#assign value ='randomString(8)'>
+    </#if>
+<#compress>
+${value}
+</#compress>    
+</#macro>
 package com.github.adminfaces.starter.bean;
 
 import ${entity.getQualifiedName()};
 import ${service.getQualifiedName()};
+<#list embeddedFields as field>
+import ${field.getType().getQualifiedName()};  
+</#list>
 <#list toOneFields as field>
 import ${field.getType().getQualifiedName()};  
 </#list>
@@ -52,7 +71,7 @@ public class ${service.getName()}It {
     @Test
     @DataSet(value="${ccEntity}.yml")
     public void shouldFind${entity.getName()}() {
-        ${entity.getName()} ${ccEntity} = ${ccService}.findById(-1);
+        ${entity.getName()} ${ccEntity} = ${ccService}.findById(<@generateIdValue field=entity.getField("id")/>);
         assertThat(${ccEntity}).isNotNull();
     } 
 
@@ -60,14 +79,20 @@ public class ${service.getName()}It {
     @DataSet(cleanBefore = true, disableConstraints = true)
     public void shouldInsert${entity.getName()}() {
         ${entity.getName()} ${ccEntity} = new ${entity.getName()}();
-<#list requiredFields as field>
-    <#if entity.hasToOneAssociation(field)>
-        ${field.getType().getSimpleName()} ${field.getName()} = new ${field.getType().getSimpleName()}();
-        ${ccEntity}.set${field.getName()?cap_first}(${field.getName()});
-    <#else>
-        ${ccEntity}.set${field.getName()?cap_first}(<@generateFieldValue field=field/>);
+<#list fields as field>
+    <#if entity.isRequired(field) && !entity.hasAssociation(field)>
+        ${ccEntity}.set${field.getName()?cap_first}(<@generateFieldValue field=field entity=entity/>);
     </#if>
 </#list>
+<#list embeddedFields as field>
+        ${field.getType().getSimpleName()} ${field.getName()} = new ${field.getType().getSimpleName()}();
+    <#list entity.getFieldsFromEmbeddedField(field) as embeddedField>
+        <#if entity.isRequired(embeddedField)>
+        ${field.getName()}.set${embeddedField.getName()?cap_first}(<@generateFieldValue field=embeddedField entity=entity/>);
+        </#if>
+    </#list>
+        ${ccEntity}.set${field.getName()?cap_first}(${field.getName()});
+</#list>    
         ${entity.getName()} saved${entity.getName()} = ${ccService}.saveOrUpdate(${ccEntity});
         assertThat(saved${entity.getName()}.getId()).isNotNull();
     } 
@@ -76,7 +101,7 @@ public class ${service.getName()}It {
     @DataSet(value="${ccEntity}.yml")
     public void shouldRemove${entity.getName()}() {
         assertThat(${ccService}.count()).isEqualTo(1L);
-        ${entity.getName()} ${ccEntity} = ${ccService}.findById(-1);
+        ${entity.getName()} ${ccEntity} = ${ccService}.findById(<@generateIdValue field=entity.getField("id")/>);
         assertThat(${ccEntity}).isNotNull();
         ${ccService}.remove(${ccEntity});
         assertThat(${ccService}.count()).isEqualTo(0L);
@@ -85,20 +110,43 @@ public class ${service.getName()}It {
     @Test
     @DataSet(value="${ccEntity}.yml", disableConstraints = true)
     public void shouldUpdate${entity.getName()}() {
-        ${entity.getName()} ${ccEntity} = ${ccService}.findById(-1);
+        ${entity.getName()} ${ccEntity} = ${ccService}.findById(<@generateIdValue field=entity.getField("id")/>);
         assertThat(${ccEntity}).isNotNull();
-<#list requiredFields as field>
-    <#if !entity.hasToOneAssociation(field)>
-        ${field.getType().getSimpleName()} ${field.getName()} = <@generateFieldValue field=field/>;
+<#list fields as field>
+    <#if entity.isRequired(field) && !field.hasAnnotation("javax.persistence.Id") && !entity.hasAssociation(field)>
+        ${field.getType().getSimpleName()} ${field.getName()} = <@generateFieldValue field=field entity=entity/>;
         ${ccEntity}.set${field.getName()?cap_first}(${field.getName()});
     </#if>
 </#list>
+<#list embeddedFields as field>
+    <#list entity.getFieldsFromEmbeddedField(field) as embeddedField>
+        <#if entity.isRequired(embeddedField)>
+        ${embeddedField.getType().getSimpleName()} ${field.getName()}${embeddedField.getName()?cap_first} = <@generateFieldValue field=embeddedField entity=entity/>;
+        ${ccEntity}.get${field.getName()?cap_first}().set${embeddedField.getName()?cap_first}(${field.getName()}${embeddedField.getName()?cap_first}); 
+        </#if>
+    </#list>
+</#list>    
         ${ccEntity} = ${ccService}.saveOrUpdate(${ccEntity});
-<#list requiredFields as field>
-    <#if !entity.hasToOneAssociation(field)>
+<#list fields as field>
+    <#if entity.isRequired(field) && !field.hasAnnotation("javax.persistence.Id")>
         assertThat(${ccEntity}.get${field.getName()?cap_first}()).isEqualTo(${field.getName()});
     </#if>
 </#list>
+<#list embeddedFields as field>
+    <#list entity.getFieldsFromEmbeddedField(field) as embeddedField>
+        <#if entity.isRequired(embeddedField)>
+        assertThat(${ccEntity}.get${field.getName()?cap_first}().get${embeddedField.getName()?cap_first}()).isEqualTo(${field.getName()?lower_case}${embeddedField.getName()?cap_first});
+        </#if>
+    </#list>
+</#list>
+    }
+    
+    public String randomString(int size) {
+        String value = UUID.randomUUID().toString();
+        if(value.length() > size) {
+            value = value.substring(0,size-1);
+        }
+        return value;    
     }
 
 }

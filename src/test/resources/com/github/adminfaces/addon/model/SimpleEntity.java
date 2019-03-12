@@ -1,5 +1,6 @@
 
 import com.github.adminfaces.addon.model.Speaker;
+import com.github.adminfaces.addon.model.Address;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -63,6 +64,12 @@ public class Person implements Serializable, PersistenceEntity {
     @Version
     @Column(name = "version")
     private int version;
+    
+    @Embedded
+	private Address address;
+    
+    @ManyToOne
+    private Speaker speaker;
 
     @Column
     @NotNull
@@ -71,8 +78,6 @@ public class Person implements Serializable, PersistenceEntity {
     @Column
     private String surname;
     
-    @OneToOne
-	private Speaker speaker;
     
     //no need getters/setter its only for testing
 }

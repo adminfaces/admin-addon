@@ -6,7 +6,10 @@ import java.util.List;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
+import javax.persistence.Embeddable;
+import javax.persistence.Embedded;
 import javax.persistence.Transient;
+import javax.persistence.Version;
 
 import org.jboss.forge.roaster.model.Type;
 import org.jboss.forge.roaster.model.source.FieldSource;
@@ -90,6 +93,37 @@ public class ScaffoldEntity implements Serializable {
             .forEach(fields::add);
         return fields;
     }
+    
+    /**
+     * Used by test dataset (dataset.yml) generation
+     * @param associationField
+     * @return
+     * @throws FileNotFoundException
+     */
+    public List<FieldSource<JavaClassSource>> getRequiredFieldsFromAssociationField(FieldSource<JavaClassSource> associationField) throws FileNotFoundException {
+        List<FieldSource<JavaClassSource>> fields = new ArrayList<>();
+        String sourceFolder = AdminScaffoldUtils.resolveSourceFolder(project);
+        String qualifiedName = associationField.getType().getQualifiedName();
+        JavaClassSource associationFieldClassSource = Roaster.parse(JavaClassSource.class, new File(sourceFolder + "/" + qualifiedName.replace(".", "/") + ".java"));
+        associationFieldClassSource.getFields().stream()
+            .filter(f -> !f.hasAnnotation(Transient.class) && (f.hasAnnotation(Column.class) || f.hasAnnotation(Basic.class)))
+            .filter(f -> AdminScaffoldUtils.resolveRequiredAttribute(f))
+            .forEach(fields::add);
+        
+        associationFieldClassSource.getFields().stream()
+        .filter(f -> f.hasAnnotation(Embedded.class))
+        .forEach(f -> {
+            try {
+                AdminScaffoldUtils.getFieldsFromEmbeddedField(f, project)
+                    .stream()
+                    .filter(f2 -> AdminScaffoldUtils.resolveRequiredAttribute(f2))
+                    .forEach(fields::add);
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(AdminScaffoldUtils.class.getName()).log(Level.SEVERE, null, ex);
+            }
+});
+        return fields;
+    }
 
     public String getDisplayField() {
         return entityConfig.getDisplayField();
@@ -148,6 +182,10 @@ public class ScaffoldEntity implements Serializable {
         return AdminScaffoldUtils.isBidirectionalAssociation(field);
     }
 
+    public boolean isEmbeddedField(FieldSource<JavaClassSource> field) {
+    	return AdminScaffoldUtils.isEmbeddedField(field);
+    }
+    
     public Type<JavaClassSource> getArrayType(FieldSource<JavaClassSource> field) { //just expose to freemarker
         return AdminScaffoldUtils.getArrayType(field);
     }
@@ -207,6 +245,14 @@ public class ScaffoldEntity implements Serializable {
 
     public boolean isSpinnerType(FieldSource<JavaClassSource> field) {
         return getFieldConfig(field).getType().equals(ComponentTypeEnum.SPINNER);
+    }
+    
+    public FieldSource<JavaClassSource> getField(String name) {
+    	return entity.getField(name);
+    }
+    
+    public boolean hasVersionField() {
+    	return getField("version") != null;
     }
 
     public boolean isDatatableEditable() {
