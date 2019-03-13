@@ -38,7 +38,7 @@ image::img/scaffold-generate02.png[link="https://github.com/adminfaces/admin-add
 
 * *AdminFaces: Scaffold config* command: 
 ====
-After scaffold generation the addon will create default scaffold configuration files under `src/main/resources/scaffold` for each entities and also a `global-config.yml` file. These configuration files default values are based on the entities provided on scaffold generation and the global file. 
+After scaffold generation the addon will create default scaffold configuration files under `src/main/resources/scaffold` for each entity and also a `global-config.yml` file. These configuration files default values are based on the entities provided on scaffold generation and the global file. 
 
 In order to change scaffold configuration for each entity or the global configuration you either can edit the files manually or use *AdminFaces: Scaffold config* command.
 ====
