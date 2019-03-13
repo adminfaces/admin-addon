@@ -3,11 +3,9 @@
 image:https://travis-ci.org/adminfaces/admin-addon.svg[Build Status (Travis CI), link=https://travis-ci.org/adminfaces/admin-addon]
 image:https://coveralls.io/repos/adminfaces/admin-addon/badge.svg?branch=master&service=github[Coverage, link=https://coveralls.io/r/adminfaces/admin-addon] 
 
-This forge addon enables AdminFaces `setup` and `scaffold from JPA entities`.
-
-        
-=== Dependencies: None 
+This forge addon enables http://github.com/adminfaces/[AdminFaces^] `setup`, `scaffold from JPA entities`, `test-setup`,  `new service tests` and `scaffold config` commands.
  
+image::img/admin-addon.png[link="https://github.com/adminfaces/admin-addon/blob/master/img/admin-addon.png?raw=true"]
 
 === Installation
 
@@ -27,8 +25,45 @@ It will install AdminFaces dependencies, resources and initial configuration.
 
 * *AdminFaces: Scaffold* command: 
 ====
-It will generate a crud on top of selected entity.
+You first need to execute *Scaffold setup* in order to enable *scaffold generate* command, see images below.
+
+It will generate crud, including list and form pages, on top of selected entities. The generate crud is based on http://github.com/adminfaces/admin-persistence/[admin-persistence^] framework.
 ====
 
- 
+image::img/scaffold-setup.png[link="https://github.com/adminfaces/admin-addon/blob/master/img/scaffold-setup.png?raw=true"]
 
+image::img/scaffold-generate01.png[link="https://github.com/adminfaces/admin-addon/blob/master/img/scaffold-generate01.png?raw=true"]
+ 
+image::img/scaffold-generate02.png[link="https://github.com/adminfaces/admin-addon/blob/master/img/scaffold-generate02.png?raw=true"] 
+
+* *AdminFaces: Scaffold config* command: 
+====
+After scaffold generation the addon will create default scaffold configuration files under `src/main/resources/scaffold` for each entities and also a `global-config.yml` file. These configuration files default values are based on the entities provided on scaffold generation and the global file. 
+
+In order to change scaffold configuration for each entity or the global configuration you either can edit the files manually or use *AdminFaces: Scaffold config* command.
+====
+
+image::img/admin-scaffold-config01.png[link="https://github.com/adminfaces/admin-addon/blob/master/img/admin-scaffold-config01.png?raw=true"]
+
+image::img/admin-scaffold-config02.png[link="https://github.com/adminfaces/admin-addon/blob/master/img/admin-scaffold-config02.png?raw=true"]
+
+image::img/admin-scaffold-config03.png[link="https://github.com/adminfaces/admin-addon/blob/master/img/admin-scaffold-config03.png?raw=true"] 
+
+image::img/admin-scaffold-config04.png[link="https://github.com/adminfaces/admin-addon/blob/master/img/admin-scaffold-config04.png?raw=true"]
+
+
+* *AdminFaces: Test harness setup* command:
+====
+It will setup `integration tests` dependencies and resource files such as https://deltaspike.apache.org/documentation/test-control.html[DeltaSpike test control^] and https://github.com/database-rider/database-rider[Database Rider^]. 
+====
+
+image::img/test-harness-setup.png[link="https://github.com/adminfaces/admin-addon/blob/master/img/test-harness-setup.png?raw=true"]
+
+* *AdminFaces: New service test* command:
+====
+The `Test harness setup` command will enable the *New service test* which will generate integration tests based on service classes. The command will also generare `dbunit yml datasets` based on the service entity.
+====
+
+image::img/admin-new-service-test.png[link="https://github.com/adminfaces/admin-addon/blob/master/img/admin-new-service-test.png?raw=true"]
+
+image::img/admin-new-service-test02.png[link="https://github.com/adminfaces/admin-addon/blob/master/img/admin-new-service-test02.png?raw=true"]
