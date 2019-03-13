@@ -16,7 +16,7 @@ ${entity.getName()}:
     </#list>
 </#list>
 <#list toOneFields as field>
-    ${field.getName()}: -1
+    ${field.getName()}_id: -1
 </#list>
 
 <#list toOneFields as field>
@@ -26,6 +26,9 @@ ${field.getType().getSimpleName()}:
         <#if (associationField.hasAnnotation("javax.persistence.Column") || associationField.hasAnnotation("javax.persistence.Basic")) && !associationField.hasAnnotation("javax.persistence.Id") && !associationField.hasAnnotation("javax.persistence.Embedded") && !associationField.hasAnnotation("javax.persistence.Version")>
     ${associationField.getName()}: ${datasetValue(associationField)}
         </#if>
+        <#if associationField.getName() == "version">
+    version: 0
+        </#if>    
     </#list> 
 </#list>
 

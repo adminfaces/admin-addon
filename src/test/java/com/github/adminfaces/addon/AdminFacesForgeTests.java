@@ -46,7 +46,6 @@ import java.util.concurrent.TimeoutException;
 import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
 import static org.assertj.core.api.Assertions.contentOf;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

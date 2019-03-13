@@ -107,7 +107,7 @@ public class ScaffoldEntity implements Serializable {
         JavaClassSource associationFieldClassSource = Roaster.parse(JavaClassSource.class, new File(sourceFolder + "/" + qualifiedName.replace(".", "/") + ".java"));
         associationFieldClassSource.getFields().stream()
             .filter(f -> !f.hasAnnotation(Transient.class) && (f.hasAnnotation(Column.class) || f.hasAnnotation(Basic.class)))
-            .filter(f -> AdminScaffoldUtils.resolveRequiredAttribute(f))
+            .filter(f -> AdminScaffoldUtils.resolveRequiredAttribute(f) || f.hasAnnotation(Version.class))
             .forEach(fields::add);
         
         associationFieldClassSource.getFields().stream()

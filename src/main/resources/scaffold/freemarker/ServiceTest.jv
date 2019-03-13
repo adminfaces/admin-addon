@@ -128,7 +128,7 @@ public class ${service.getName()}It {
 </#list>    
         ${ccEntity} = ${ccService}.saveOrUpdate(${ccEntity});
 <#list fields as field>
-    <#if entity.isRequired(field) && !field.hasAnnotation("javax.persistence.Id")>
+    <#if entity.isRequired(field) && !field.hasAnnotation("javax.persistence.Id") && !entity.hasAssociation(field)>
         assertThat(${ccEntity}.get${field.getName()?cap_first}()).isEqualTo(${field.getName()});
     </#if>
 </#list>
