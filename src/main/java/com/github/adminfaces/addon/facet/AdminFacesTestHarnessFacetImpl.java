@@ -1,16 +1,20 @@
 package com.github.adminfaces.addon.facet;
 
+import static com.github.adminfaces.addon.util.DependencyUtil.ADMIN_PERSISTENCE_COORDINATE;
+import static com.github.adminfaces.addon.util.DependencyUtil.DBRIDER_COORDINATE;
+import static com.github.adminfaces.addon.util.DependencyUtil.DELTASPIKE_CDICONTROL_COORDINATE;
+import static com.github.adminfaces.addon.util.DependencyUtil.DELTASPIKE_TESTCONTROL_COORDINATE;
+import static com.github.adminfaces.addon.util.DependencyUtil.HIBERNATE_CORE_COORDINATE;
+import static com.github.adminfaces.addon.util.DependencyUtil.HIBERNATE_ENTITYMANAGER_COORDINATE;
+import static com.github.adminfaces.addon.util.DependencyUtil.HSQLSDB_COORDINATE;
+import static com.github.adminfaces.addon.util.DependencyUtil.JUNIT4_COORDINATE;
+
 import org.jboss.forge.addon.dependencies.builder.DependencyBuilder;
 import org.jboss.forge.addon.facets.AbstractFacet;
-import org.jboss.forge.addon.projects.Project;
-import org.jboss.forge.addon.projects.facets.DependencyFacet;
-
-import javax.inject.Inject;
-
-import static com.github.adminfaces.addon.util.DependencyUtil.*;
-import org.jboss.forge.addon.facets.FacetFactory;
 import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.parser.java.resources.JavaResource;
+import org.jboss.forge.addon.projects.Project;
+import org.jboss.forge.addon.projects.facets.DependencyFacet;
 import org.jboss.forge.addon.projects.facets.ResourcesFacet;
 import org.jboss.forge.addon.resource.DirectoryResource;
 
@@ -20,9 +24,6 @@ import org.jboss.forge.addon.resource.DirectoryResource;
  * @author <a href="mailto:rmpestano@gmail.com">Rafael Pestano</a>
  */
 public class AdminFacesTestHarnessFacetImpl extends AbstractFacet<Project> implements AdminFacesTestHarnessFacet {
-
-    @Inject
-    private FacetFactory facetFactory;
 
     @Override
     public boolean install() {

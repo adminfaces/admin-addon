@@ -3,8 +3,6 @@ package com.github.adminfaces.addon.scaffold;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import javax.inject.Inject;
-
 import org.jboss.forge.addon.javaee.jpa.JPAFacet;
 import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.projects.Project;
@@ -29,13 +27,12 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.util.Refactory;
 import org.jboss.shrinkwrap.descriptor.api.persistence.PersistenceCommonDescriptor;
 
+import com.github.adminfaces.addon.util.AdminScaffoldUtils;
+
 public class AdminFacesEntitySelectionWizard extends AbstractProjectCommand implements UIWizardStep {
 
     private UISelectMany<JavaClassSource> entities;
     private UIInput<Boolean> generateEqualsAndHashCode;
-
-    @Inject
-    private ProjectFactory projectFactory;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -135,7 +132,7 @@ public class AdminFacesEntitySelectionWizard extends AbstractProjectCommand impl
 
     @Override
     protected ProjectFactory getProjectFactory() {
-        return projectFactory;
+        return AdminScaffoldUtils.getService(ProjectFactory.class);
     }
 
     @Override

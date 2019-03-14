@@ -46,6 +46,7 @@ import org.jboss.forge.addon.resource.FileResource;
 import org.jboss.forge.addon.resource.Resource;
 
 import org.jboss.forge.addon.scaffold.util.ScaffoldUtil;
+import org.jboss.forge.furnace.container.simple.lifecycle.SimpleContainer;
 import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.roaster.Roaster;
@@ -264,6 +265,10 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
                 .text("org.apache.deltaspike.jpa.impl.transaction.BeanManagedUserTransactionStrategy");
             beansXml.setContents(XMLParser.toXMLInputStream(node));
         }
+    }
+    
+    public static <T> T getService(Class<T> clazz) {
+    	return SimpleContainer.getServices(AdminScaffoldUtils.class.getClassLoader(), clazz).get();
     }
    
 }

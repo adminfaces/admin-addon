@@ -1,12 +1,9 @@
 package com.github.adminfaces.addon.freemarker;
 
-import javax.annotation.PostConstruct;
+import java.io.Serializable;
 
 import freemarker.template.Template;
-import java.io.Serializable;
-import javax.enterprise.context.ApplicationScoped;
 
-@ApplicationScoped
 public class TemplateFactory implements Serializable {
 
     private static final String INDEX_TEMPLATE = "scaffold/freemarker/index.xhtml";

@@ -23,6 +23,7 @@
  */
 package com.github.adminfaces.addon.ui;
 
+import static com.github.adminfaces.addon.util.AdminScaffoldUtils.getService;
 import com.github.adminfaces.addon.facet.AdminFacesFacet;
 import com.github.adminfaces.addon.facet.AdminFacesTestHarnessFacet;
 import com.github.adminfaces.addon.util.AdminScaffoldUtils;
@@ -73,15 +74,6 @@ import org.jboss.forge.roaster.model.source.JavaSource;
 @FacetConstraint(AdminFacesFacet.class)
 public class AdminTestSetupCommand extends AbstractProjectCommand {
 
-    @Inject
-    private FacetFactory facetFactory;
-
-    @Inject
-    private ProjectFactory projectFactory;
-
-    @Inject
-    private DependencyUtil dependencyUtil;
-
     @Override
     public UICommandMetadata getMetadata(UIContext context) {
         return Metadata.forCommand(getClass()).name("AdminFaces: Test harness setup").category(Categories.create("AdminFaces"))
@@ -109,7 +101,7 @@ public class AdminTestSetupCommand extends AbstractProjectCommand {
     }
 
     protected void addAdminFacesTestHarnessResources(Project project) {
-        AdminScaffoldUtils.setupAdminPersistence(project, dependencyUtil, facetFactory);
+        AdminScaffoldUtils.setupAdminPersistence(project, getService(DependencyUtil.class), getService(FacetFactory.class));
         DirectoryResource testResources = project.getFacet(ResourcesFacet.class).getTestResourceDirectory();
         testResources.getOrCreateChildDirectory("datasets");
         DirectoryResource testMetaInf = testResources.getOrCreateChildDirectory("META-INF");
@@ -160,6 +152,7 @@ public class AdminTestSetupCommand extends AbstractProjectCommand {
     }
 
     protected void addAdminFacesTestDependencies(Project project) {
+    	DependencyUtil dependencyUtil = getService(DependencyUtil.class);
         DependencyFacet dependencyFacet = project.getFacet(DependencyFacet.class);
         DependencyBuilder junit = DependencyBuilder.create()
             .setScopeType("test")
@@ -263,7 +256,7 @@ public class AdminTestSetupCommand extends AbstractProjectCommand {
 
     @Override
     protected ProjectFactory getProjectFactory() {
-        return projectFactory;
+        return getService(ProjectFactory.class);
     }
 
     private void addTestEntityManagerProducer(Project project) {

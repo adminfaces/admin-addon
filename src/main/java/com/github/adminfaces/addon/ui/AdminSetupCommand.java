@@ -1,5 +1,14 @@
 package com.github.adminfaces.addon.ui;
 
+import static com.github.adminfaces.addon.util.AdminScaffoldUtils.getService;
+import static com.github.adminfaces.addon.util.Constants.WebResources.INCLUDES;
+import static com.github.adminfaces.addon.util.Constants.WebResources.INDEX_HTML;
+import static com.github.adminfaces.addon.util.Constants.WebResources.INDEX_PAGE;
+import static com.github.adminfaces.addon.util.Constants.WebResources.LOGIN_PAGE;
+import static com.github.adminfaces.addon.util.Constants.WebResources.PAGE_TEMPLATE;
+import static com.github.adminfaces.addon.util.Constants.WebResources.SCAFFOLD_RESOURCES;
+import static com.github.adminfaces.addon.util.Constants.WebResources.TEMPLATE_DEFAULT;
+import static com.github.adminfaces.addon.util.Constants.WebResources.TEMPLATE_TOP;
 import static org.jboss.forge.addon.scaffold.util.ScaffoldUtil.createOrOverwrite;
 
 import java.io.File;
@@ -13,8 +22,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.inject.Inject;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -54,11 +61,9 @@ import org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor;
 import org.jboss.shrinkwrap.descriptor.api.webcommon31.ServletMappingType;
 import org.metawidget.util.simple.StringUtils;
 
+import com.github.adminfaces.addon.facet.AdminFacesFacet;
 import com.github.adminfaces.addon.freemarker.FreemarkerTemplateProcessor;
 import com.github.adminfaces.addon.freemarker.TemplateFactory;
-
-import static com.github.adminfaces.addon.util.Constants.WebResources.*;
-import com.github.adminfaces.addon.facet.AdminFacesFacet;
 
 /**
  * AdminFaces: Setup command
@@ -70,15 +75,6 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 
     private static final Logger LOG = Logger.getLogger(AdminSetupCommand.class.getName());
 
-    @Inject
-    private FacetFactory facetFactory;
-
-    @Inject
-    private ProjectFactory projectFactory;
-
-    @Inject
-    private TemplateFactory templates;
-
     @Override
     public UICommandMetadata getMetadata(UIContext context) {
         return Metadata.forCommand(getClass()).name("AdminFaces: Setup").category(Categories.create("AdminFaces"))
@@ -87,7 +83,7 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 
     @Override
     protected ProjectFactory getProjectFactory() {
-        return projectFactory;
+        return getService(ProjectFactory.class);
     }
 
     @Override
@@ -110,6 +106,7 @@ public class AdminSetupCommand extends AbstractProjectCommand {
             return Results.success();
         }
         List<Result> results = new ArrayList<>();
+        FacetFactory facetFactory = getService(FacetFactory.class);
         AdminFacesFacet facet = facetFactory.create(project, AdminFacesFacet.class);
         facetFactory.install(project, facet);
         results.add(Results.success("AdminFaces setup completed successfully!"));
@@ -188,6 +185,7 @@ public class AdminSetupCommand extends AbstractProjectCommand {
         // admin config
         addAdminConfig(project);
 
+        TemplateFactory templates = getService(TemplateFactory.class);
         // Basic pages
         if (!web.getWebResource(INDEX_PAGE).exists()) {
             result.add(createOrOverwrite(web.getWebResource(INDEX_PAGE),

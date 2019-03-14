@@ -1,29 +1,29 @@
 package com.github.adminfaces.addon.scaffold.model;
 
+import static com.github.adminfaces.addon.util.AdminScaffoldUtils.extractEmbeddedFields;
+import static com.github.adminfaces.addon.util.AdminScaffoldUtils.extractEntityFields;
+
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
-import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
 import javax.persistence.Transient;
 import javax.persistence.Version;
 
+import org.jboss.forge.addon.projects.Project;
+import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.Type;
 import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 
 import com.github.adminfaces.addon.util.AdminScaffoldUtils;
-import static com.github.adminfaces.addon.util.AdminScaffoldUtils.extractEmbeddedFields;
-import static com.github.adminfaces.addon.util.AdminScaffoldUtils.extractEntityFields;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.jboss.forge.addon.projects.Project;
-import org.jboss.forge.roaster.Roaster;
 
 public class ScaffoldEntity implements Serializable {
 

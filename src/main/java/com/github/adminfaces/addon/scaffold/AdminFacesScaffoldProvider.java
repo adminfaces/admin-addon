@@ -1,5 +1,6 @@
 package com.github.adminfaces.addon.scaffold;
 
+import static com.github.adminfaces.addon.util.AdminScaffoldUtils.getService;
 import static com.github.adminfaces.addon.util.AdminScaffoldUtils.resolveToManyAssociationFields;
 import static com.github.adminfaces.addon.util.AdminScaffoldUtils.resolveToOneAssociationFields;
 import static com.github.adminfaces.addon.util.Constants.NEW_LINE;
@@ -21,7 +22,6 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Id;
 
@@ -60,6 +60,7 @@ import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.Field;
+import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
@@ -76,14 +77,13 @@ import org.metawidget.util.simple.StringUtils;
 
 import com.github.adminfaces.addon.freemarker.FreemarkerTemplateProcessor;
 import com.github.adminfaces.addon.freemarker.TemplateFactory;
-import com.github.adminfaces.addon.scaffold.model.EntityConfig;
 import com.github.adminfaces.addon.scaffold.config.ScaffoldConfigLoader;
+import com.github.adminfaces.addon.scaffold.model.EntityConfig;
 import com.github.adminfaces.addon.scaffold.model.ScaffoldEntity;
 import com.github.adminfaces.addon.ui.AdminSetupCommand;
 import com.github.adminfaces.addon.util.AdminScaffoldUtils;
 import com.github.adminfaces.addon.util.Constants;
 import com.github.adminfaces.addon.util.DependencyUtil;
-import org.jboss.forge.roaster.model.source.FieldSource;
 
 public class AdminFacesScaffoldProvider implements ScaffoldProvider {
 
@@ -93,16 +93,12 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
         .charset("UTF-8").indentAmount(4).syntax(Document.OutputSettings.Syntax.xml);
 
     private final Parser parser = Parser.xmlParser().settings(new ParseSettings(true, true));
+    
+    TemplateFactory templates;
 
-    @Inject
-    private TemplateFactory templates;
-
-    @Inject
-    private DependencyUtil dependencyUtil;
-
-    @Inject
-    private FacetFactory facetFactory;
-
+    public AdminFacesScaffoldProvider() {
+    	templates = getService(TemplateFactory.class);
+    }
     @Override
     public String getName() {
         return "AdminFaces";
@@ -116,7 +112,7 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
     @Override
     public List<Resource<?>> setup(ScaffoldSetupContext setupContext) {
         Project project = setupContext.getProject();
-        AdminScaffoldUtils.setupAdminPersistence(project,dependencyUtil, facetFactory);
+        AdminScaffoldUtils.setupAdminPersistence(project, getService(DependencyUtil.class), getService(FacetFactory.class));
         createScaffoldConfig(project);
         addAppListCache(project);
         return Collections.emptyList();

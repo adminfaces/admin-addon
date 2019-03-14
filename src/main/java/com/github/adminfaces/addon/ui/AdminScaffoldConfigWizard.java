@@ -23,37 +23,37 @@
  */
 package com.github.adminfaces.addon.ui;
 
+import static com.github.adminfaces.addon.util.AdminScaffoldUtils.getService;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.jboss.forge.addon.facets.constraints.FacetConstraint;
 import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.projects.Project;
-import org.jboss.forge.addon.projects.ui.AbstractProjectCommand;
-import org.jboss.forge.addon.ui.command.PrerequisiteCommandsProvider;
-import org.jboss.forge.addon.ui.context.UIContext;
-import org.jboss.forge.addon.ui.context.UIExecutionContext;
-import org.jboss.forge.addon.ui.result.NavigationResult;
-import org.jboss.forge.addon.ui.result.Result;
-import org.jboss.forge.addon.ui.wizard.UIWizard;
-import org.jboss.forge.addon.ui.result.navigation.NavigationResultBuilder;
-import com.github.adminfaces.addon.facet.AdminFacesFacet;
-import java.util.List;
-import java.util.stream.Collectors;
-import javax.inject.Inject;
-import org.jboss.forge.addon.facets.FacetFactory;
 import org.jboss.forge.addon.projects.ProjectFactory;
 import org.jboss.forge.addon.projects.facets.ResourcesFacet;
+import org.jboss.forge.addon.projects.ui.AbstractProjectCommand;
 import org.jboss.forge.addon.resource.DirectoryResource;
 import org.jboss.forge.addon.resource.FileResource;
 import org.jboss.forge.addon.resource.Resource;
+import org.jboss.forge.addon.ui.command.PrerequisiteCommandsProvider;
 import org.jboss.forge.addon.ui.context.UIBuilder;
+import org.jboss.forge.addon.ui.context.UIContext;
+import org.jboss.forge.addon.ui.context.UIExecutionContext;
 import org.jboss.forge.addon.ui.context.UINavigationContext;
 import org.jboss.forge.addon.ui.context.UISelection;
-import org.jboss.forge.addon.ui.hints.InputType;
 import org.jboss.forge.addon.ui.input.UISelectOne;
 import org.jboss.forge.addon.ui.metadata.UICommandMetadata;
-import org.jboss.forge.addon.ui.metadata.WithAttributes;
+import org.jboss.forge.addon.ui.result.NavigationResult;
+import org.jboss.forge.addon.ui.result.Result;
 import org.jboss.forge.addon.ui.result.Results;
+import org.jboss.forge.addon.ui.result.navigation.NavigationResultBuilder;
 import org.jboss.forge.addon.ui.util.Categories;
 import org.jboss.forge.addon.ui.util.Metadata;
+import org.jboss.forge.addon.ui.wizard.UIWizard;
+
+import com.github.adminfaces.addon.facet.AdminFacesFacet;
 
 /**
  *
@@ -62,15 +62,8 @@ import org.jboss.forge.addon.ui.util.Metadata;
 @FacetConstraint(JavaSourceFacet.class)
 public class AdminScaffoldConfigWizard extends AbstractProjectCommand implements UIWizard, PrerequisiteCommandsProvider {
 
-    @Inject
-    private FacetFactory facetFactory;
 
-    @Inject
-    private ProjectFactory projectFactory;
-
-    @Inject
-    @WithAttributes(label = "Select configuration file", description = "Target scaffold configuration file to edit", required = true, type = InputType.DROPDOWN)
-    private UISelectOne<FileResource<?>> configFile;
+    private UISelectOne<FileResource> configFile;
 
     @Override
     public UICommandMetadata getMetadata(UIContext context) {
@@ -85,6 +78,9 @@ public class AdminScaffoldConfigWizard extends AbstractProjectCommand implements
 
     @Override
     public void initializeUI(UIBuilder builder) throws Exception {
+    	configFile = builder.getInputComponentFactory().createSelectOne("Select configuration file", FileResource.class)
+    	.setRequired(true)
+    	.setDescription("Target scaffold configuration file to edit.");
         loadConfigFiles(builder.getUIContext());
         builder.add(configFile);
     }
@@ -110,12 +106,12 @@ public class AdminScaffoldConfigWizard extends AbstractProjectCommand implements
         final Project project = getSelectedProject(context);
         DirectoryResource resources = project.getFacet(ResourcesFacet.class).getResourceDirectory();
         DirectoryResource scaffoldDir = resources.getChildDirectory("scaffold");
-        final List<FileResource<?>> scaffoldConfigList = scaffoldDir.listResources((Resource<?> file) -> file.getName().endsWith("yml"))
+        final List<FileResource> scaffoldConfigList = scaffoldDir.listResources((Resource<?> file) -> file.getName().endsWith("yml"))
             .stream()
             .map(r -> (FileResource<?>) r)
             .collect(Collectors.toList());
         configFile.setValueChoices(scaffoldConfigList);
-        configFile.setItemLabelConverter((FileResource<?> source)
+        configFile.setItemLabelConverter((FileResource source)
             -> source.getFullyQualifiedName().substring(source.getFullyQualifiedName().indexOf(project.getRoot().getName())));
         int selectionIndex = -1;
         if (!selection.isEmpty()) {
@@ -133,7 +129,7 @@ public class AdminScaffoldConfigWizard extends AbstractProjectCommand implements
 
     @Override
     protected ProjectFactory getProjectFactory() {
-        return projectFactory;
+        return getService(ProjectFactory.class);
     }
 
 }

@@ -1,16 +1,20 @@
 package com.github.adminfaces.addon.facet;
 
-import com.github.adminfaces.addon.util.DependencyUtil;
+import static com.github.adminfaces.addon.util.AdminScaffoldUtils.getService;
+import static com.github.adminfaces.addon.util.Constants.WebResources.INCLUDES;
+import static com.github.adminfaces.addon.util.Constants.WebResources.TEMPLATE_DEFAULT;
+import static com.github.adminfaces.addon.util.Constants.WebResources.TEMPLATE_TOP;
+import static com.github.adminfaces.addon.util.DependencyUtil.ADMIN_TEMPLATE_COORDINATE;
+import static com.github.adminfaces.addon.util.DependencyUtil.ADMIN_THEME_COORDINATE;
+import static com.github.adminfaces.addon.util.DependencyUtil.PRIMEFACES_EXTENSIONS_COORDINATE;
+
 import org.jboss.forge.addon.dependencies.builder.DependencyBuilder;
 import org.jboss.forge.addon.facets.AbstractFacet;
 import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.facets.DependencyFacet;
 import org.jboss.forge.addon.projects.facets.WebResourcesFacet;
 
-import javax.inject.Inject;
-
-import static com.github.adminfaces.addon.util.DependencyUtil.*;
-import static com.github.adminfaces.addon.util.Constants.WebResources.*;
+import com.github.adminfaces.addon.util.DependencyUtil;
 
 /**
  * The implementation of the {@link AdminFacesFacet}
@@ -19,8 +23,6 @@ import static com.github.adminfaces.addon.util.Constants.WebResources.*;
  */
 public class AdminFacesFacetImpl extends AbstractFacet<Project> implements AdminFacesFacet {
 
-    @Inject
-    private DependencyUtil dependencyUtil;
 
     @Override
     public boolean install() {
@@ -29,6 +31,7 @@ public class AdminFacesFacetImpl extends AbstractFacet<Project> implements Admin
     }
 
     private void addAdminFacesDependencies() {
+    	DependencyUtil dependencyUtil = getService(DependencyUtil.class);
         DependencyFacet dependencyFacet = getFaceted().getFacet(DependencyFacet.class);
         DependencyBuilder adminTemplateDependency = DependencyBuilder.create()
             .setCoordinate(dependencyUtil.getLatestVersion(ADMIN_TEMPLATE_COORDINATE));

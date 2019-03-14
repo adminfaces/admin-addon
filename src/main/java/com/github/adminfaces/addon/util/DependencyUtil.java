@@ -1,13 +1,15 @@
 package com.github.adminfaces.addon.util;
 
+import static com.github.adminfaces.addon.util.AdminScaffoldUtils.getService;
+
 import org.jboss.forge.addon.dependencies.Coordinate;
 import org.jboss.forge.addon.dependencies.DependencyResolver;
 import org.jboss.forge.addon.dependencies.builder.CoordinateBuilder;
 import org.jboss.forge.addon.dependencies.builder.DependencyBuilder;
 import org.jboss.forge.addon.dependencies.builder.DependencyQueryBuilder;
 import org.jboss.forge.addon.projects.facets.DependencyFacet;
-import javax.inject.Inject;
-import static com.github.adminfaces.addon.util.Constants.*;
+
+import com.github.adminfaces.addon.util.Constants.Versions;
 
 /**
  * Created by rmpestano on 25/02/17.
@@ -33,11 +35,9 @@ public class DependencyUtil {
     public static final Coordinate HIBERNATE_CORE_COORDINATE = CoordinateBuilder.create().setGroupId("org.hibernate").setArtifactId("hibernate-core").setVersion(Versions.HIBERNATE);
     public static final Coordinate HIBERNATE_ENTITYMANAGER_COORDINATE = CoordinateBuilder.create().setGroupId("org.hibernate").setArtifactId("hibernate-entitymanager").setVersion(Versions.HIBERNATE);
 
-    @Inject
-    private DependencyResolver resolver;
 
     public Coordinate getLatestVersion(Coordinate coordinate) {
-        return resolver.resolveVersions(DependencyQueryBuilder.create(coordinate))
+        return getService(DependencyResolver.class).resolveVersions(DependencyQueryBuilder.create(coordinate))
             .stream()
             .filter(d -> !d.getVersion().contains("SNAPSHOT"))
             .reduce((a, b) -> b)

@@ -23,17 +23,15 @@
  */
 package com.github.adminfaces.addon;
 
-import com.github.adminfaces.addon.facet.AdminFacesFacet;
-import com.github.adminfaces.addon.facet.AdminFacesTestHarnessFacet;
-import com.github.adminfaces.addon.scaffold.config.ScaffoldConfigLoader;
 import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.CALENDAR;
 import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.DATEPICKER;
 import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.SELECT_MANY_MENU;
 import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.SELECT_ONE_MENU;
-import com.github.adminfaces.addon.util.Constants;
 import static com.github.adminfaces.addon.util.Constants.NEW_LINE;
-import com.github.adminfaces.addon.util.DependencyUtil;
-import com.github.adminfaces.addon.util.TestUtils;
+import static org.assertj.core.api.Assertions.contentOf;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -43,10 +41,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import javax.inject.Inject;
+
 import org.apache.commons.io.IOUtils;
-import static org.assertj.core.api.Assertions.contentOf;
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.addon.dependencies.builder.DependencyBuilder;
@@ -82,6 +78,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.github.adminfaces.addon.facet.AdminFacesFacet;
+import com.github.adminfaces.addon.facet.AdminFacesTestHarnessFacet;
+import com.github.adminfaces.addon.scaffold.config.ScaffoldConfigLoader;
+import com.github.adminfaces.addon.util.AdminScaffoldUtils;
+import com.github.adminfaces.addon.util.Constants;
+import com.github.adminfaces.addon.util.DependencyUtil;
+import com.github.adminfaces.addon.util.TestUtils;
+
 /**
  *
  * @author rafael-pestano
@@ -89,10 +93,8 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class AdminFacesForgeTests {
 
-    @Inject
     private ProjectFactory projectFactory;
 
-    @Inject
     private ShellTest shellTest;
 
     private Project project;
@@ -111,6 +113,10 @@ public class AdminFacesForgeTests {
 
     @Before
     public void setup() throws IllegalArgumentException, NoSuchFieldException, NoSuchFieldException, IllegalAccessException {
+    	
+    	projectFactory = AdminScaffoldUtils.getService(ProjectFactory.class);
+        shellTest = AdminScaffoldUtils.getService(ShellTest.class);
+        
         Field globalConfigField = ScaffoldConfigLoader.class.getDeclaredField("globalConfig");
         globalConfigField.setAccessible(true);
         globalConfigField.set(null, null);

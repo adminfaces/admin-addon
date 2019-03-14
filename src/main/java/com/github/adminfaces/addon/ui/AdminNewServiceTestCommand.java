@@ -3,14 +3,22 @@ package com.github.adminfaces.addon.ui;
 /**
  * @author rmpestano
  */
-import com.github.adminfaces.addon.facet.AdminFacesTestHarnessFacet;
-import com.github.adminfaces.addon.freemarker.FreemarkerTemplateProcessor;
-import com.github.adminfaces.addon.freemarker.GenerateDataSetValueFromField;
-import com.github.adminfaces.addon.freemarker.TemplateFactory;
-import com.github.adminfaces.addon.scaffold.config.ScaffoldConfigLoader;
-import com.github.adminfaces.addon.scaffold.model.EntityConfig;
-import com.github.adminfaces.addon.scaffold.model.ScaffoldEntity;
-import org.jboss.forge.addon.facets.FacetFactory;
+import static com.github.adminfaces.addon.util.AdminScaffoldUtils.getService;
+import static com.github.adminfaces.addon.util.AdminScaffoldUtils.resolveToOneAssociationFields;
+import static org.jboss.forge.addon.scaffold.util.ScaffoldUtil.createOrOverwrite;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.ejb.Stateless;
+
 import org.jboss.forge.addon.facets.constraints.FacetConstraint;
 import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.parser.java.resources.JavaResource;
@@ -19,6 +27,7 @@ import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.ProjectFactory;
 import org.jboss.forge.addon.projects.facets.ResourcesFacet;
 import org.jboss.forge.addon.projects.ui.AbstractProjectCommand;
+import org.jboss.forge.addon.resource.DirectoryResource;
 import org.jboss.forge.addon.resource.FileResource;
 import org.jboss.forge.addon.resource.Resource;
 import org.jboss.forge.addon.resource.visit.VisitContext;
@@ -27,51 +36,32 @@ import org.jboss.forge.addon.ui.context.UIContext;
 import org.jboss.forge.addon.ui.context.UIExecutionContext;
 import org.jboss.forge.addon.ui.input.UISelectMany;
 import org.jboss.forge.addon.ui.metadata.UICommandMetadata;
-import org.jboss.forge.addon.ui.metadata.WithAttributes;
 import org.jboss.forge.addon.ui.result.Result;
 import org.jboss.forge.addon.ui.result.Results;
 import org.jboss.forge.addon.ui.util.Categories;
 import org.jboss.forge.addon.ui.util.Metadata;
+import org.jboss.forge.parser.xml.Node;
+import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.JavaType;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
+import org.jboss.forge.roaster.model.util.Types;
 import org.metawidget.util.simple.StringUtils;
 
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import static com.github.adminfaces.addon.util.AdminScaffoldUtils.*;
-import java.util.Optional;
-import org.jboss.forge.addon.resource.DirectoryResource;
-import org.jboss.forge.parser.xml.Node;
-import org.jboss.forge.parser.xml.XMLParser;
-import org.jboss.forge.roaster.model.util.Types;
+import com.github.adminfaces.addon.facet.AdminFacesTestHarnessFacet;
+import com.github.adminfaces.addon.freemarker.FreemarkerTemplateProcessor;
+import com.github.adminfaces.addon.freemarker.GenerateDataSetValueFromField;
+import com.github.adminfaces.addon.freemarker.TemplateFactory;
+import com.github.adminfaces.addon.scaffold.config.ScaffoldConfigLoader;
+import com.github.adminfaces.addon.scaffold.model.EntityConfig;
+import com.github.adminfaces.addon.scaffold.model.ScaffoldEntity;
 
 @FacetConstraint(AdminFacesTestHarnessFacet.class)
 public class AdminNewServiceTestCommand extends AbstractProjectCommand {
 
     private static final Logger LOG = Logger.getLogger(AdminNewServiceTestCommand.class.getName());
 
-    @Inject
-    private FacetFactory facetFactory;
-
-    @Inject
-    private ProjectFactory projectFactory;
-
-    @Inject
-    private TemplateFactory templates;
-
-    @Inject
-    @WithAttributes(label = "Target services", description = "Select services to create the integration tests.", required = true)
-    private UISelectMany<JavaClassSource> targetServices;
+    UISelectMany<JavaClassSource> targetServices;
 
     @Override
     public UICommandMetadata getMetadata(UIContext context) {
@@ -83,6 +73,9 @@ public class AdminNewServiceTestCommand extends AbstractProjectCommand {
     public void initializeUI(UIBuilder builder) throws Exception {
         UIContext context = builder.getUIContext();
         Project project = getSelectedProject(context);
+        targetServices = builder.getInputComponentFactory().createSelectMany("Target services", JavaClassSource.class)
+			        .setDescription("Select services to create the integration tests.")
+			        .setRequired(true);
         final List<JavaClassSource> services = getAllServices(project);
         targetServices.setValueChoices(services);
         targetServices.setItemLabelConverter((JavaClassSource source)
@@ -124,14 +117,14 @@ public class AdminNewServiceTestCommand extends AbstractProjectCommand {
     private void createServiceTest(Map<Object, Object> context, JavaClassSource service, Project project, List<Resource<?>> generatedResources) {
         JavaSourceFacet java = project.getFacet(JavaSourceFacet.class);
         JavaClassSource serviceTest = Roaster.parse(JavaClassSource.class,
-            FreemarkerTemplateProcessor.processTemplate(context, templates.getServiceTestTemplate()));
+            FreemarkerTemplateProcessor.processTemplate(context, getService(TemplateFactory.class).getServiceTestTemplate()));
         serviceTest.setPackage(service.getPackage());
         JavaResource javaResource = java.getTestJavaResource(serviceTest);
         generatedResources.add(createOrOverwrite(javaResource, serviceTest.toUnformattedString()));
     }
 
     private void createTestDataSet(Map<Object, Object> context, Project project, List<Resource<?>> generatedResources) {
-        String dataset = FreemarkerTemplateProcessor.processTemplate(context, templates.getDataSetTemplate());
+        String dataset = FreemarkerTemplateProcessor.processTemplate(context, getService(TemplateFactory.class).getDataSetTemplate());
         ResourcesFacet resourcesFacet = project.getFacet(ResourcesFacet.class);
         Resource<?> datasetsDir = resourcesFacet.getTestResourceDirectory()
             .getChild("datasets");
@@ -190,7 +183,7 @@ public class AdminNewServiceTestCommand extends AbstractProjectCommand {
 
     @Override
     protected ProjectFactory getProjectFactory() {
-        return projectFactory;
+        return getService(ProjectFactory.class);
     }
 
     @Override

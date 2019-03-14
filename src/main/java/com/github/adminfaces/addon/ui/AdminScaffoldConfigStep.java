@@ -24,11 +24,19 @@
 package com.github.adminfaces.addon.ui;
 
 import static com.github.adminfaces.addon.scaffold.config.ScaffoldConfigLoader.YML_DUMP_OPTIONS;
+import static com.github.adminfaces.addon.util.AdminScaffoldUtils.getService;
+
+import java.io.File;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
-import javax.inject.Inject;
-import org.jboss.forge.addon.facets.FacetFactory;
+import java.util.stream.Collectors;
+
+import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.ProjectFactory;
+import org.jboss.forge.addon.projects.facets.MetadataFacet;
 import org.jboss.forge.addon.projects.ui.AbstractProjectCommand;
 import org.jboss.forge.addon.resource.FileResource;
 import org.jboss.forge.addon.ui.context.UIBuilder;
@@ -36,10 +44,17 @@ import org.jboss.forge.addon.ui.context.UIContext;
 import org.jboss.forge.addon.ui.context.UIExecutionContext;
 import org.jboss.forge.addon.ui.context.UINavigationContext;
 import org.jboss.forge.addon.ui.input.InputComponentFactory;
+import org.jboss.forge.addon.ui.input.UIInput;
 import org.jboss.forge.addon.ui.input.UISelectOne;
+import org.jboss.forge.addon.ui.input.events.ValueChangeEvent;
 import org.jboss.forge.addon.ui.result.NavigationResult;
 import org.jboss.forge.addon.ui.result.Result;
+import org.jboss.forge.addon.ui.result.Results;
+import org.jboss.forge.addon.ui.util.Metadata;
 import org.jboss.forge.addon.ui.wizard.UIWizardStep;
+import org.jboss.forge.roaster.Roaster;
+import org.jboss.forge.roaster.model.source.JavaClassSource;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  *
@@ -51,28 +66,8 @@ import com.github.adminfaces.addon.scaffold.model.FieldConfig;
 import com.github.adminfaces.addon.scaffold.model.GlobalConfig;
 import com.github.adminfaces.addon.util.AdminScaffoldUtils;
 import com.github.adminfaces.addon.util.Constants;
-import java.io.File;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-import org.jboss.forge.addon.projects.Project;
-import org.jboss.forge.addon.projects.facets.MetadataFacet;
-import org.jboss.forge.addon.ui.input.UIInput;
-import org.jboss.forge.addon.ui.input.events.ValueChangeEvent;
-import org.jboss.forge.addon.ui.result.Results;
-import org.jboss.forge.addon.ui.util.Metadata;
-import org.jboss.forge.roaster.Roaster;
-import org.jboss.forge.roaster.model.source.JavaClassSource;
-import org.yaml.snakeyaml.Yaml;
 
 public class AdminScaffoldConfigStep extends AbstractProjectCommand implements UIWizardStep {
-
-    @Inject
-    private FacetFactory facetFactory;
-
-    @Inject
-    private ProjectFactory projectFactory;
 
     private GlobalConfig globalConfig;
 
@@ -335,7 +330,7 @@ public class AdminScaffoldConfigStep extends AbstractProjectCommand implements U
 
     @Override
     protected ProjectFactory getProjectFactory() {
-        return projectFactory;
+        return getService(ProjectFactory.class);
     }
 
 }
