@@ -1,4 +1,4 @@
-== AdminFaces Addon
+= AdminFaces Addon
 :page-layout: base
 :toc: preamble
 :source-language: java
@@ -21,7 +21,7 @@ This forge addon enables http://github.com/adminfaces/[AdminFaces^] `setup`, `sc
  
 image::img/admin-addon.png[link="https://github.com/adminfaces/admin-addon/blob/master/img/admin-addon.png?raw=true"]
 
-=== Installation
+== Installation
 
 Use install addon from git command:
 
@@ -33,15 +33,15 @@ addon-install-from-git --url https://github.com/adminfaces/admin-addon.git
 
 image::img/install-from-catalog.png[link="https://github.com/adminfaces/admin-addon/blob/master/img/install-from-catalog.png?raw=true"]
 
-=== Commands 
+== Commands 
 
-==== *AdminFaces: Setup*
+=== *AdminFaces: Setup*
 
 ====
 It will install AdminFaces dependencies, resources and initial configuration.
 ====
 
-==== *AdminFaces: Scaffold*
+=== *AdminFaces: Scaffold*
  
 ====
 In order to enable *scaffold generate* command you first need to execute *Scaffold setup* command.
@@ -55,20 +55,20 @@ image::img/scaffold-generate01.png[link="https://github.com/adminfaces/admin-add
  
 image::img/scaffold-generate02.png[link="https://github.com/adminfaces/admin-addon/blob/master/img/scaffold-generate02.png?raw=true"] 
 
-===== Scaffold limitations
+==== Scaffold limitations
 
 To get most of scaffold command and to not generate invalid code, follow these two rules:
 
 . Use *field based access* on your JPA entities, more https://thoughts-on-java.org/access-strategies-in-jpa-and-hibernate/[details here^]. The scaffold command *doesn't support* method (property) based access.
 . Use bidirectional relationships, https://thoughts-on-java.org/hibernate-tips-map-bidirectional-many-one-association/[see here^]
 
-===== Generate entities from database
+==== Generate entities from database
 
 The recommended way to generate JPA entities from database is to use NetBeans, https://www.javacodegeeks.com/2016/02/netbeans-java-ee-tip-1-entity-classes-database.html[see here^].
 
 It will use field based access and depending on your database schema it will use bidirectional associations.
  
-==== *AdminFaces: Scaffold config*
+=== *AdminFaces: Scaffold config*
 
 ====
 After scaffold generation the addon will create default scaffold configuration files under `src/main/resources/scaffold` for each entity and also a `global-config.yml` file. These configuration files default values are based on the entities provided on scaffold generation and the global file. 
@@ -85,7 +85,7 @@ image::img/admin-scaffold-config03.png[link="https://github.com/adminfaces/admin
 image::img/admin-scaffold-config04.png[link="https://github.com/adminfaces/admin-addon/blob/master/img/admin-scaffold-config04.png?raw=true"]
 
 
-==== *AdminFaces: Test harness setup*
+=== *AdminFaces: Test harness setup*
 ====
 It will setup `integration tests` dependencies and resource files such as https://deltaspike.apache.org/documentation/test-control.html[DeltaSpike test control^] and https://github.com/database-rider/database-rider[Database Rider^]. 
 ====
