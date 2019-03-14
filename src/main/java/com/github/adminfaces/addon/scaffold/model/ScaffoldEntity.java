@@ -182,10 +182,6 @@ public class ScaffoldEntity implements Serializable {
         return AdminScaffoldUtils.isBidirectionalAssociation(field);
     }
 
-    public boolean isEmbeddedField(FieldSource<JavaClassSource> field) {
-    	return AdminScaffoldUtils.isEmbeddedField(field);
-    }
-    
     public Type<JavaClassSource> getArrayType(FieldSource<JavaClassSource> field) { //just expose to freemarker
         return AdminScaffoldUtils.getArrayType(field);
     }

@@ -76,10 +76,6 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
             || (field.hasAnnotation(ManyToMany.class) && field.getAnnotation(ManyToMany.class).getStringValue("mappedBy") != null);
     }
     
-    public static boolean isEmbeddedField(FieldSource<JavaClassSource> field) {
-        return field.hasAnnotation(Embedded.class) || field.getOrigin().hasAnnotation(Embeddable.class);
-    }
-
     public static boolean hasToOneAssociation(FieldSource<JavaClassSource> field) {
         return field.hasAnnotation(OneToOne.class) || field.hasAnnotation(ManyToOne.class);
     }
