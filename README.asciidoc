@@ -33,18 +33,20 @@ addon-install-from-git --url https://github.com/adminfaces/admin-addon.git
 
 image::img/install-from-catalog.png[link="https://github.com/adminfaces/admin-addon/blob/master/img/install-from-catalog.png?raw=true"]
 
-=== Usage 
+=== Commands 
 
-* *AdminFaces: Setup* command: 
+==== *AdminFaces: Setup*
+
 ====
 It will install AdminFaces dependencies, resources and initial configuration.
 ====
 
-* *AdminFaces: Scaffold* command: 
+==== *AdminFaces: Scaffold*
+ 
 ====
-You first need to execute *Scaffold setup* in order to enable *scaffold generate* command, see images below.
+In order to enable *scaffold generate* command you first need to execute *Scaffold setup* command.
 
-It will generate crud, including list and form pages, on top of selected entities. The generate crud is based on http://github.com/adminfaces/admin-persistence/[admin-persistence^] framework.
+`Scaffold generate` will create crud, including list, form pages and menu entry, on top of selected entities. The generated crud is based on http://github.com/adminfaces/admin-persistence/[admin-persistence^] framework.
 ====
 
 image::img/scaffold-setup.png[link="https://github.com/adminfaces/admin-addon/blob/master/img/scaffold-setup.png?raw=true"]
@@ -53,7 +55,21 @@ image::img/scaffold-generate01.png[link="https://github.com/adminfaces/admin-add
  
 image::img/scaffold-generate02.png[link="https://github.com/adminfaces/admin-addon/blob/master/img/scaffold-generate02.png?raw=true"] 
 
-* *AdminFaces: Scaffold config* command: 
+===== Scaffold limitations
+
+To get most of scaffold command and to not generate invalid code, follow these two rules:
+
+. Use *field based access* on your JPA entities, more https://thoughts-on-java.org/access-strategies-in-jpa-and-hibernate/[details here^]. The scaffold command *doesn't support* method (property) based access.
+. Use bidirectional relationships, https://thoughts-on-java.org/hibernate-tips-map-bidirectional-many-one-association/[see here^]
+
+===== Generate entities from database
+
+The recommended way to generate JPA entities from database is to use NetBeans, https://www.javacodegeeks.com/2016/02/netbeans-java-ee-tip-1-entity-classes-database.html[see here^].
+
+It will use field based access and depending on your database schema it will use bidirectional associations.
+ 
+==== *AdminFaces: Scaffold config*
+
 ====
 After scaffold generation the addon will create default scaffold configuration files under `src/main/resources/scaffold` for each entity and also a `global-config.yml` file. These configuration files default values are based on the entities provided on scaffold generation and the global file. 
 
@@ -69,14 +85,14 @@ image::img/admin-scaffold-config03.png[link="https://github.com/adminfaces/admin
 image::img/admin-scaffold-config04.png[link="https://github.com/adminfaces/admin-addon/blob/master/img/admin-scaffold-config04.png?raw=true"]
 
 
-* *AdminFaces: Test harness setup* command:
+==== *AdminFaces: Test harness setup*
 ====
 It will setup `integration tests` dependencies and resource files such as https://deltaspike.apache.org/documentation/test-control.html[DeltaSpike test control^] and https://github.com/database-rider/database-rider[Database Rider^]. 
 ====
 
 image::img/test-harness-setup.png[link="https://github.com/adminfaces/admin-addon/blob/master/img/test-harness-setup.png?raw=true"]
 
-* *AdminFaces: New service test* command:
+==== *AdminFaces: New service test*
 ====
 The `Test harness setup` command will enable the *New service test* which will generate integration tests based on service classes. The command will also generare `dbunit yml datasets` based on the service entity.
 ====
