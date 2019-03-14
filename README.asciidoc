@@ -1,4 +1,18 @@
 == AdminFaces Addon
+:page-layout: base
+:toc: preamble
+:source-language: java
+:icons: font
+:linkattrs:
+:sectanchors:
+:sectlink:
+:numbered:
+:doctype: book
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
 
 image:https://travis-ci.org/adminfaces/admin-addon.svg[Build Status (Travis CI), link=https://travis-ci.org/adminfaces/admin-addon]
 image:https://coveralls.io/repos/adminfaces/admin-addon/badge.svg?branch=master&service=github[Coverage, link=https://coveralls.io/r/adminfaces/admin-addon] 
@@ -15,6 +29,9 @@ Use install addon from git command:
 addon-install-from-git --url https://github.com/adminfaces/admin-addon.git
 ----
 
+`or` install from catalog:
+
+image::img/install-from-catalog.png[link="https://github.com/adminfaces/admin-addon/blob/master/img/install-from-catalog.png?raw=true"]
 
 === Usage 
 
@@ -67,3 +84,5 @@ The `Test harness setup` command will enable the *New service test* which will g
 image::img/admin-new-service-test.png[link="https://github.com/adminfaces/admin-addon/blob/master/img/admin-new-service-test.png?raw=true"]
 
 image::img/admin-new-service-test02.png[link="https://github.com/adminfaces/admin-addon/blob/master/img/admin-new-service-test02.png?raw=true"]
+
+TIP: Use https://github.com/database-rider/dbunit-addon[dbunit-addon] to `generate test datasets`.
