@@ -258,7 +258,7 @@ public class AdminTestSetupCommand extends AbstractProjectCommand {
 
     @Override
     protected boolean isProjectRequired() {
-        return false;
+        return true;
     }
 
     @Override

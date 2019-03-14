@@ -330,7 +330,7 @@ public class AdminScaffoldConfigStep extends AbstractProjectCommand implements U
 
     @Override
     protected boolean isProjectRequired() {
-        return false;
+        return true;
     }
 
     @Override
