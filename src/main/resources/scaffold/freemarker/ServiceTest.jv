@@ -114,7 +114,16 @@ public class ${service.getName()}It {
         assertThat(${ccEntity}).isNotNull();
 <#list fields as field>
     <#if entity.isRequired(field) && !field.hasAnnotation("javax.persistence.Id") && !entity.hasAssociation(field)>
-        ${field.getType().getSimpleName()} ${field.getName()} = <@generateFieldValue field=field entity=entity/>;
+         <#if field.getType().isPrimitive()>
+	        <#if field.getType().getSimpleName() == "int">
+	          <#assign fieldDeclaration = "Integer ${field.getName()}">
+	        <#else>
+	         <#assign fieldDeclaration = "${field.getType().getSimpleName()?cap_first} ${field.getName()}">
+	        </#if>
+	    <#else>
+	    <#assign fieldDeclaration = "${field.getType().getSimpleName()} ${field.getName()}">
+        </#if>
+        ${fieldDeclaration} = <@generateFieldValue field=field entity=entity/>;
         ${ccEntity}.set${field.getName()?cap_first}(${field.getName()});
     </#if>
 </#list>
