@@ -87,12 +87,12 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
 	    <#else> <#-- end hasToManyAssociation -->
 	    <#if field.getType().isPrimitive()>
 	        <#if field.getType().getSimpleName() == "int">
-	          <#assign fieldDeclaration = Integer ${field.getName()} = null;>
+	          <#assign fieldDeclaration = "Integer ${field.getName()} = null;">
 	        <#else>
-	         <#assign fieldDeclaration = ${field.getType().getSimpleName()?cap_first} ${field.getName()} = null;>
+	         <#assign fieldDeclaration = "${field.getType().getSimpleName()?cap_first} ${field.getName()} = null;">
 	        </#if>
 	    <#else>
-	    <#assign fieldDeclaration = ${field.getType().getSimpleName()} ${field.getName()} = null;>
+	    <#assign fieldDeclaration = "${field.getType().getSimpleName()} ${field.getName()} = null;">
         </#if>
         ${fieldDeclaration}
         if (filter.hasParam("${field.getName()}")) {
