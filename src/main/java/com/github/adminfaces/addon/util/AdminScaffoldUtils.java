@@ -202,9 +202,9 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
                 if (facetFactory.install(project, metaModelFacet)) {
                     DependencyFacet facet = project.getFacet(DependencyFacet.class);
                     DependencyBuilder jpaModelegenDependency = DependencyBuilder.create().setCoordinate(CoordinateBuilder.create().setGroupId("org.hibernate").setArtifactId("hibernate-jpamodelgen"));
-                   /* if(facet.hasDirectDependency(jpaModelegenDependency)) {
+                    if(facet.hasDirectDependency(jpaModelegenDependency)) {
                         facet.removeDependency(jpaModelegenDependency);//not needed on direct deps
-                    }*/
+                    }
                     break;
                 }
             }
