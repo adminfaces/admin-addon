@@ -600,7 +600,6 @@ public class AdminFacesForgeTests {
         shellTest.execute("jpa-new-field --named name --length 20", 10, TimeUnit.SECONDS);
         shellTest.execute("jpa-new-field --named capacity --type java.lang.Short", 10, TimeUnit.SECONDS);
         shellTest.execute("jpa-new-field --named hasWifi --type java.lang.Boolean", 10, TimeUnit.SECONDS);
-        shellTest.execute("jpa-new-field --named talks --type com.github.admin.addon.model.Talk --relationship-type One-to-Many", 10, TimeUnit.SECONDS);
 
         shellTest.execute("constraint-add --on-property name --constraint NotNull", 10, TimeUnit.SECONDS);
         shellTest.execute("constraint-add --on-property capacity --constraint NotNull", 10, TimeUnit.SECONDS);
@@ -625,8 +624,7 @@ public class AdminFacesForgeTests {
         shellTest.execute("constraint-add --on-property bio --constraint Size --max 2000", 10, TimeUnit.SECONDS);
 
         shellTest.execute("cd ../Talk.java", 15, TimeUnit.SECONDS);
-        //shellTest.execute("jpa-new-field --named speaker --type com.github.admin.addon.model.Speaker --relationship-type Many-to-One", 10, TimeUnit.SECONDS); 
-        shellTest.execute("jpa-new-field --named room --type com.github.admin.addon.model.Room --relationship-type Many-to-One", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named room --type com.github.admin.addon.model.Room --relationship-type Many-to-One --inverse-field-name talks", 10, TimeUnit.SECONDS);
         shellTest.execute("constraint-add --on-property speaker --constraint NotNull", 10, TimeUnit.SECONDS);
         shellTest.execute("constraint-add --on-property room --constraint NotNull", 10, TimeUnit.SECONDS);
     }

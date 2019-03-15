@@ -100,9 +100,9 @@ public class ScaffoldConfigLoader {
             }
         });
         entityFields.stream()
-            .filter(f -> f.hasAnnotation(Column.class) || AdminScaffoldUtils.hasAssociation(f)
-            || f.hasAnnotation(Basic.class) || f.hasAnnotation(Transient.class) || f.hasAnnotation(Id.class)
-            || f.hasAnnotation(EmbeddedId.class))
+            .filter(f -> !f.hasAnnotation(Transient.class) && (f.hasAnnotation(Column.class) || AdminScaffoldUtils.hasAssociation(f)
+            || f.hasAnnotation(Basic.class) || f.hasAnnotation(Id.class)
+            || f.hasAnnotation(EmbeddedId.class)))
             .forEach(f -> {
                 configFromField(f, globalConfig, entityConfig);
             });

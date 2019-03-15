@@ -85,7 +85,16 @@ public class ${entity.getName()}ListMB extends CrudMB<${entity.getName()}> imple
             }
         }
 	    <#else> <#-- end hasToManyAssociation -->
-        ${field.getType().getSimpleName()} ${field.getName()} = null;
+	    <#if field.getType().isPrimitive()>
+	        <#if field.getType().getSimpleName() == "int">
+	          <#assign fieldDeclaration = Integer ${field.getName()} = null;>
+	        <#else>
+	         <#assign fieldDeclaration = ${field.getType().getSimpleName()?cap_first} ${field.getName()} = null;>
+	        </#if>
+	    <#else>
+	    <#assign fieldDeclaration = ${field.getType().getSimpleName()} ${field.getName()} = null;>
+        </#if>
+        ${fieldDeclaration}
         if (filter.hasParam("${field.getName()}")) {
             ${field.getName()} = <#if field.getType().getSimpleName() == "Integer">filter.getIntParam("${field.getName()}")<#elseif field.getType().getSimpleName() == "Long">filter.getLongParam("${field.getName()}")<#elseif field.getType().getSimpleName() == "Boolean">filter.getBooleanParam("${field.getName()}")<#elseif field.getType().getSimpleName() == "Double">filter.getDoubleParam("${field.getName()}") <#else>(${field.getType().getSimpleName()})filter.getParam("${field.getName()}")</#if>;
         } else if (has(${ccEntity}Filter.get${field.getName()?cap_first}())) {
