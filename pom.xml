@@ -264,6 +264,7 @@
                                 <configuration>
                                     <excludes>
                                         <exclude>**/*HelpMojo*</exclude>
+                                        <exclude>**/Constants*</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>

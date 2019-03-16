@@ -59,7 +59,7 @@ import org.jboss.forge.addon.ui.util.Metadata;
  *
  * @author rmpestano
  */
-@FacetConstraint(JavaSourceFacet.class)
+@FacetConstraint(AdminFacesFacet.class)
 public class AdminScaffoldConfigWizard extends AbstractProjectCommand implements UIWizard, PrerequisiteCommandsProvider {
 
     @Inject

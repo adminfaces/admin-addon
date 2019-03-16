@@ -102,3 +102,112 @@ image::img/admin-new-service-test.png[link="https://github.com/adminfaces/admin-
 image::img/admin-new-service-test02.png[link="https://github.com/adminfaces/admin-addon/blob/master/img/admin-new-service-test02.png?raw=true"]
 
 TIP: Use https://github.com/database-rider/dbunit-addon[dbunit-addon] to `generate test datasets`.
+
+
+== Demo video
+
+== Generated application
+
+You can find the generated application by AdminFaces scaffold here: https://github.com/adminfaces/generated-scaffold-app/ 
+
+It was generated using the following commands (you can paste all commands [at once] on the forge console in eclipse ide or using the forge on command line):
+
+----
+clear;
+
+project-new --named admin-app --top-level-package com.github.adminfaces.app --type war --final-name admin-app --version 1.0 ;
+
+jpa-setup --persistence-unit-name adminPU --jpaVersion 2.1 --provider Hibernate --container JBOSS_EAP7 --db-type H2 --data-source-name java:jboss/datasources/ExampleDS ;
+
+cdi-setup --cdiVersion 1.1 ;
+
+ejb-setup --ejbVersion 3.2 ;
+
+faces-setup --facesVersion 2.2 ;
+
+servlet-setup --servletVersion 3.1 ;
+
+javaee-setup --java-ee-version 7 ;
+
+adminfaces-setup ;
+
+# entities #
+
+jpa-new-entity --named Talk ;
+
+jpa-new-field --named title ;
+
+jpa-new-field --named description --length 2000 ;
+
+jpa-new-field --named date --type java.util.Date --temporal-type DATE ;
+
+constraint-add --on-property title --constraint NotNull ;
+
+constraint-add --on-property description --constraint Size --max 2000 ;
+
+constraint-add --on-property date --constraint NotNull ;
+
+jpa-new-entity --named Room ;
+
+jpa-new-field --named name --length 20 ;
+
+jpa-new-field --named capacity --type java.lang.Short ;
+
+jpa-new-field --named hasWifi --type java.lang.Boolean ;
+
+constraint-add --on-property name --constraint NotNull ;
+
+constraint-add --on-property capacity --constraint NotNull ;
+
+jpa-new-embeddable --named Address ;
+
+jpa-new-field --named street --length 50 --not-nullable ;
+
+jpa-new-field --named city  --length 50 --not-nullable ;
+
+jpa-new-field --named zipcode --columnName --length 10 --not-nullable --type java.lang.Integer ;
+
+jpa-new-field --named state ;
+
+jpa-new-entity --named Speaker ;
+
+jpa-new-field --named firstname ;
+
+jpa-new-field --named surname ;
+
+jpa-new-field --named bio --length 2000 ;
+
+jpa-new-field --named twitter ;
+
+jpa-new-field --named talks --type com.github.adminfaces.app.model.Talk --relationship-type One-to-Many --inverse-field-name speaker ;
+
+jpa-new-field --named address --entity --type com.github.adminfaces.app.model.Address --relationship-type Embedded ;
+
+constraint-add --on-property firstname --constraint NotNull ;
+
+constraint-add --on-property surname --constraint NotNull ;
+
+constraint-add --on-property bio --constraint Size --max 2000 ;
+
+cd ../Talk.java 
+
+jpa-new-field --named room --type com.github.adminfaces.app.model.Room --relationship-type Many-to-One --inverse-field-name talks ;
+
+constraint-add --on-property speaker --constraint NotNull ;
+
+constraint-add --on-property room --constraint NotNull ;
+
+scaffold-setup --provider AdminFaces ;
+
+scaffold-generate --provider AdminFaces --entities com.github.adminfaces.app.model.* ;
+
+adminfaces-test-harness-setup ;
+
+adminfaces-new-service-test --target-services com.github.adminfaces.app.service.* ;
+
+build test --profile it-tests ;
+
+;
+
+
+----

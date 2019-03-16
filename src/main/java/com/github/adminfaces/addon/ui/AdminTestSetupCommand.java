@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 import javax.inject.Inject;
@@ -105,6 +106,7 @@ public class AdminTestSetupCommand extends AbstractProjectCommand {
         addAdminFacesTestHarnessResources(project);
         addTestEntityManagerProducer(project);
         addMavenTestsProfile(project);
+        moveJavaEEApiDependencyToTheTop(project);
         return Results.success("AdminFaces test harness setup finished successfully!");
     }
 
@@ -303,6 +305,52 @@ public class AdminTestSetupCommand extends AbstractProjectCommand {
                 .createChild("includes").text("**/*It.java");
             m2Model.setContents(XMLParser.toXMLInputStream(node));
         }
+    }
+
+    /**
+     * Makes java-api dependency as first dependeny to avoid error java.lang.NoSuchFieldError: AROUND_CONSTRUCT
+     *
+     */
+    private void moveJavaEEApiDependencyToTheTop(Project project) {
+        MavenFacet m2 = project.getFacet(MavenFacet.class);
+        MavenModelResource m2Model = m2.getModelResource();
+        Node root = XMLParser.parse(m2Model.getResourceInputStream());
+
+        List<Node> dependencies = root.get("dependencies").get(0).getChildren();
+        
+        if(dependencies.get(0).getSingle("artifactId").getText().equals("javaee-api") || dependencies.get(0).getSingle("artifactId").getText().equals("javaee-web-api")) {
+            return;//if already the first dependency then do nothing
+        }
+        
+        Optional<Node> javaeeApiDependency = dependencies
+            .stream()
+            .filter(dep -> dep.getSingle("artifactId").getText().equals("javaee-api") || dep.getSingle("artifactId").getText().equals("javaee-web-api"))
+            .findFirst();
+
+        if (javaeeApiDependency.isPresent()) {
+            root.removeChild("dependencies");
+
+            Node newDependencies = root.createChild("dependencies");
+            Node newJavaeeApiDependency = newDependencies.createChild("dependency");
+            newJavaeeApiDependency.createChild("groupId").text(javaeeApiDependency.get().getSingle("groupId").getText());
+            newJavaeeApiDependency.createChild("artifactId").text(javaeeApiDependency.get().getSingle("artifactId").getText());
+            if (javaeeApiDependency.get().getSingle("version") != null) {
+                newJavaeeApiDependency.createChild("version").text(javaeeApiDependency.get().getSingle("version").getText());
+            }
+            
+            dependencies
+                .forEach(dep -> {
+                    if(!dep.getSingle("artifactId").getText().equals(javaeeApiDependency.get().getSingle("artifactId").getText())) {
+                        Node dependencyNode = newDependencies.createChild("dependency");
+                        dependencyNode.createChild("groupId").text(dep.getSingle("artifactId").getText());
+                        dependencyNode.createChild("artifactId").text(dep.getSingle("artifactId").getText());
+                        if(dep.getSingle("version") != null) {
+                            dependencyNode.createChild("version").text(dep.getSingle("version").getText());
+                        }
+                    }
+                });
+        }
+
     }
 
 }
