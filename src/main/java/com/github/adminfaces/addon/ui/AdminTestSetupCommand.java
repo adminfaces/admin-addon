@@ -315,13 +315,12 @@ public class AdminTestSetupCommand extends AbstractProjectCommand {
         MavenFacet m2 = project.getFacet(MavenFacet.class);
         MavenModelResource m2Model = m2.getModelResource();
         Node root = XMLParser.parse(m2Model.getResourceInputStream());
-
         List<Node> dependencies = root.get("dependencies").get(0).getChildren();
-        
-        if(dependencies.get(0).getSingle("artifactId").getText().equals("javaee-api") || dependencies.get(0).getSingle("artifactId").getText().equals("javaee-web-api")) {
+
+        if (dependencies.get(0).getSingle("artifactId").getText().equals("javaee-api") || dependencies.get(0).getSingle("artifactId").getText().equals("javaee-web-api")) {
             return;//if already the first dependency then do nothing
         }
-        
+
         Optional<Node> javaeeApiDependency = dependencies
             .stream()
             .filter(dep -> dep.getSingle("artifactId").getText().equals("javaee-api") || dep.getSingle("artifactId").getText().equals("javaee-web-api"))
@@ -337,18 +336,20 @@ public class AdminTestSetupCommand extends AbstractProjectCommand {
             if (javaeeApiDependency.get().getSingle("version") != null) {
                 newJavaeeApiDependency.createChild("version").text(javaeeApiDependency.get().getSingle("version").getText());
             }
-            
+
             dependencies
                 .forEach(dep -> {
-                    if(!dep.getSingle("artifactId").getText().equals(javaeeApiDependency.get().getSingle("artifactId").getText())) {
+                    if (!dep.getSingle("artifactId").getText().equals(javaeeApiDependency.get().getSingle("artifactId").getText())) {
                         Node dependencyNode = newDependencies.createChild("dependency");
                         dependencyNode.createChild("groupId").text(dep.getSingle("artifactId").getText());
                         dependencyNode.createChild("artifactId").text(dep.getSingle("artifactId").getText());
-                        if(dep.getSingle("version") != null) {
+                        if (dep.getSingle("version") != null) {
                             dependencyNode.createChild("version").text(dep.getSingle("version").getText());
                         }
                     }
                 });
+            
+            m2Model.setContents(XMLParser.toXMLInputStream(root));
         }
 
     }
