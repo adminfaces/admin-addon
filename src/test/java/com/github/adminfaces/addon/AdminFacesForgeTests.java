@@ -522,11 +522,9 @@ public class AdminFacesForgeTests {
             .contains("!!com.github.adminfaces.addon.scaffold.model.GlobalConfig" + NEW_LINE
                 + "datatableEditable: true" + NEW_LINE
                 + "datatableReflow: true" + NEW_LINE
-                + "" + NEW_LINE
                 + "inputSize: 30" + NEW_LINE
                 + "menuIcon: fa fa-edit" + NEW_LINE
-                + "toManyComponentType: " + SELECT_MANY_MENU.name()
-                + "" + NEW_LINE
+                + "toManyComponentType: " + SELECT_MANY_MENU.name() + NEW_LINE
                 + "toOneComponentType: " + SELECT_ONE_MENU.name()
                 + "");
     }
