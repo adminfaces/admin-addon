@@ -141,12 +141,12 @@
                             </div>
                         </div>
        <#else>    
-                       <div class="ui-sm-12 ui-g-6 ui-g-nopad">
-                             <div class="ui-sm-12 ui-g-11">  
+                       <div class="ui-sm-12 <#if field?is_last>ui-g-12<#else>ui-g-6</#if> ui-g-nopad">
+                             <div class="ui-sm-12 <#if field?is_last>ui-g-12<#else>ui-g-11</#if>">  
                                  <p:outputLabel for="${field.getName()}" value="${field.getName()?cap_first}"/>
                              </div>
                             
-                            <div class="ui-sm-12 ui-g-11">  
+                            <div class="ui-sm-12 <#if field?is_last>ui-g-12<#else>ui-g-11</#if>">  
                         <@formFields entity=entity field=field/>
                                 <span class="help-block">
                         <#if entity.isTextAreaType(field)>   
