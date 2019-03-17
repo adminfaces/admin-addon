@@ -341,14 +341,17 @@ public class AdminTestSetupCommand extends AbstractProjectCommand {
                 .forEach(dep -> {
                     if (!dep.getSingle("artifactId").getText().equals(javaeeApiDependency.get().getSingle("artifactId").getText())) {
                         Node dependencyNode = newDependencies.createChild("dependency");
-                        dependencyNode.createChild("groupId").text(dep.getSingle("artifactId").getText());
+                        dependencyNode.createChild("groupId").text(dep.getSingle("groupId").getText());
                         dependencyNode.createChild("artifactId").text(dep.getSingle("artifactId").getText());
                         if (dep.getSingle("version") != null) {
                             dependencyNode.createChild("version").text(dep.getSingle("version").getText());
                         }
+                        if(dep.getSingle("scope") != null) {
+                            dependencyNode.createChild("scope").text(dep.getSingle("scope").getText());
+                        }
                     }
                 });
-            
+            System.out.println(root);
             m2Model.setContents(XMLParser.toXMLInputStream(root));
         }
 
