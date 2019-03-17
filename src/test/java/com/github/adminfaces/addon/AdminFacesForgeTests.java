@@ -46,6 +46,7 @@ import java.util.concurrent.TimeoutException;
 import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
 import static org.assertj.core.api.Assertions.contentOf;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -174,6 +175,22 @@ public class AdminFacesForgeTests {
             .exists();
 
         assertThat(project.getFacet(AdminFacesFacet.class).isInstalled()).isTrue();
+        
+        DirectoryResource root = project.getRoot().reify(DirectoryResource.class);
+        assertThat(root.getChild("Dockerfile").exists());
+        File dockerfile = new File(root.getChild("Dockerfile").getFullyQualifiedName());
+        assertThat(contentOf(dockerfile)).contains("FROM rmpestano/wildfly:15.0.1")
+           .contains("COPY ./target/AdminFaces.war ${DEPLOYMENT_DIR}");
+        
+        DirectoryResource dockerDir = root.getChildDirectory("docker");
+        assertThat(dockerDir.exists()).isTrue();
+        
+        File dockerRunFile = new File(dockerDir.getFullyQualifiedName()+"/run.sh");
+        assertThat(contentOf(dockerRunFile)).contains("docker run -it --rm --name AdminFaces -p 8080:8080 admin/AdminFaces");
+        
+        File dockerBuildFile = new File(dockerDir.getFullyQualifiedName()+"/build.sh");
+        assertThat(contentOf(dockerBuildFile)).contains("docker build -t admin/AdminFaces ../");
+        
     }
 
     @Test

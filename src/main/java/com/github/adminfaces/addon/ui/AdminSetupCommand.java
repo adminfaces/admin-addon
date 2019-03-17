@@ -59,6 +59,7 @@ import com.github.adminfaces.addon.freemarker.TemplateFactory;
 
 import static com.github.adminfaces.addon.util.Constants.WebResources.*;
 import com.github.adminfaces.addon.facet.AdminFacesFacet;
+import java.io.ByteArrayInputStream;
 
 /**
  * AdminFaces: Setup command
@@ -186,7 +187,7 @@ public class AdminSetupCommand extends AbstractProjectCommand {
         context.put("copyrightYear", Year.now().toString());
 
         // admin config
-        addAdminConfig(project);
+        addAdminConfig(project, result);
 
         // Basic pages
         if (!web.getWebResource(INDEX_PAGE).exists()) {
@@ -258,10 +259,11 @@ public class AdminSetupCommand extends AbstractProjectCommand {
         createOrOverwrite(web.getWebResource("/resources/css/app.css"),
             getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/css/app.css"));
 
+        addDockerfile(project, result);
         return result;
     }
 
-    private void addAdminConfig(Project project) {
+    private void addAdminConfig(Project project, List<Resource<?>> result) {
 
         Resource<?> resources = project.getRoot().reify(DirectoryResource.class).getChildDirectory("src")
             .getChildDirectory("main").getOrCreateChildDirectory("resources");
@@ -271,6 +273,7 @@ public class AdminSetupCommand extends AbstractProjectCommand {
                 IOUtils.copy(
                     Thread.currentThread().getContextClassLoader().getResourceAsStream("/admin-config.properties"),
                     new FileOutputStream(new File(resources.getFullyQualifiedName() + "/admin-config.properties")));
+                result.add(resources.getChild("admin-config.properties"));
             } catch (IOException e) {
                 LOG.log(Level.SEVERE, "Could not add 'admin-config.properties'.", e);
             }
@@ -449,6 +452,51 @@ public class AdminSetupCommand extends AbstractProjectCommand {
         context = new HashMap<>();
         context.put("templatePath", PAGE_TEMPLATE);
         return context;
+    }
+
+    private void addDockerfile(Project project, List<Resource<?>> result) {
+        DirectoryResource root = project.getRoot().reify(DirectoryResource.class);
+        if (!root.getChild("Dockerfile").exists()) {
+            MavenFacet maven = project.getFacet(MavenFacet.class);
+            String artifactId = maven.getModel().getArtifactId();
+            try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("/scaffold/docker/Dockerfile")) {
+                String dockerfileContent = IOUtils.toString(is, "UTF-8");
+                dockerfileContent = dockerfileContent.replaceAll("ARTIFACTID", artifactId);
+                IOUtils.copy(new ByteArrayInputStream(dockerfileContent.getBytes("UTF-8")),
+                    new FileOutputStream(new File(root.getFullyQualifiedName() + "/Dockerfile")));
+                result.add(root.getChild("Dockerfile"));
+            } catch (Exception ex) {
+                LOG.log(Level.SEVERE, "Could not add 'Dockerfile'.", ex);
+            }
+
+            //create docker folder and put run.sh, build.sh utilities
+            DirectoryResource dockerFolder = root.getOrCreateChildDirectory("docker");
+            try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("/scaffold/docker/build.sh")) {
+                String dockerBuildContent = IOUtils.toString(is, "UTF-8");
+                dockerBuildContent = dockerBuildContent.replaceAll("ARTIFACTID", artifactId);
+                IOUtils.copy(new ByteArrayInputStream(dockerBuildContent.getBytes("UTF-8")),
+                    new FileOutputStream(new File(dockerFolder.getFullyQualifiedName() + "/build.sh")));
+                result.add(dockerFolder.getChild("build.sh"));
+            } catch (Exception ex) {
+                LOG.log(Level.SEVERE, "Could not add 'build.sh'.", ex);
+            }
+            
+            try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("/scaffold/docker/run.sh")) {
+                String dockerRunContent = IOUtils.toString(is, "UTF-8");
+                dockerRunContent = dockerRunContent.replaceAll("ARTIFACTID", artifactId);
+                IOUtils.copy(new ByteArrayInputStream(dockerRunContent.getBytes("UTF-8")),
+                    new FileOutputStream(new File(dockerFolder.getFullyQualifiedName() + "/run.sh")));
+                 result.add(dockerFolder.getChild("run.sh"));
+            } catch (Exception ex) {
+                LOG.log(Level.SEVERE, "Could not add 'run.sh'.", ex);
+            }
+            
+            try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("/scaffold/docker/standalone.conf")) {
+                IOUtils.copy(is, new FileOutputStream(new File(dockerFolder.getFullyQualifiedName() + "/standalone.conf")));
+            } catch (Exception ex) {
+                LOG.log(Level.SEVERE, "Could not add 'standalone.conf'.", ex);
+            }
+        }
     }
 
 }
