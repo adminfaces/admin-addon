@@ -54,10 +54,8 @@ public class FreemarkerTemplateProcessor {
         try {
             template.process(map, output);
             output.flush();
-        } catch (IOException ioEx) {
+        } catch (IOException | TemplateException ioEx) {
             throw new RuntimeException(ioEx);
-        } catch (TemplateException templateEx) {
-            throw new RuntimeException(templateEx);
         }
         return output.toString();
     }
