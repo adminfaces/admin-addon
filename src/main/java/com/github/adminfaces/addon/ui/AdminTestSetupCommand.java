@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -73,6 +74,8 @@ import org.jboss.forge.roaster.model.source.JavaSource;
 
 @FacetConstraint(AdminFacesFacet.class)
 public class AdminTestSetupCommand extends AbstractProjectCommand {
+    
+    final List<String> BANNED_ARTIFACTIDS = Arrays.asList("jsr250-api", "jboss-ejb-api", "jboss-jsf-api","jboss-servlet-api","cdi-api","hibernate-jpa");
 
     @Inject
     private FacetFactory facetFactory;
@@ -106,7 +109,7 @@ public class AdminTestSetupCommand extends AbstractProjectCommand {
         addAdminFacesTestHarnessResources(project);
         addTestEntityManagerProducer(project);
         addMavenTestsProfile(project);
-        moveJavaEEApiDependencyToTheTop(project);
+        removeNeedlessDependencies(project);
         return Results.success("AdminFaces test harness setup finished successfully!");
     }
 
@@ -145,7 +148,7 @@ public class AdminTestSetupCommand extends AbstractProjectCommand {
             }
         }
 
-        //add beans.xml to meta-inf in sources (nneded by deltaspike test control)
+        //add beans.xml to meta-inf in sources (needed by deltaspike test control)
         DirectoryResource metaInf = project.getFacet(ResourcesFacet.class).getResourceDirectory().getChildDirectory("META-INF");
         if (!metaInf.getChild("beans.xml").exists()) {
             try (InputStream is = new ByteArrayInputStream(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -256,6 +259,7 @@ public class AdminTestSetupCommand extends AbstractProjectCommand {
             servletApi.setVersion("3.1.0");
             dependencyUtil.installDependency(dependencyFacet, servletApi);
         }
+        
     }
 
     @Override
@@ -289,7 +293,7 @@ public class AdminTestSetupCommand extends AbstractProjectCommand {
         Node node = XMLParser.parse(m2Model.getResourceInputStream());
         Node profiles = node.getOrCreate("profiles");
         Optional<Node> itTestsProfile = profiles.get("profile")
-            .stream().filter(p -> p.getName().equals("id") && p.getText().equalsIgnoreCase("it-tests"))
+            .stream().filter(p -> p.getSingle("id").getText().equalsIgnoreCase("it-tests"))
             .findFirst();
 
         if (!itTestsProfile.isPresent()) {
@@ -308,53 +312,14 @@ public class AdminTestSetupCommand extends AbstractProjectCommand {
     }
 
     /**
-     * Makes java-api dependency as first dependeny to avoid error java.lang.NoSuchFieldError: AROUND_CONSTRUCT
+     * Removes JavaEE apis that are not need or intersects with javaee-api dependency
+     * to avoid error java.lang.NoSuchFieldError: AROUND_CONSTRUCT in it tests
      *
      */
-    private void moveJavaEEApiDependencyToTheTop(Project project) {
-        MavenFacet m2 = project.getFacet(MavenFacet.class);
-        MavenModelResource m2Model = m2.getModelResource();
-        Node root = XMLParser.parse(m2Model.getResourceInputStream());
-        List<Node> dependencies = root.get("dependencies").get(0).getChildren();
-
-        if (dependencies.get(0).getSingle("artifactId").getText().equals("javaee-api") || dependencies.get(0).getSingle("artifactId").getText().equals("javaee-web-api")) {
-            return;//if already the first dependency then do nothing
-        }
-
-        Optional<Node> javaeeApiDependency = dependencies
-            .stream()
-            .filter(dep -> dep.getSingle("artifactId").getText().equals("javaee-api") || dep.getSingle("artifactId").getText().equals("javaee-web-api"))
-            .findFirst();
-
-        if (javaeeApiDependency.isPresent()) {
-            root.removeChild("dependencies");
-
-            Node newDependencies = root.createChild("dependencies");
-            Node newJavaeeApiDependency = newDependencies.createChild("dependency");
-            newJavaeeApiDependency.createChild("groupId").text(javaeeApiDependency.get().getSingle("groupId").getText());
-            newJavaeeApiDependency.createChild("artifactId").text(javaeeApiDependency.get().getSingle("artifactId").getText());
-            if (javaeeApiDependency.get().getSingle("version") != null) {
-                newJavaeeApiDependency.createChild("version").text(javaeeApiDependency.get().getSingle("version").getText());
-            }
-
-            dependencies
-                .forEach(dep -> {
-                    if (!dep.getSingle("artifactId").getText().equals(javaeeApiDependency.get().getSingle("artifactId").getText())) {
-                        Node dependencyNode = newDependencies.createChild("dependency");
-                        dependencyNode.createChild("groupId").text(dep.getSingle("groupId").getText());
-                        dependencyNode.createChild("artifactId").text(dep.getSingle("artifactId").getText());
-                        if (dep.getSingle("version") != null) {
-                            dependencyNode.createChild("version").text(dep.getSingle("version").getText());
-                        }
-                        if(dep.getSingle("scope") != null) {
-                            dependencyNode.createChild("scope").text(dep.getSingle("scope").getText());
-                        }
-                    }
-                });
-            System.out.println(root);
-            m2Model.setContents(XMLParser.toXMLInputStream(root));
-        }
-
+    private void removeNeedlessDependencies(Project project) {
+        MavenFacet maven = project.getFacet(MavenFacet.class);
+        DependencyFacet dependencyFacet = project.getFacet(DependencyFacet.class);
+        dependencyUtil.removeByArtifactIds(dependencyFacet, maven, BANNED_ARTIFACTIDS);
     }
 
 }

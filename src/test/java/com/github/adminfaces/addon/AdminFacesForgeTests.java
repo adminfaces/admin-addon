@@ -56,7 +56,6 @@ import org.jboss.forge.addon.javaee.facets.JavaEE7Facet;
 import org.jboss.forge.addon.javaee.jpa.JPAFacet_2_1;
 import org.jboss.forge.addon.javaee.servlet.ServletFacet_3_1;
 import org.jboss.forge.addon.maven.projects.MavenFacet;
-import org.jboss.forge.addon.maven.resources.MavenModelResource;
 import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.ProjectFactory;
@@ -73,8 +72,6 @@ import org.jboss.forge.addon.ui.result.Failed;
 import org.jboss.forge.addon.ui.result.Result;
 import org.jboss.forge.arquillian.AddonDependencies;
 import org.jboss.forge.arquillian.archive.AddonArchive;
-import org.jboss.forge.parser.xml.Node;
-import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
@@ -108,7 +105,6 @@ public class AdminFacesForgeTests {
             .addAsResource("InitDB.java", "InitDB.java")
             .addAsResource("scaffold/custom-global-config.yml", "custom-global-config.yml")
             .addAsResource(AdminFacesForgeTests.class.getResource("/scaffolded-app-with-test-harness.zip"), "scaffolded-app-with-test-harness.zip")
-            .addAsResource(AdminFacesForgeTests.class.getResource("/app-with-javaeeapi-at-the-bottom.zip"), "app-with-javaeeapi-at-the-bottom.zip")
             .addAsResource(AdminFacesForgeTests.class.getResource("/scaffolded-app.zip"), "scaffolded-app.zip")
             .addAsResource(AdminFacesForgeTests.class.getResource("/app-with-adminfaces-setup.zip"), "app-with-adminfaces-setup.zip");
     }
@@ -528,28 +524,6 @@ public class AdminFacesForgeTests {
         MavenFacet maven = project.getFacet(MavenFacet.class);
         boolean buildSuccess = maven.executeMaven(Arrays.asList("clean", "package"));
         assertThat(buildSuccess).isTrue();
-    }
-    
-    @Test
-    public void shouldSetUpAdminFacesTestHarnessAndMoveJavaEEApiDepToTheTop() throws TimeoutException, IOException {
-        TestUtils.unzip(getClass().getResourceAsStream("/app-with-javaeeapi-at-the-bottom.zip"), project.getRoot().getFullyQualifiedName());
-        shellTest.getShell().setCurrentResource(project.getRoot());
-        shellTest.clearScreen();
-        project = projectFactory.findProject(project.getRoot());
-        Result testHarnessSetupResult = shellTest
-            .execute("adminfaces-test-harness-setup", 2, TimeUnit.MINUTES);
-        if (testHarnessSetupResult instanceof Failed) {
-            ((Failed) testHarnessSetupResult).getException().printStackTrace();
-        }
-        assertThat(testHarnessSetupResult).isInstanceOf(Result.class).extracting("message")
-            .contains("AdminFaces test harness setup finished successfully!");
-        project = projectFactory.findProject(project.getRoot());
-        assertThat(project.hasFacet(AdminFacesTestHarnessFacet.class)).isTrue();
-        MavenFacet m2 = project.getFacet(MavenFacet.class);
-        MavenModelResource m2Model = m2.getModelResource();
-        Node root = XMLParser.parse(m2Model.getResourceInputStream());
-        List<Node> dependencies = root.get("dependencies").get(0).getChildren();
-        assertThat(dependencies.get(0).getSingle("artifactId").getText()).isEqualTo("javaee-api");
     }
     
     @Test

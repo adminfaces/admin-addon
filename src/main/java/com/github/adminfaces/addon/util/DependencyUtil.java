@@ -8,6 +8,12 @@ import org.jboss.forge.addon.dependencies.builder.DependencyQueryBuilder;
 import org.jboss.forge.addon.projects.facets.DependencyFacet;
 import javax.inject.Inject;
 import static com.github.adminfaces.addon.util.Constants.*;
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.maven.model.Model;
+import org.jboss.forge.addon.dependencies.Dependency;
+import org.jboss.forge.addon.maven.dependencies.MavenDependencyAdapter;
+import org.jboss.forge.addon.maven.projects.MavenFacet;
 
 /**
  * Created by rmpestano on 25/02/17.
@@ -57,6 +63,23 @@ public class DependencyUtil {
             facet.removeDependency(dependency);
             facet.addDirectDependency(dependency);
         }
+    }
+
+    public void removeByArtifactIds(DependencyFacet dependencyFacet, MavenFacet maven, List<String> artifactIds) {
+        Model pom = maven.getModel();
+        List<Dependency> dependencies = MavenDependencyAdapter.fromMavenList(pom.getDependencies());
+
+        List<Dependency> toBeRemoved = new ArrayList<>();
+        for (Dependency dependency : dependencies) {
+            for (String artifactId : artifactIds) {
+                if(dependency.getCoordinate().getArtifactId().startsWith(artifactId)) {
+                    toBeRemoved.add(dependency);
+                }
+            }
+        }
+        dependencies.removeAll(toBeRemoved);
+        pom.setDependencies(MavenDependencyAdapter.toMavenList(dependencies));
+        maven.setModel(pom);
     }
 
 }
