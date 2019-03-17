@@ -32,7 +32,6 @@ public class GlobalConfig {
     
     private ComponentTypeEnum toOneComponentType;
     private ComponentTypeEnum toManyComponentType;
-    private ComponentTypeEnum dateComponentType;
     private Boolean datatableEditable;
     private Boolean datatableReflow;
     private Integer inputSize;
@@ -52,14 +51,6 @@ public class GlobalConfig {
 
     public void setToManyComponentType(ComponentTypeEnum toManyComponentType) {
         this.toManyComponentType = toManyComponentType;
-    }
-
-    public ComponentTypeEnum getDateComponentType() {
-        return dateComponentType;
-    }
-
-    public void setDateComponentType(ComponentTypeEnum dateComponentType) {
-        this.dateComponentType = dateComponentType;
     }
 
     public Boolean getDatatableEditable() {

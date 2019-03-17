@@ -132,17 +132,6 @@ public class AdminScaffoldConfigStep extends AbstractProjectCommand implements U
                 globalConfig.setToManyComponentType((ComponentTypeEnum) event.getNewValue());
             });
 
-            UISelectOne<ComponentTypeEnum> dateComponentType = componentFactory.createSelectOne("DateComponentType", ComponentTypeEnum.class)
-                .setDescription("Component type to be used in date fields.")
-                .setRequired(true)
-                .setDefaultValue(globalConfig.getDateComponentType())
-                .setValueChoices(Arrays.asList(ComponentTypeEnum.CALENDAR, ComponentTypeEnum.DATEPICKER));
-            builder.add(dateComponentType);
-
-            dateComponentType.addValueChangeListener((ValueChangeEvent event) -> {
-                globalConfig.setDateComponentType((ComponentTypeEnum) event.getNewValue());
-            });
-
             UIInput<Boolean> datatableEditable = componentFactory.createInput("Datatable editable", Boolean.class)
                 .setDefaultValue(globalConfig.getDatatableEditable())
                 .setRequired(true)

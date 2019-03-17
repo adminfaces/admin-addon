@@ -101,6 +101,8 @@
                                     <p:spinner id="${field.getName()}" value="${r"#{"}row.${field.getName()}}"/>
                                     <#elseif entity.isInputSwitchType(field)>
                                     <p:inputSwitch id="${field.getName()}" value="${r"#{"}row.${field.getName()}}"/>
+                                    <#elseif entity.isToggleSwitchType(field)>
+                                    <p:toggleSwitch id="${field.getName()}" value="${r"#{"}row.${field.getName()}}"/>
                                     <#elseif entity.isAutoCompleteType(field)>
                                     <p:autoComplete id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}" completeMethod="${r"#{"}${mb}.complete${field.getName()?cap_first}}" minQueryLength="2" dropdown="true"
                                                     var="${field.getName()}" itemLabel="${r"#{"}${field.getName()}.${entity.getAssociationDisplayField(field)}}" itemValue="${r"#{"}${field.getName()}}" converter="entityConverter"/> 
@@ -210,6 +212,8 @@
                         <p:spinner id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}"/>
                         <#elseif entity.isInputSwitchType(field)>
                         <p:inputSwitch id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}"/>
+                        <#elseif entity.isToggleSwitchType(field)>
+                        <p:toggleSwitch id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}"/>
                         <#elseif entity.isAutoCompleteType(field)>
                         <p:autoComplete id="${field.getName()}" value="${r"#{"}${mb}.filter.entity.${field.getName()}}" completeMethod="${r"#{"}${mb}.complete${field.getName()?cap_first}}" minQueryLength="2" dropdown="true"
                                         var="${field.getName()}" itemLabel="${r"#{"}${field.getName()}.${entity.getAssociationDisplayField(field)}}" itemValue="${r"#{"}${field.getName()}}" converter="entityConverter"/> 

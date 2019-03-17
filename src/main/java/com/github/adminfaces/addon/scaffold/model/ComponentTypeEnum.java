@@ -8,10 +8,11 @@ public enum ComponentTypeEnum {
 	INPUT_TEXT, 
     INPUT_NUMBER, 
     INPUT_SWITCH,
+    PASSWORD,
 	SELECT_MANY_MENU, 
 	SELECT_ONE_MENU, 
     SELECT_ONE_RADIO,
     SPINNER,
-    PASSWORD,
-    TEXT_AREA 
+    TEXT_AREA,
+    TOGGLE_SWITCH
 }

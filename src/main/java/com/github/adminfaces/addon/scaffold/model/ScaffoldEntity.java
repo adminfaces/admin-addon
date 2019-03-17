@@ -226,6 +226,10 @@ public class ScaffoldEntity implements Serializable {
     public boolean isInputSwitchType(FieldSource<JavaClassSource> field) {
         return getFieldConfig(field).getType().equals(ComponentTypeEnum.INPUT_SWITCH);
     }
+    
+    public boolean isToggleSwitchType(FieldSource<JavaClassSource> field) {
+        return getFieldConfig(field).getType().equals(ComponentTypeEnum.TOGGLE_SWITCH);
+    }
 
     public boolean isCalendarType(FieldSource<JavaClassSource> field) {
         return getFieldConfig(field).getType().equals(ComponentTypeEnum.CALENDAR);

@@ -29,11 +29,14 @@ import com.github.adminfaces.addon.scaffold.config.ScaffoldConfigLoader;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import org.jboss.forge.addon.dependencies.Dependency;
 
 import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.projects.Project;
+import org.jboss.forge.addon.projects.facets.DependencyFacet;
 import org.jboss.forge.addon.projects.facets.ResourcesFacet;
 import org.jboss.forge.addon.resource.DirectoryResource;
 import org.jboss.forge.addon.resource.FileResource;
@@ -50,19 +53,23 @@ import org.junit.runners.JUnit4;
  */
 @RunWith(JUnit4.class)
 public class ScaffoldConfigLoaderTest {
-    
-    
+
+    Project project;
+
     @Before
     public void initGlobalConfig() throws IllegalArgumentException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, IllegalAccessException {
         //clean cached instance of global config
         Field globalConfigField = ScaffoldConfigLoader.class.getDeclaredField("globalConfig");
         globalConfigField.setAccessible(true);
-        globalConfigField.set(null,null);
+        globalConfigField.set(null, null);
+        project = mock(Project.class);
+        DependencyFacet dependencyFacet = mock(DependencyFacet.class);
+        doReturn(new ArrayList<Dependency>()).when(dependencyFacet).getEffectiveDependencies();
+        doReturn(dependencyFacet).when(project).getFacet(DependencyFacet.class);
     }
-    
+
     @Test
     public void shouldLoadGlobalConfig() {
-        Project project = mock(Project.class);
         ResourcesFacet resourcesFacet = mock(ResourcesFacet.class);
         DirectoryResource directoryResource = mock(DirectoryResource.class);
         doReturn(directoryResource).when(resourcesFacet).getResourceDirectory();
@@ -72,11 +79,11 @@ public class ScaffoldConfigLoaderTest {
         doReturn(globalConfigFile).when(scaffoldDir).getChild(anyString());
         InputStream is = ScaffoldConfigLoader.class.getResourceAsStream("/scaffold/global-config.yml");
         doReturn(is).when(globalConfigFile).getResourceInputStream();
-        doReturn(resourcesFacet).when(project).getFacet(anyObject());
+        doReturn(resourcesFacet).when(project).getFacet(ResourcesFacet.class);
         GlobalConfig globalConfig = ScaffoldConfigLoader.loadGlobalConfig(project);
         assertThat(globalConfig).isNotNull();
-        assertThat(globalConfig).extracting("toOneComponentType", "toManyComponentType", "dateComponentType", "datatableEditable", "inputSize", "menuIcon")
-            .contains(ComponentTypeEnum.AUTOCOMPLETE, ComponentTypeEnum.CHECKBOXMENU, ComponentTypeEnum.CALENDAR, false, 100, "fa fa-circle-o");
+        assertThat(globalConfig).extracting("toOneComponentType", "toManyComponentType", "datatableEditable", "inputSize", "menuIcon")
+            .contains(ComponentTypeEnum.AUTOCOMPLETE, ComponentTypeEnum.CHECKBOXMENU, false, 100, "fa fa-circle-o");
     }
 
     @Test
@@ -95,7 +102,6 @@ public class ScaffoldConfigLoaderTest {
         doReturn(globalConfigFile).when(scaffoldDir).getChild("global-config.yml");
         InputStream is = ScaffoldConfigLoader.class.getResourceAsStream("/scaffold/global-config.yml");
         doReturn(is).when(globalConfigFile).getResourceInputStream();
-        Project project = mock(Project.class);
         doReturn(sourceFacet).when(project).getFacet(JavaSourceFacet.class);
         ResourcesFacet resourcesFacet = mock(ResourcesFacet.class);
         DirectoryResource directoryResource = mock(DirectoryResource.class);
@@ -119,15 +125,13 @@ public class ScaffoldConfigLoaderTest {
         InputStream speakerStream = getClass().getResourceAsStream("/scaffold/speaker.yml");
         doReturn(speakerStream).when(speakerFileResourceConfigFile).getResourceInputStream();
         doReturn(speakerFileResourceConfigFile).when(scaffoldDir).getChild("Speaker.yml");
-        
+
         FileResource<?> talkFileResourceConfigFile = mock(FileResource.class);
         doReturn(true).when(talkFileResourceConfigFile).exists();
         doReturn(null).when(talkFileResourceConfigFile).setContents(anyString());
         InputStream talkStream = getClass().getResourceAsStream("/scaffold/talk.yml");
         doReturn(talkStream).when(talkFileResourceConfigFile).getResourceInputStream();
         doReturn(talkFileResourceConfigFile).when(scaffoldDir).getChild("Talk.yml");
-        
-        Project project = mock(Project.class);
         ResourcesFacet resourcesFacet = mock(ResourcesFacet.class);
         DirectoryResource directoryResource = mock(DirectoryResource.class);
         doReturn(directoryResource).when(resourcesFacet).getResourceDirectory();
@@ -157,7 +161,6 @@ public class ScaffoldConfigLoaderTest {
         doReturn(globalConfigFile).when(scaffoldDir).getChild("global-config.yml");
         InputStream is = ScaffoldConfigLoader.class.getResourceAsStream("/scaffold/custom-global-config.yml");
         doReturn(is).when(globalConfigFile).getResourceInputStream();
-        Project project = mock(Project.class);
         doReturn(sourceFacet).when(project).getFacet(JavaSourceFacet.class);
         ResourcesFacet resourcesFacet = mock(ResourcesFacet.class);
         DirectoryResource directoryResource = mock(DirectoryResource.class);
@@ -203,26 +206,26 @@ public class ScaffoldConfigLoaderTest {
             .contains(INPUT_NUMBER, 30, true, false);
 
         assertThat(entityConfig.getFieldConfigByName("street"))
-                .extracting("type", "length", "required", "hidden")
-                .contains(TEXT_AREA, 50, false, false);
+            .extracting("type", "length", "required", "hidden")
+            .contains(TEXT_AREA, 50, false, false);
 
         assertThat(entityConfig.getFieldConfigByName("city"))
-                .extracting("type", "length", "required", "hidden")
-                .contains(TEXT_AREA, 50, false, false);
+            .extracting("type", "length", "required", "hidden")
+            .contains(TEXT_AREA, 50, false, false);
 
         assertThat(entityConfig.getFieldConfigByName("zipcode"))
-                .extracting("type", "length", "required", "hidden")
-                .contains(INPUT_NUMBER, 10, false, false);
+            .extracting("type", "length", "required", "hidden")
+            .contains(INPUT_NUMBER, 10, false, false);
 
         assertThat(entityConfig.getFieldConfigByName("state"))
-                .extracting("type", "length", "hidden")
-                .contains(INPUT_TEXT, 30, false, false);
-        
+            .extracting("type", "length", "hidden")
+            .contains(INPUT_TEXT, 30, false, false);
+
         assertThat(entityConfig.getDatatableEditable()).isTrue();
-        
+
         entity = Roaster.parse(JavaClassSource.class, ScaffoldConfigLoaderTest.class.getResourceAsStream("/com/github/adminfaces/addon/model/Talk.java"));
         entityConfig = ScaffoldConfigLoader.createOrLoadEntityConfig(entity, project);
-        
+
         assertThat(entityConfig).isNotNull()
             .extracting("displayField", "menuIcon").contains("title", "fa fa-circle");
         assertThat(entityConfig.getFields()).isNotNull().hasSize(7);
@@ -249,12 +252,12 @@ public class ScaffoldConfigLoaderTest {
 
         assertThat(entityConfig.getFieldConfigByName("date"))
             .extracting("type", "length", "required", "hidden")
-            .contains(DATEPICKER, 30, false, false);
+            .contains(CALENDAR, 30, false, false);
 
         assertThat(entityConfig.getFieldConfigByName("speaker"))
             .extracting("type", "length", "required", "hidden")
             .contains(SELECT_ONE_MENU, 30, false, false);
-        
+
         assertThat(entityConfig.getDatatableEditable()).isTrue();
     }
 
@@ -292,20 +295,20 @@ public class ScaffoldConfigLoaderTest {
             .contains(CHECKBOXMENU, 100, false, false);
 
         assertThat(entityConfig.getFieldConfigByName("street"))
-                .extracting("type", "length", "required", "hidden")
-                .contains(INPUT_TEXT, 50, false, false);
+            .extracting("type", "length", "required", "hidden")
+            .contains(INPUT_TEXT, 50, false, false);
 
         assertThat(entityConfig.getFieldConfigByName("city"))
-                .extracting("type", "length", "required", "hidden")
-                .contains(INPUT_TEXT, 50, false, false);
+            .extracting("type", "length", "required", "hidden")
+            .contains(INPUT_TEXT, 50, false, false);
 
         assertThat(entityConfig.getFieldConfigByName("zipcode"))
-                .extracting("type", "length", "required", "hidden")
-                .contains(INPUT_NUMBER, 10, false, false);
+            .extracting("type", "length", "required", "hidden")
+            .contains(INPUT_NUMBER, 10, false, false);
 
         assertThat(entityConfig.getFieldConfigByName("state"))
-                .extracting("type", "length", "required", "hidden")
-                .contains(INPUT_TEXT, 100, false, false);
+            .extracting("type", "length", "required", "hidden")
+            .contains(INPUT_TEXT, 100, false, false);
 
         assertThat(entityConfig.getDatatableEditable()).isFalse();
     }
@@ -342,7 +345,7 @@ public class ScaffoldConfigLoaderTest {
         assertThat(entityConfig.getFieldConfigByName("speaker"))
             .extracting("type", "length", "required", "hidden")
             .contains(AUTOCOMPLETE, 100, false, false);
-        
+
         assertThat(entityConfig.getDatatableEditable()).isFalse();
     }
 }

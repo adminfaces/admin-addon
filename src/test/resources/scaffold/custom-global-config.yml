@@ -1,7 +1,6 @@
 !!com.github.adminfaces.addon.scaffold.model.GlobalConfig
 toOneComponentType: SELECT_ONE_MENU
 toManyComponentType: SELECT_MANY_MENU
-dateComponentType: DATEPICKER
 datatableEditable: true
 datatableReflow: false
 inputSize: 30

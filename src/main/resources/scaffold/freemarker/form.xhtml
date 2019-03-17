@@ -21,6 +21,8 @@
                                 <p:spinner id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} ${r"#{"}msg['label.is-required']}." </#if>/>
                         <#elseif entity.isInputSwitchType(field)>
                                 <p:inputSwitch id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} ${r"#{"}msg['label.is-required']}." </#if>/>
+                        <#elseif entity.isToggleSwitchType(field)>
+                                <p:toggleSwitch id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} ${r"#{"}msg['label.is-required']}." </#if>/>
                         <#elseif entity.isAutoCompleteType(field)>
                                 <p:autoComplete id="${field.getName()}" value="${r"#{"}${mb}.${fieldName}}" completeMethod="${r"#{"}${mb}.complete${field.getName()?cap_first}}" minQueryLength="2" dropdown="true" <#if entity.isRequired(field)>required="true" requiredMessage="${field.getName()?cap_first} ${r"#{"}msg['label.is-required']}." </#if>
                                         var="${field.getName()}" itemLabel="${r"#{"}${field.getName()}.${entity.getAssociationDisplayField(field)}}" itemValue="${r"#{"}${field.getName()}}" converter="entityConverter"/> 

@@ -31,13 +31,18 @@ import com.github.adminfaces.addon.util.AdminScaffoldUtils;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jboss.forge.addon.dependencies.Dependency;
+import org.jboss.forge.addon.projects.facets.DependencyFacet;
 import org.yaml.snakeyaml.DumperOptions;
 
 public class ScaffoldConfigLoader {
 
     public static final DumperOptions YML_DUMP_OPTIONS;
+
+    private static Boolean isPrimeFaces7;
 
     static {
         YML_DUMP_OPTIONS = new DumperOptions();
@@ -51,6 +56,7 @@ public class ScaffoldConfigLoader {
 
     public static GlobalConfig loadGlobalConfig(Project project) {
         if (globalConfig == null) {
+            initIsPrimeFaces7(project);
             DirectoryResource scaffoldDir = project.getFacet(ResourcesFacet.class).getResourceDirectory()
                 .getChildDirectory("scaffold");
             FileResource<?> globalConfigFile = (FileResource<?>) scaffoldDir.getChild("global-config.yml");
@@ -137,7 +143,7 @@ public class ScaffoldConfigLoader {
 
     private static ComponentTypeEnum resolveComponentType(FieldSource<JavaClassSource> field, Integer length, GlobalConfig globalConfig) {
         if (field.hasAnnotation(Temporal.class)) {
-            return globalConfig.getDateComponentType();
+            return isPrimeFaces7 ? DATEPICKER:CALENDAR;
         }
         if (AdminScaffoldUtils.hasToManyAssociation(field)) {
             return globalConfig.getToManyComponentType();
@@ -162,11 +168,33 @@ public class ScaffoldConfigLoader {
             return INPUT_NUMBER;
         }
         if (type.isType(Boolean.class) || type.isType("boolean")) {
-            return INPUT_SWITCH;
+            return isPrimeFaces7 ? TOGGLE_SWITCH : INPUT_SWITCH;
         }
         //TODO inspect other fields types
 
         return INPUT_TEXT;
+    }
+
+    /**
+     * Used to decide if we're going to use newer primefaces components like toggleSwitch and datepicker
+     *
+     * @return
+     */
+    public static void initIsPrimeFaces7(Project project) {
+        try {
+            DependencyFacet dependencyFacet = project.getFacet(DependencyFacet.class);
+            Optional<Dependency> primefacesDependency = dependencyFacet.getEffectiveDependenciesInScopes("compile")
+                .stream()
+                .filter(d -> d.getCoordinate().getArtifactId().equals("primefaces"))
+                .findFirst();
+            String version = "6";
+            if (primefacesDependency.isPresent()) {
+                version = primefacesDependency.get().getCoordinate().getVersion().charAt(0) + "";
+            }
+            isPrimeFaces7 = Integer.parseInt(version) >= 7;
+        } catch (Exception e) {
+            isPrimeFaces7 = false;
+        }
     }
 
 }

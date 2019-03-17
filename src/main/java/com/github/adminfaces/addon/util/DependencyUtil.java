@@ -64,7 +64,7 @@ public class DependencyUtil {
             facet.addDirectDependency(dependency);
         }
     }
-
+    
     public void removeByArtifactIds(DependencyFacet dependencyFacet, MavenFacet maven, List<String> artifactIds) {
         Model pom = maven.getModel();
         List<Dependency> dependencies = MavenDependencyAdapter.fromMavenList(pom.getDependencies());

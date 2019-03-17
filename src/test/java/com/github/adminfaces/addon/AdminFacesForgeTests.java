@@ -46,7 +46,6 @@ import java.util.concurrent.TimeoutException;
 import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
 import static org.assertj.core.api.Assertions.contentOf;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -107,6 +106,7 @@ public class AdminFacesForgeTests {
             .addAsResource("scaffold/custom-global-config.yml", "custom-global-config.yml")
             .addAsResource(AdminFacesForgeTests.class.getResource("/scaffolded-app-with-test-harness.zip"), "scaffolded-app-with-test-harness.zip")
             .addAsResource(AdminFacesForgeTests.class.getResource("/scaffolded-app.zip"), "scaffolded-app.zip")
+            .addAsResource(AdminFacesForgeTests.class.getResource("/app-with-adminfaces-setup-and-pf7.zip"), "app-with-adminfaces-setup-and-pf7.zip")
             .addAsResource(AdminFacesForgeTests.class.getResource("/app-with-adminfaces-setup.zip"), "app-with-adminfaces-setup.zip");
     }
 
@@ -175,22 +175,22 @@ public class AdminFacesForgeTests {
             .exists();
 
         assertThat(project.getFacet(AdminFacesFacet.class).isInstalled()).isTrue();
-        
+
         DirectoryResource root = project.getRoot().reify(DirectoryResource.class);
         assertThat(root.getChild("Dockerfile").exists());
         File dockerfile = new File(root.getChild("Dockerfile").getFullyQualifiedName());
         assertThat(contentOf(dockerfile)).contains("FROM rmpestano/wildfly:15.0.1")
-           .contains("COPY ./target/AdminFaces.war ${DEPLOYMENT_DIR}");
-        
+            .contains("COPY ./target/AdminFaces.war ${DEPLOYMENT_DIR}");
+
         DirectoryResource dockerDir = root.getChildDirectory("docker");
         assertThat(dockerDir.exists()).isTrue();
-        
-        File dockerRunFile = new File(dockerDir.getFullyQualifiedName()+"/run.sh");
+
+        File dockerRunFile = new File(dockerDir.getFullyQualifiedName() + "/run.sh");
         assertThat(contentOf(dockerRunFile)).contains("docker run -it --rm --name AdminFaces -p 8080:8080 admin/AdminFaces");
-        
-        File dockerBuildFile = new File(dockerDir.getFullyQualifiedName()+"/build.sh");
+
+        File dockerBuildFile = new File(dockerDir.getFullyQualifiedName() + "/build.sh");
         assertThat(contentOf(dockerBuildFile)).contains("docker build -t admin/AdminFaces ../");
-        
+
     }
 
     @Test
@@ -342,6 +342,84 @@ public class AdminFacesForgeTests {
     }
 
     @Test
+    public void shouldScaffoldFromEntitiesUsingPrimeFaces7() throws Exception {
+        TestUtils.unzip(getClass().getResourceAsStream("/app-with-adminfaces-setup-and-pf7.zip"), project.getRoot().getFullyQualifiedName());
+        shellTest.getShell().setCurrentResource(project.getRoot());
+        shellTest.clearScreen();
+        project = projectFactory.findProject(project.getRoot());
+        shellTest.clearScreen();
+        shellTest.execute("jpa-new-entity --named Room", 15, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named name --length 20", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named capacity --type java.lang.Short", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named hasWifi --type java.lang.Boolean", 10, TimeUnit.SECONDS);
+        shellTest.execute("jpa-new-field --named date --type java.util.Date --temporal-type DATE", 10, TimeUnit.SECONDS);
+        shellTest.execute("constraint-add --on-property name --constraint NotNull", 10, TimeUnit.SECONDS);
+        shellTest.execute("constraint-add --on-property date --constraint NotNull", 10, TimeUnit.SECONDS);
+        shellTest.execute("constraint-add --on-property hasWifi --constraint NotNull", 10, TimeUnit.SECONDS);
+        Result result = shellTest.execute("scaffold-setup --provider AdminFaces", 1, TimeUnit.MINUTES);
+        JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
+
+        if (result instanceof Failed) {
+            Failed failedResult = (Failed) result;
+            failedResult.getException().printStackTrace();
+            Assert.fail(failedResult.getMessage());
+        }
+        assertThat(result).isInstanceOf(CompositeResult.class).extracting("message")
+            .contains("***SUCCESS*** Scaffold was setup successfully.");
+
+        String entityPackageName = sourceFacet.getBasePackage() + ".model";
+
+        Result scaffoldGenerate1 = shellTest
+            .execute(("scaffold-generate --entities " + entityPackageName + ".Room"), 1, TimeUnit.MINUTES);
+
+        if (scaffoldGenerate1 instanceof Failed) {
+            ((Failed) scaffoldGenerate1).getException().printStackTrace();
+        }
+        assertThat(scaffoldGenerate1).isNotInstanceOf(Failed.class);
+
+        ResourcesFacet resourcesFacet = project.getFacet(ResourcesFacet.class);
+        File roomScaffoldConfigFile = new File(resourcesFacet.getResourceDirectory().getFullyQualifiedName() + "/scaffold/Room.yml");
+        assertThat(roomScaffoldConfigFile).exists();
+        assertThat(contentOf(roomScaffoldConfigFile))
+            .contains("!!com.github.adminfaces.addon.scaffold.model.EntityConfig\n" +
+"datatableEditable: false\n" +
+"datatableReflow: true\n" +
+"displayField: name\n" +
+"fields:\n" +
+"- hidden: false\n" +
+"  length: 100\n" +
+"  name: id\n" +
+"  required: true\n" +
+"  type: INPUT_NUMBER\n" +
+"- hidden: false\n" +
+"  length: 100\n" +
+"  name: version\n" +
+"  required: false\n" +
+"  type: INPUT_NUMBER\n" +
+"- hidden: false\n" +
+"  length: 20\n" +
+"  name: name\n" +
+"  required: true\n" +
+"  type: INPUT_TEXT\n" +
+"- hidden: false\n" +
+"  length: 100\n" +
+"  name: capacity\n" +
+"  required: false\n" +
+"  type: INPUT_NUMBER\n" +
+"- hidden: false\n" +
+"  length: 100\n" +
+"  name: hasWifi\n" +
+"  required: true\n" +
+"  type: TOGGLE_SWITCH\n" +
+"- hidden: false\n" +
+"  length: 100\n" +
+"  name: date\n" +
+"  required: true\n" +
+"  type: DATEPICKER\n" +
+"menuIcon: fa fa-circle-o");
+    }
+
+    @Test
     public void shouldScaffoldFromEntitiesUsingCustomConfiguration() throws Exception {
         TestUtils.unzip(getClass().getResourceAsStream("/app-with-adminfaces-setup.zip"), project.getRoot().getFullyQualifiedName());
         shellTest.getShell().setCurrentResource(project.getRoot());
@@ -444,7 +522,6 @@ public class AdminFacesForgeTests {
             .contains("!!com.github.adminfaces.addon.scaffold.model.GlobalConfig" + NEW_LINE
                 + "datatableEditable: true" + NEW_LINE
                 + "datatableReflow: true" + NEW_LINE
-                + "dateComponentType: " + CALENDAR.name()
                 + "" + NEW_LINE
                 + "inputSize: 30" + NEW_LINE
                 + "menuIcon: fa fa-edit" + NEW_LINE
@@ -522,7 +599,7 @@ public class AdminFacesForgeTests {
                 + "  type: AUTOCOMPLETE" + NEW_LINE
                 + "menuIcon: fa fa-circle-o");
     }
-    
+
     @Test
     public void shouldSetUpAdminFacesTestHarness() throws TimeoutException, IOException {
         TestUtils.unzip(getClass().getResourceAsStream("/app-with-adminfaces-setup.zip"), project.getRoot().getFullyQualifiedName());
@@ -542,7 +619,7 @@ public class AdminFacesForgeTests {
         boolean buildSuccess = maven.executeMaven(Arrays.asList("clean", "package"));
         assertThat(buildSuccess).isTrue();
     }
-    
+
     @Test
     public void shouldCreateServiceTests() throws IOException, TimeoutException, InterruptedException {
         project = projectFactory.createTempProject();
@@ -569,30 +646,30 @@ public class AdminFacesForgeTests {
             .contains("Added /src/test/java/com/github/admin/addon/service/RoomServiceIt.java")
             .contains("Added /src/test/java/com/github/admin/addon/service/TalkServiceIt.java")
             .contains("Added /src/test/java/com/github/admin/addon/service/SpeakerServiceIt.java");
-        
+
         ResourcesFacet resourcesFacet = project.getFacet(ResourcesFacet.class);
         FileResource<?> testPersistenceXML = resourcesFacet.getTestResourceDirectory().getChild("META-INF").getChild("persistence.xml").reify(FileResource.class);
         File persistenceXmlFile = new File(testPersistenceXML.getFullyQualifiedName());
         assertThat(contentOf(persistenceXmlFile))
-            .contains("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n" +
-"<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"2.0\" xsi:schemaLocation=\"http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd\">\n" +
-"  <persistence-unit name=\"testDB\" transaction-type=\"RESOURCE_LOCAL\">\n" +
-"    <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>\n" +
-"    <class>com.github.admin.addon.model.Room</class>\n" +
-"    <class>com.github.admin.addon.model.Speaker</class>\n" +
-"    <class>com.github.admin.addon.model.Talk</class>\n" +
-"    <properties>\n" +
-"      <property name=\"hibernate.dialect\" value=\"org.hibernate.dialect.HSQLDialect\"/>\n" +
-"      <property name=\"javax.persistence.jdbc.driver\" value=\"org.hsqldb.jdbcDriver\"/>\n" +
-"      <property name=\"javax.persistence.jdbc.url\" value=\"jdbc:hsqldb:mem:test;DB_CLOSE_DELAY=-1\"/>\n" +
-"      <property name=\"javax.persistence.jdbc.user\" value=\"sa\"/>\n" +
-"      <property name=\"javax.persistence.jdbc.password\" value=\"\"/>\n" +
-"      <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>\n" +
-"      <property name=\"hibernate.show_sql\" value=\"true\"/>\n" +
-"    </properties>\n" +
-"  </persistence-unit>\n" +
-"</persistence>");
-        
+            .contains("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
+                + "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"2.0\" xsi:schemaLocation=\"http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd\">\n"
+                + "  <persistence-unit name=\"testDB\" transaction-type=\"RESOURCE_LOCAL\">\n"
+                + "    <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>\n"
+                + "    <class>com.github.admin.addon.model.Room</class>\n"
+                + "    <class>com.github.admin.addon.model.Speaker</class>\n"
+                + "    <class>com.github.admin.addon.model.Talk</class>\n"
+                + "    <properties>\n"
+                + "      <property name=\"hibernate.dialect\" value=\"org.hibernate.dialect.HSQLDialect\"/>\n"
+                + "      <property name=\"javax.persistence.jdbc.driver\" value=\"org.hsqldb.jdbcDriver\"/>\n"
+                + "      <property name=\"javax.persistence.jdbc.url\" value=\"jdbc:hsqldb:mem:test;DB_CLOSE_DELAY=-1\"/>\n"
+                + "      <property name=\"javax.persistence.jdbc.user\" value=\"sa\"/>\n"
+                + "      <property name=\"javax.persistence.jdbc.password\" value=\"\"/>\n"
+                + "      <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>\n"
+                + "      <property name=\"hibernate.show_sql\" value=\"true\"/>\n"
+                + "    </properties>\n"
+                + "  </persistence-unit>\n"
+                + "</persistence>");
+
         MavenFacet maven = project.getFacet(MavenFacet.class);
         boolean buildSuccess = maven.executeMaven(Arrays.asList("clean", "package", "-Pit-tests"));
         assertThat(buildSuccess).isTrue();
