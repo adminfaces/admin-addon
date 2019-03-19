@@ -26,27 +26,10 @@ package com.github.adminfaces.addon;
 import com.github.adminfaces.addon.facet.AdminFacesFacet;
 import com.github.adminfaces.addon.facet.AdminFacesTestHarnessFacet;
 import com.github.adminfaces.addon.scaffold.config.ScaffoldConfigLoader;
-import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.CALENDAR;
-import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.DATEPICKER;
-import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.SELECT_MANY_MENU;
-import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.SELECT_ONE_MENU;
 import com.github.adminfaces.addon.util.Constants;
-import static com.github.adminfaces.addon.util.Constants.NEW_LINE;
 import com.github.adminfaces.addon.util.DependencyUtil;
 import com.github.adminfaces.addon.util.TestUtils;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
-import static org.assertj.core.api.Assertions.contentOf;
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.addon.dependencies.builder.DependencyBuilder;
@@ -82,6 +65,22 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import javax.inject.Inject;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import static com.github.adminfaces.addon.scaffold.model.ComponentTypeEnum.*;
+import static com.github.adminfaces.addon.util.Constants.NEW_LINE;
+import static org.assertj.core.api.Assertions.contentOf;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+
 /**
  *
  * @author rafael-pestano
@@ -106,7 +105,7 @@ public class AdminFacesForgeTests {
             .addAsResource("scaffold/custom-global-config.yml", "custom-global-config.yml")
             .addAsResource(AdminFacesForgeTests.class.getResource("/scaffolded-app-with-test-harness.zip"), "scaffolded-app-with-test-harness.zip")
             .addAsResource(AdminFacesForgeTests.class.getResource("/scaffolded-app.zip"), "scaffolded-app.zip")
-            .addAsResource(AdminFacesForgeTests.class.getResource("/app-with-adminfaces-setup-and-pf7.zip"), "app-with-adminfaces-setup-and-pf7.zip")
+            .addAsResource(AdminFacesForgeTests.class.getResource("/app-with-adminfaces-setup-and-pf6.zip"), "app-with-adminfaces-setup-and-pf6.zip")
             .addAsResource(AdminFacesForgeTests.class.getResource("/app-with-adminfaces-setup.zip"), "app-with-adminfaces-setup.zip");
     }
 
@@ -152,7 +151,9 @@ public class AdminFacesForgeTests {
         File adminConfig = new File(
             projectRoot.getFullyQualifiedName() + "/src/main/resources/admin-config.properties");
         assertThat(adminConfig).exists().hasContent("admin.renderControlSidebar=true" + NEW_LINE
-            + "admin.controlSidebar.showOnMobile=true" + NEW_LINE + "admin.ignoredResources=rest");
+                + "admin.controlSidebar.showOnMobile=true" + NEW_LINE
+                + "admin.renderAsterisks=true" + NEW_LINE
+                + "admin.ignoredResources=rest");
         assertThat(new File(projectRoot.getFullyQualifiedName() + "/src/main/resources/messages.properties")).exists();
         WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
         assertThat(new File(web.getWebResource("index.xhtml").getFullyQualifiedName())).exists();
@@ -179,7 +180,7 @@ public class AdminFacesForgeTests {
         DirectoryResource root = project.getRoot().reify(DirectoryResource.class);
         assertThat(root.getChild("Dockerfile").exists());
         File dockerfile = new File(root.getChild("Dockerfile").getFullyQualifiedName());
-        assertThat(contentOf(dockerfile)).contains("FROM rmpestano/wildfly:15.0.1")
+        assertThat(contentOf(dockerfile)).contains("FROM rmpestano/wildfly:16.0.0")
             .contains("COPY ./target/AdminFaces.war ${DEPLOYMENT_DIR}");
 
         DirectoryResource dockerDir = root.getChildDirectory("docker");
@@ -336,14 +337,25 @@ public class AdminFacesForgeTests {
             .contains("<h:panelGroup rendered=\"#{not speakerListMB.showTalksDetailMap[row.id]}\" style=\"text-align: center\">")
             .contains("<p:dataList rendered=\"#{speakerListMB.showTalksDetailMap[row.id]}\" emptyMessage=\"#{msg['label.empty-list']}\" value=\"#{speakerListMB.speakerTalks}\" var=\"d\" styleClass=\"no-border\" ");
 
+        ResourcesFacet resourcesFacet = project.getFacet(ResourcesFacet.class);
+        File roomScaffoldConfigFile = new File(resourcesFacet.getResourceDirectory().getFullyQualifiedName() + "/scaffold/Room.yml");
+        assertThat(roomScaffoldConfigFile).exists();
+        assertThat(contentOf(roomScaffoldConfigFile))
+                .contains("type: TOGGLE_SWITCH");
+
+        File talkScaffoldConfigFile = new File(resourcesFacet.getResourceDirectory().getFullyQualifiedName() + "/scaffold/Talk.yml");
+        assertThat(talkScaffoldConfigFile).exists();
+        assertThat(contentOf(talkScaffoldConfigFile))
+                .contains("type: DATEPICKER");
+
         MavenFacet maven = project.getFacet(MavenFacet.class);
         boolean buildSuccess = maven.executeMaven(Arrays.asList("clean", "package"));
         assertThat(buildSuccess).isTrue();
     }
 
     @Test
-    public void shouldScaffoldFromEntitiesUsingPrimeFaces7() throws Exception {
-        TestUtils.unzip(getClass().getResourceAsStream("/app-with-adminfaces-setup-and-pf7.zip"), project.getRoot().getFullyQualifiedName());
+    public void shouldScaffoldFromEntitiesUsingPrimeFaces6() throws Exception {
+        TestUtils.unzip(getClass().getResourceAsStream("/app-with-adminfaces-setup-and-pf6.zip"), project.getRoot().getFullyQualifiedName());
         shellTest.getShell().setCurrentResource(project.getRoot());
         shellTest.clearScreen();
         project = projectFactory.findProject(project.getRoot());
@@ -410,12 +422,12 @@ public class AdminFacesForgeTests {
 "  length: 100\n" +
 "  name: hasWifi\n" +
 "  required: true\n" +
-"  type: TOGGLE_SWITCH\n" +
+"  type: INPUT_SWITCH\n" +
 "- hidden: false\n" +
 "  length: 100\n" +
 "  name: date\n" +
 "  required: true\n" +
-"  type: DATEPICKER\n" +
+"  type: CALENDAR\n" +
 "menuIcon: fa fa-circle-o");
     }
 

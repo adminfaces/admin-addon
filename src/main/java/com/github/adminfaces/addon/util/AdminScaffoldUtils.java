@@ -2,7 +2,9 @@ package com.github.adminfaces.addon.util;
 
 import com.github.adminfaces.addon.scaffold.metamodel.AdminFacesMetaModelProvider;
 import com.github.adminfaces.addon.scaffold.model.ScaffoldEntity;
+
 import static com.github.adminfaces.addon.util.DependencyUtil.ADMIN_PERSISTENCE_COORDINATE;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -26,6 +28,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.model.Plugin;
@@ -64,18 +67,18 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
 
     public static boolean hasAssociation(FieldSource<JavaClassSource> field) {
         return field.hasAnnotation(OneToMany.class) || field.hasAnnotation(OneToOne.class)
-            || field.hasAnnotation(ManyToOne.class) || field.hasAnnotation(ManyToMany.class);
+                || field.hasAnnotation(ManyToOne.class) || field.hasAnnotation(ManyToMany.class);
     }
 
     public static boolean hasToManyAssociation(FieldSource<JavaClassSource> field) {
         return field.hasAnnotation(OneToMany.class) || field.hasAnnotation(ManyToMany.class);
     }
-    
+
     public static boolean isBidirectionalAssociation(FieldSource<JavaClassSource> field) {
-        return (field.hasAnnotation(OneToMany.class) && field.getAnnotation(OneToMany.class).getStringValue("mappedBy") != null) 
-            || (field.hasAnnotation(ManyToMany.class) && field.getAnnotation(ManyToMany.class).getStringValue("mappedBy") != null);
+        return (field.hasAnnotation(OneToMany.class) && field.getAnnotation(OneToMany.class).getStringValue("mappedBy") != null)
+                || (field.hasAnnotation(ManyToMany.class) && field.getAnnotation(ManyToMany.class).getStringValue("mappedBy") != null);
     }
-    
+
     public static boolean hasToOneAssociation(FieldSource<JavaClassSource> field) {
         return field.hasAnnotation(OneToOne.class) || field.hasAnnotation(ManyToOne.class);
     }
@@ -100,54 +103,54 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
 
     public static String resolveDisplayField(JavaClassSource entity) {
         Optional<FieldSource<JavaClassSource>> displayField = entity.getFields().stream()
-            .filter((f -> isValidDisplayField(f) && f.getType().isType(String.class) && AdminScaffoldUtils.resolveRequiredAttribute(f)))
-            .findFirst();
+                .filter((f -> isValidDisplayField(f) && f.getType().isType(String.class) && AdminScaffoldUtils.resolveRequiredAttribute(f)))
+                .findFirst();
         if (displayField.isPresent()) {
             return displayField.get().getName();
         } else {
             return "";
         }
     }
-    
-   public static boolean isValidDisplayField(FieldSource<JavaClassSource> field) {
-       return field.hasAnnotation(Column.class)
-            || field.hasAnnotation(Basic.class)
-            || field.hasAnnotation(Embedded.class) || field.hasAnnotation(Id.class)
-            || field.hasAnnotation(EmbeddedId.class);
-   }
-   
-   
-   public static List<FieldSource<JavaClassSource>> extractEntityFields(JavaClassSource entity) {
+
+    public static boolean isValidDisplayField(FieldSource<JavaClassSource> field) {
+        return field.hasAnnotation(Column.class)
+                || field.hasAnnotation(Basic.class)
+                || field.hasAnnotation(Embedded.class) || field.hasAnnotation(Id.class)
+                || field.hasAnnotation(EmbeddedId.class);
+    }
+
+
+    public static List<FieldSource<JavaClassSource>> extractEntityFields(JavaClassSource entity) {
         List<FieldSource<JavaClassSource>> fields = new ArrayList<>();
         entity.getFields().stream()
-            .filter(f -> !f.hasAnnotation(Transient.class) && (f.hasAnnotation(Column.class)
-                || hasAssociation(f) || f.hasAnnotation(Basic.class)
-                || f.hasAnnotation(Id.class) || f.hasAnnotation(EmbeddedId.class)))
-            .forEach(fields::add);
+                .filter(f -> !f.hasAnnotation(Transient.class) && (f.hasAnnotation(Column.class)
+                        || hasAssociation(f) || f.hasAnnotation(Basic.class)
+                        || f.hasAnnotation(Id.class) || f.hasAnnotation(EmbeddedId.class)))
+                .forEach(fields::add);
         return fields;
     }
 
-   
+
     public static List<FieldSource<JavaClassSource>> extractEmbeddedFields(JavaClassSource entity) {
         List<FieldSource<JavaClassSource>> fields = new ArrayList<>();
         entity.getFields().stream()
-            .filter(f -> !f.hasAnnotation(Transient.class) && f.hasAnnotation(Embedded.class))
-            .forEach(fields::add);
+                .filter(f -> !f.hasAnnotation(Transient.class) && f.hasAnnotation(Embedded.class))
+                .forEach(fields::add);
         return fields;
     }
-    
+
     public static List<FieldSource<JavaClassSource>> getFieldsFromEmbeddedField(FieldSource<JavaClassSource> embeddedField, Project project) throws FileNotFoundException {
         List<FieldSource<JavaClassSource>> fields = new ArrayList<>();
         String sourceFolder = resolveSourceFolder(project);
         String qualifiedName = embeddedField.getType().getQualifiedName();
         JavaClassSource embeddedFieldClassSource = Roaster.parse(JavaClassSource.class, new File(sourceFolder + "/" + qualifiedName.replace(".", "/") + ".java"));
         embeddedFieldClassSource.getFields().stream()
-            .filter(f -> !f.hasAnnotation(Transient.class) && (f.hasAnnotation(Column.class)
-            || hasAssociation(f) || f.hasAnnotation(Basic.class)))
-            .forEach(fields::add);
+                .filter(f -> !f.hasAnnotation(Transient.class) && (f.hasAnnotation(Column.class)
+                        || hasAssociation(f) || f.hasAnnotation(Basic.class)))
+                .forEach(fields::add);
         return fields;
     }
-    
+
     public static String resolveSourceFolder(Project project) {
         JavaSourceFacet sourceFacet = project.getFacet(JavaSourceFacet.class);
         return sourceFacet.getSourceDirectory().getFullyQualifiedName();
@@ -178,7 +181,7 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
         }
         return toOneFields;
     }
-    
+
     private static void configJPAMetaModel(Project project, FacetFactory facetFactory) {
         MavenFacet pom = project.getFacet(MavenFacet.class);
         boolean isMetaModelConfigured = false;
@@ -186,7 +189,7 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
             isMetaModelConfigured = false;
         } else {
             Plugin metaModelPlugin = pom.getModel().getBuild().getPluginsAsMap()
-                .get("org.bsc.maven:maven-processor-plugin");
+                    .get("org.bsc.maven:maven-processor-plugin");
             if (metaModelPlugin == null) {
                 isMetaModelConfigured = false;
             } else {
@@ -196,13 +199,13 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
 
         if (!isMetaModelConfigured) {
             Iterable<PersistenceMetaModelFacet> facets = facetFactory.createFacets(project,
-                PersistenceMetaModelFacet.class);
+                    PersistenceMetaModelFacet.class);
             for (PersistenceMetaModelFacet metaModelFacet : facets) {
                 metaModelFacet.setMetaModelProvider(new AdminFacesMetaModelProvider());
                 if (facetFactory.install(project, metaModelFacet)) {
                     DependencyFacet facet = project.getFacet(DependencyFacet.class);
                     DependencyBuilder jpaModelegenDependency = DependencyBuilder.create().setCoordinate(CoordinateBuilder.create().setGroupId("org.hibernate").setArtifactId("hibernate-jpamodelgen"));
-                    if(facet.hasDirectDependency(jpaModelegenDependency)) {
+                    if (facet.hasDirectDependency(jpaModelegenDependency)) {
                         facet.removeDependency(jpaModelegenDependency);//not needed on direct deps
                     }
                     break;
@@ -211,20 +214,20 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
         }
 
     }
-    
+
     private static void addEntityManagerProducer(Project project) {
         MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
         JavaSourceFacet javaSource = project.getFacet(JavaSourceFacet.class);
         DirectoryResource sourceDirectory = javaSource.getSourceDirectory();
-        String emProducerPath = (sourceDirectory.getFullyQualifiedName() +"/" + metadataFacet.getProjectGroupName() + "/infra/EntityManagerProducer").replaceAll("\\.", "/")+".java";
-        if(!new File(emProducerPath).exists()) {
+        String emProducerPath = (sourceDirectory.getFullyQualifiedName() + "/" + metadataFacet.getProjectGroupName() + "/infra/EntityManagerProducer").replaceAll("\\.", "/") + ".java";
+        if (!new File(emProducerPath).exists()) {
             try (InputStream emProducerStream = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("/infra/persistence/EntityManagerProducer.java")) {
+                    .getResourceAsStream("/infra/persistence/EntityManagerProducer.java")) {
                 JavaSource<?> entityManagerProducer = (JavaSource<?>) Roaster.parse(emProducerStream);
                 entityManagerProducer.setPackage(metadataFacet.getProjectGroupName() + ".infra");
                 javaSource.saveJavaSource(entityManagerProducer);
                 FileUtils.copyInputStreamToFile(emProducerStream, new File(project.getRoot().getFullyQualifiedName()
-                    + entityManagerProducer.getPackage().replaceAll("\\.", "/")));
+                        + entityManagerProducer.getPackage().replaceAll("\\.", "/")));
             } catch (Exception e) {
                 LOG.log(Level.SEVERE, "Could not add 'EntityManagerProducer'.", e);
             }
@@ -234,7 +237,7 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
 
     private static void addAdminPersistence(Project project, DependencyUtil dependencyUtil) {
         DependencyBuilder adminPersistenceDependency = DependencyBuilder.create()
-            .setCoordinate(dependencyUtil.getLatestVersion(ADMIN_PERSISTENCE_COORDINATE));
+                .setCoordinate(dependencyUtil.getLatestVersion(ADMIN_PERSISTENCE_COORDINATE));
         dependencyUtil.installDependency(project.getFacet(DependencyFacet.class), adminPersistenceDependency);
         configDeltaSpike(project);
     }
@@ -244,9 +247,9 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
 
         if (!resources.getChild("apache-deltaspike.properties").exists()) {
             try (InputStream is = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("/apache-deltaspike.properties")) {
+                    .getResourceAsStream("/apache-deltaspike.properties")) {
                 IOUtils.copy(is, new FileOutputStream(
-                    new File(resources.getFullyQualifiedName() + "/apache-deltaspike.properties")));
+                        new File(resources.getFullyQualifiedName() + "/apache-deltaspike.properties")));
             } catch (IOException e) {
                 LOG.log(Level.SEVERE, "Could not add 'apache-deltaspike.properties'.", e);
             }
@@ -256,14 +259,14 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
         Node node = XMLParser.parse(beansXml.getResourceInputStream());
         Node alternativesNode = node.getOrCreate("alternatives");
         Optional<Node> deltaspikeTransactionStrategy = alternativesNode.getChildren().stream()
-            .filter(f -> f.getName().equals("class") && f.getText().contains("BeanManagedUserTransactionStrategy"))
-            .findFirst();
+                .filter(f -> f.getName().equals("class") && f.getText().contains("BeanManagedUserTransactionStrategy"))
+                .findFirst();
 
         if (!deltaspikeTransactionStrategy.isPresent()) {
             alternativesNode.createChild("class")
-                .text("org.apache.deltaspike.jpa.impl.transaction.BeanManagedUserTransactionStrategy");
+                    .text("org.apache.deltaspike.jpa.impl.transaction.BeanManagedUserTransactionStrategy");
             beansXml.setContents(XMLParser.toXMLInputStream(node));
         }
     }
-   
+
 }

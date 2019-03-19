@@ -36,10 +36,13 @@ public class AdminFacesFacetImpl extends AbstractFacet<Project> implements Admin
             .setCoordinate(dependencyUtil.getLatestVersion(ADMIN_THEME_COORDINATE));
         DependencyBuilder primefacesExtensionsDependency = DependencyBuilder.create()
             .setCoordinate(PRIMEFACES_EXTENSIONS_COORDINATE);
+        DependencyBuilder omniFacesDependency = DependencyBuilder.create()
+                .setCoordinate(OMNIFACES_COORDINATE);
+
         dependencyUtil.installDependency(dependencyFacet, adminThemeDependency);
         dependencyUtil.installDependency(dependencyFacet, adminTemplateDependency);
         dependencyUtil.installDependency(dependencyFacet, primefacesExtensionsDependency);//only for gravatar
-
+        dependencyUtil.installDependency(dependencyFacet, omniFacesDependency);
     }
 
     @Override

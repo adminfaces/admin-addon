@@ -31,6 +31,8 @@ public class DependencyUtil {
     public static final Coordinate DBRIDER_COORDINATE = CoordinateBuilder.create().setGroupId("com.github.database-rider").setArtifactId("rider-cdi");
     public static final Coordinate PRIMEFACES_EXTENSIONS_COORDINATE = CoordinateBuilder.create().setGroupId("org.primefaces.extensions")
         .setArtifactId("primefaces-extensions").setVersion("6.2.8");
+    public static final Coordinate OMNIFACES_COORDINATE = CoordinateBuilder.create().setGroupId("org.omnifaces")
+            .setArtifactId("omnifaces").setVersion("3.2");
     public static final Coordinate DELTASPIKE_CORE_API_COORDINATE = CoordinateBuilder.create().setGroupId("org.apache.deltaspike.core")
         .setArtifactId("deltaspike-core-api").setVersion(Versions.DELTASPIKE);
     public static final Coordinate DELTASPIKE_TESTCONTROL_COORDINATE = CoordinateBuilder.create().setGroupId("org.apache.deltaspike.modules").setArtifactId("deltaspike-test-control-module-impl").setVersion(Versions.DELTASPIKE);
