@@ -1,4 +1,4 @@
-FROM rmpestano/wildfly:15.0.1
+FROM rmpestano/wildfly:16.0.0
 
 COPY ./docker/standalone.conf ${WILDFLY_HOME}/bin/
 
