@@ -183,6 +183,10 @@ public class AdminFacesForgeTests {
         assertThat(contentOf(dockerfile)).contains("FROM rmpestano/wildfly:16.0.0")
             .contains("COPY ./target/AdminFaces.war ${DEPLOYMENT_DIR}");
 
+        File buildAndRunFile = new File(root.getChild("build-and-run.sh").getFullyQualifiedName());
+        assertThat(buildAndRunFile).exists();
+        assertThat(contentOf(buildAndRunFile)).contains("mvn clean package && cd docker && ./build.sh && cd ../ && ./docker/run.sh");
+        
         DirectoryResource dockerDir = root.getChildDirectory("docker");
         assertThat(dockerDir.exists()).isTrue();
 
@@ -191,6 +195,7 @@ public class AdminFacesForgeTests {
 
         File dockerBuildFile = new File(dockerDir.getFullyQualifiedName() + "/build.sh");
         assertThat(contentOf(dockerBuildFile)).contains("docker build -t admin/AdminFaces ../");
+        
 
     }
 

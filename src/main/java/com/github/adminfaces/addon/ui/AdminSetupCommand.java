@@ -468,6 +468,14 @@ public class AdminSetupCommand extends AbstractProjectCommand {
             } catch (Exception ex) {
                 LOG.log(Level.SEVERE, "Could not add 'Dockerfile'.", ex);
             }
+            
+            //add build and run script
+            try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("/scaffold/docker/build-and-run.sh")) {
+                IOUtils.copy(is, new FileOutputStream(new File(root.getFullyQualifiedName() + "/build-and-run.sh")));
+                result.add(root.getChild("build-and-run.sh"));
+            } catch (Exception ex) {
+                LOG.log(Level.SEVERE, "Could not add 'build-and-run.sh'.", ex);
+            }
 
             //create docker folder and put run.sh, build.sh utilities
             DirectoryResource dockerFolder = root.getOrCreateChildDirectory("docker");
