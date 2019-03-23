@@ -98,10 +98,8 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 
     @Override
     public Result execute(UIExecutionContext context) throws Exception {
-
         final Project project = getSelectedProject(context) != null ? getSelectedProject(context)
             : getSelectedProject(context.getUIContext());
-
         boolean execute = true;
         if (project.hasFacet(AdminFacesFacet.class) && project.getFacet(AdminFacesFacet.class).isInstalled()) {
             execute = context.getPrompt().promptBoolean("AdminFaces is already installed, override it?");
@@ -119,12 +117,10 @@ public class AdminSetupCommand extends AbstractProjectCommand {
             ServletFacet_3_1 servletFacet_3_1 = facetFactory.create(project, ServletFacet_3_1.class);
             facetFactory.install(project, servletFacet_3_1);
         }
-
         if (!project.hasFacet(FacesFacet_2_0.class)) {
             FacesFacet_2_0 facesFacet = facetFactory.create(project, FacesFacet_2_0.class);
             facetFactory.install(project, facesFacet);
         }
-
         if (!project.hasFacet(CDIFacet.class)) {
             CDIFacet_1_0 cdiFacet = facetFactory.create(project, CDIFacet_1_0.class);
             facetFactory.install(project, cdiFacet);
@@ -132,7 +128,6 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 
         MavenFacet m2 = project.getFacet(MavenFacet.class);
         MavenModelResource m2Model = m2.getModelResource();
-
         Node node = XMLParser.parse(m2Model.getResourceInputStream());
         Node resourcesNode = node.getOrCreate("build").getOrCreate("resources");
         Optional<Node> resourcesFiltering = resourcesNode.get("resource").stream()
@@ -144,7 +139,6 @@ public class AdminSetupCommand extends AbstractProjectCommand {
             resource.createChild("directory").text("src/main/resources");
             m2Model.setContents(XMLParser.toXMLInputStream(node));
         }
-
         addAdminFacesResources(project).forEach(r -> results.add(Results
             .success("Added " + r.getFullyQualifiedName().replace(project.getRoot().getFullyQualifiedName(), ""))));
         setupWebXML(project);
@@ -170,13 +164,11 @@ public class AdminSetupCommand extends AbstractProjectCommand {
         List<Resource<?>> result = new ArrayList<>();
         WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
         JavaSourceFacet javaSource = project.getFacet(JavaSourceFacet.class);
-
         ServletFacet_3_1 servlet = project.getFacet(ServletFacet_3_1.class);
 
         org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor servletConfig = (org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor) servlet
             .getConfig();
         servletConfig.getOrCreateWelcomeFileList().welcomeFile(INDEX_HTML);
-
         HashMap<Object, Object> context = getTemplateContext();
         MetadataFacet metadataFacet = project.getFacet(MetadataFacet.class);
         String projectName = metadataFacet.getProjectName();
@@ -185,16 +177,13 @@ public class AdminSetupCommand extends AbstractProjectCommand {
         context.put("appName", appName);
         context.put("logoMini", logoMini);
         context.put("copyrightYear", Year.now().toString());
-
         // admin config
         addAdminConfig(project, result);
-
         // Basic pages
         if (!web.getWebResource(INDEX_PAGE).exists()) {
             result.add(createOrOverwrite(web.getWebResource(INDEX_PAGE),
                 FreemarkerTemplateProcessor.processTemplate(context, templates.getIndexTemplate())));
         }
-
         if (!web.getWebResource(LOGIN_PAGE).exists()) {
             result.add(createOrOverwrite(web.getWebResource(LOGIN_PAGE),
                 FreemarkerTemplateProcessor.processTemplate(context, templates.getLoginTemplate())));
@@ -203,23 +192,18 @@ public class AdminSetupCommand extends AbstractProjectCommand {
         // page templates
         result.add(createOrOverwrite(web.getWebResource(TEMPLATE_DEFAULT),
             FreemarkerTemplateProcessor.processTemplate(context, templates.getTemplateDefault())));
-
         result.add(createOrOverwrite(web.getWebResource(TEMPLATE_TOP),
             FreemarkerTemplateProcessor.processTemplate(context, templates.getTemplateTop())));
 
         // menus
         result.add(createOrOverwrite(web.getWebResource(INCLUDES + "/menu.xhtml"),
             getClass().getResourceAsStream(SCAFFOLD_RESOURCES + INCLUDES + "/menu.xhtml")));
-
         result.add(createOrOverwrite(web.getWebResource(INCLUDES + "/menubar.xhtml"),
             getClass().getResourceAsStream(SCAFFOLD_RESOURCES + INCLUDES + "/menubar.xhtml")));
-
         result.add(createOrOverwrite(web.getWebResource(INCLUDES + "/top-bar.xhtml"),
             getClass().getResourceAsStream(SCAFFOLD_RESOURCES + INCLUDES + "/top-bar.xhtml")));
-
         result.add(createOrOverwrite(web.getWebResource(INCLUDES + "/controlsidebar-tabs-content.xhtml"),
             getClass().getResourceAsStream(SCAFFOLD_RESOURCES + INCLUDES + "/controlsidebar-tabs-content.xhtml")));
-
         if (!web.getWebResource("WEB-INF/beans.xml").exists()) {
             result.add(createOrOverwrite(web.getWebResource("WEB-INF/beans.xml"),
                 getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/WEB-INF/beans.xml")));
@@ -240,25 +224,18 @@ public class AdminSetupCommand extends AbstractProjectCommand {
         // Static resources
         createOrOverwrite(web.getWebResource("/resources/favicon/favicon.ico"),
             getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon.ico"));
-
         createOrOverwrite(web.getWebResource("/resources/favicon/favicon-16x16.png"),
             getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon-16x16.png"));
-
         createOrOverwrite(web.getWebResource("/resources/favicon/favicon-32x32.png"),
             getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon-32x32.png"));
-
         createOrOverwrite(web.getWebResource("/resources/favicon/favicon-96x96.png"),
             getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/favicon-96x96.png"));
-
         createOrOverwrite(web.getWebResource("/resources/images/login-bg.jpg"),
             getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/login-bg.jpg"));
-
         createOrOverwrite(web.getWebResource("/resources/images/login-bg-mobile.jpeg"),
             getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/login-bg-mobile.jpeg"));
-
         createOrOverwrite(web.getWebResource("/resources/css/app.css"),
             getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/css/app.css"));
-
         addDockerfile(project, result);
         return result;
     }
@@ -277,7 +254,6 @@ public class AdminSetupCommand extends AbstractProjectCommand {
             } catch (IOException e) {
                 LOG.log(Level.SEVERE, "Could not add 'admin-config.properties'.", e);
             }
-
         }
 
         if (!resources.getChild("messages.properties").exists()) {
@@ -287,7 +263,6 @@ public class AdminSetupCommand extends AbstractProjectCommand {
             } catch (IOException e) {
                 LOG.log(Level.SEVERE, "Could not add 'admin-config.properties'.", e);
             }
-
         }
 
     }
@@ -295,28 +270,18 @@ public class AdminSetupCommand extends AbstractProjectCommand {
     protected void setupWebXML(Project project) {
         ServletFacet_3_1 servlet = project.getFacet(ServletFacet_3_1.class);
         WebAppDescriptor servletConfig = (WebAppDescriptor) servlet.getConfig();
-
         final List<ParamValueType<WebAppDescriptor>> allContextParam = servletConfig.getAllContextParam();
-
         setWebXmlContextParam(servletConfig, allContextParam, "javax.faces.DATETIMECONVERTER_DEFAULT_TIMEZONE_IS_SYSTEM_TIMEZONE", "true");
-
         setWebXmlContextParam(servletConfig, allContextParam, "javax.faces.INTERPRET_EMPTY_STRING_SUBMITTED_VALUES_AS_NULL", "true");
-
         configPrimeFaces(servletConfig, allContextParam);
-
         FacesFacet facesFacet = project.getFacet(FacesFacet.class);
-
         configOmniFaces(servletConfig, facesFacet);
-
         configNumberOfFacesViews(servletConfig, allContextParam);
-
         setupErrorPages(servletConfig);
-
         servlet.saveConfig(servletConfig);
     }
 
     private void setupErrorPages(WebAppDescriptor servletConfig) {
-
         String pageSuffix = ".xhtml";
         Optional<ServletMappingType<WebAppDescriptor>> facesServlet = servletConfig.getAllServletMapping().stream()
             .filter(m -> m.getServletName().equals("Faces Servlet")).findFirst();
@@ -404,26 +369,17 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 
     private void configPrimeFaces(WebAppDescriptor servletConfig,
         List<ParamValueType<WebAppDescriptor>> allContextParam) {
-
         setWebXmlContextParam(servletConfig, allContextParam, "primefaces.THEME", "admin", true);
-
         setWebXmlContextParam(servletConfig, allContextParam, "primefaces.FONT_AWESOME", "true", true);
-
         setWebXmlContextParam(servletConfig, allContextParam, "primefaces.MOVE_SCRIPTS_TO_BOTTOM", "true");
-
     }
 
     private void configNumberOfFacesViews(WebAppDescriptor servletConfig,
         List<ParamValueType<WebAppDescriptor>> allContextParam) {
-
         final String NUM_FACES_VIEWS = "6";
-
         setWebXmlContextParam(servletConfig, allContextParam, "com.sun.faces.numberOfLogicalViews", NUM_FACES_VIEWS);
-
         setWebXmlContextParam(servletConfig, allContextParam, "com.sun.faces.numberOfViewsInSession", NUM_FACES_VIEWS);
-
         setWebXmlContextParam(servletConfig, allContextParam, "org.omnifaces.VIEW_SCOPE_MANAGER_MAX_ACTIVE_VIEW_SCOPES", NUM_FACES_VIEWS);
-
     }
 
     private void setWebXmlContextParam(WebAppDescriptor servletConfig,
