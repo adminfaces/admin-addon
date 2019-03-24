@@ -152,7 +152,7 @@ public class AdminFacesForgeTests {
             projectRoot.getFullyQualifiedName() + "/src/main/resources/admin-config.properties");
         assertThat(adminConfig).exists().hasContent("admin.renderControlSidebar=true" + NEW_LINE
                 + "admin.controlSidebar.showOnMobile=true" + NEW_LINE
-                + "admin.renderAsterisks=true" + NEW_LINE
+                + "admin.renderFormAsterisks=false" + NEW_LINE
                 + "admin.ignoredResources=rest");
         assertThat(new File(projectRoot.getFullyQualifiedName() + "/src/main/resources/messages.properties")).exists();
         WebResourcesFacet web = project.getFacet(WebResourcesFacet.class);
@@ -195,8 +195,6 @@ public class AdminFacesForgeTests {
 
         File dockerBuildFile = new File(dockerDir.getFullyQualifiedName() + "/build.sh");
         assertThat(contentOf(dockerBuildFile)).contains("docker build -t admin/AdminFaces ../");
-        
-
     }
 
     @Test
