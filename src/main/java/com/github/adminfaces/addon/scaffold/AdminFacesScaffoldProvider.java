@@ -119,10 +119,40 @@ public class AdminFacesScaffoldProvider implements ScaffoldProvider {
         AdminScaffoldUtils.setupAdminPersistence(project,dependencyUtil, facetFactory);
         createScaffoldConfig(project);
         addAppListCache(project);
+        setupPersistenceXml(project);
         return Collections.emptyList();
     }
 
-    /**
+    private void setupPersistenceXml(Project project) {
+    	DirectoryResource resourceDirectory = project.getFacet(ResourcesFacet.class).getResourceDirectory();
+        FileResource<?> persistenceXMLFile = resourceDirectory.getChildDirectory("META-INF").getChild("persistence.xml").reify(FileResource.class);
+        Node node = XMLParser.parse(persistenceXMLFile.getResourceInputStream());
+        Node persistenceUnitNode = node.getSingle("persistence-unit");
+        String provider = persistenceUnitNode.getSingle("provider").getText();
+        //if hibernate 4 or great then remove flush_before_completion property
+        if("org.hibernate.jpa.HibernatePersistenceProvider".equals(provider)) {
+        	 Node propertiesNode = persistenceUnitNode.getSingle("properties");
+        	 Optional<Node> flushProperty = propertiesNode.getChildren().stream()
+        	       .filter(p -> p.getAttribute("name").equals("hibernate.transaction.flush_before_completion"))
+        	       .findFirst();
+        	 
+        	 if(flushProperty.isPresent()) {
+        		 persistenceUnitNode.removeChild("properties");
+        		 Node newPropertiesNode = persistenceUnitNode.createChild("properties");
+        		 propertiesNode.getChildren().stream()
+        		 .filter(p -> !p.getAttribute("name").equals("hibernate.transaction.flush_before_completion"))
+                 .forEach(c -> newPropertiesNode.createChild("property")
+                      .attribute("name", c.getAttribute("name"))
+                      .attribute("value", c.getAttribute("value")));
+        		 persistenceXMLFile.setContents(XMLParser.toXMLInputStream(node));
+        	 }
+        	 
+        }
+       
+
+	}
+
+	/**
      * Just adds global scaffold config file to the project
      *
      * @param project

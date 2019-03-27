@@ -125,7 +125,7 @@ public class AdminFacesForgeTests {
 
     @Test
     public void shouldSetupAdminFaces() throws Exception {
-        shellTest.execute("jpa-setup --provider Hibernate --container JBOSS_EAP7 --db-type H2 --data-source-name java:jboss/datasources/ExampleDS", 30, TimeUnit.SECONDS);
+        shellTest.execute("jpa-setup --jpa-provider \"Hibernate 4.x\" --container WILDFLY --db-type H2 --data-source-name java:jboss/datasources/ExampleDS", 30, TimeUnit.SECONDS);
         shellTest.clearScreen();
         Result result = shellTest.execute("adminfaces-setup", 60, TimeUnit.SECONDS);
 
