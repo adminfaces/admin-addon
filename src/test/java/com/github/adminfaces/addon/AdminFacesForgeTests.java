@@ -195,6 +195,10 @@ public class AdminFacesForgeTests {
 
         File dockerBuildFile = new File(dockerDir.getFullyQualifiedName() + "/build.sh");
         assertThat(contentOf(dockerBuildFile)).contains("docker build -t admin/adminfaces ../");
+        
+        MavenFacet maven = project.getFacet(MavenFacet.class);
+		String projectFinalName = maven.getModel().getBuild().getFinalName();
+		assertThat(projectFinalName).isEqualTo("AdminFaces");
     }
 
     @Test

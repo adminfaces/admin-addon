@@ -126,19 +126,8 @@ public class AdminSetupCommand extends AbstractProjectCommand {
             facetFactory.install(project, cdiFacet);
         }
 
-        MavenFacet m2 = project.getFacet(MavenFacet.class);
-        MavenModelResource m2Model = m2.getModelResource();
-        Node node = XMLParser.parse(m2Model.getResourceInputStream());
-        Node resourcesNode = node.getOrCreate("build").getOrCreate("resources");
-        Optional<Node> resourcesFiltering = resourcesNode.get("resource").stream()
-            .filter(r -> r.getName().equals("directory") && r.getText().equals("src/main/resources")).findFirst();
-
-        if (!resourcesFiltering.isPresent()) {
-            Node resource = resourcesNode.createChild("resource");
-            resource.createChild("filtering").text("true");
-            resource.createChild("directory").text("src/main/resources");
-            m2Model.setContents(XMLParser.toXMLInputStream(node));
-        }
+        updatePom(project);
+        
         addAdminFacesResources(project).forEach(r -> results.add(Results
             .success("Added " + r.getFullyQualifiedName().replace(project.getRoot().getFullyQualifiedName(), ""))));
         setupWebXML(project);
@@ -146,6 +135,44 @@ public class AdminSetupCommand extends AbstractProjectCommand {
         return Results.aggregate(results);
 
     }
+
+	private void updatePom(final Project project) {
+		MavenFacet m2 = project.getFacet(MavenFacet.class);
+        MavenModelResource m2Model = m2.getModelResource();
+        Node node = XMLParser.parse(m2Model.getResourceInputStream());
+        
+        addResourceFiltering(m2Model, node);
+        addFinalName(m2Model, node, project);
+	}
+
+	/**
+	 * If finalName doesn't exists then adds it using project artifactId
+	 * @param m2Model
+	 * @param root
+	 * @param project
+	 */
+	private void addFinalName(MavenModelResource m2Model, Node root, Project project) {
+		if(root.getOrCreate("build").get("finalName").isEmpty()) {
+			MavenFacet maven = project.getFacet(MavenFacet.class);
+	        String artifactId = maven.getModel().getArtifactId();
+			root.getSingle("build")
+					 .createChild("finalName")
+					 .text(artifactId);
+			 m2Model.setContents(XMLParser.toXMLInputStream(root));
+		}
+	}
+
+	private void addResourceFiltering(MavenModelResource m2Model, Node root) {
+		Node resourcesNode = root.getOrCreate("build").getOrCreate("resources");
+        Optional<Node> resourcesFiltering = resourcesNode.get("resource").stream()
+            .filter(r -> r.getName().equals("directory") && r.getText().equals("src/main/resources")).findFirst();
+        if (!resourcesFiltering.isPresent()) {
+            Node resource = resourcesNode.createChild("resource");
+            resource.createChild("filtering").text("true");
+            resource.createChild("directory").text("src/main/resources");
+            m2Model.setContents(XMLParser.toXMLInputStream(root));
+        }
+	}
 
     private String resolveLogoMini(String projectName) {
         if (projectName.length() > 3) {
