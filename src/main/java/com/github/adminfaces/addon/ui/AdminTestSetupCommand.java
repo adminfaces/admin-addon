@@ -265,7 +265,7 @@ public class AdminTestSetupCommand extends AbstractProjectCommand {
                 .setArtifactId("jsf-api")
                 .setGroupId("com.sun.faces");
             if (!dependencyFacet.hasDirectDependency(jsfApi)) {
-                servletApi.setVersion("2.1.13");
+            	jsfApi.setVersion("2.1.13");
                 dependencyUtil.installDependency(dependencyFacet, jsfApi);
             }
     }
