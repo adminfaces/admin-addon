@@ -119,8 +119,7 @@ project-new --named admin-app --top-level-package com.github.adminfaces.app --ty
 
 javaee-setup --java-ee-version 7 ;
 
-jpa-setup --persistence-unit-name adminPU --jpaVersion 2.1 --provider Hibernate --container WILDFLY --db-type H2 --data-source-name java:jboss/datasources/ExampleDS ;
-
+jpa-setup --persistence-unit-name adminPU --jpaVersion 2.1 --jpa-provider "Hibernate 4.x" --container WILDFLY --db-type H2 --data-source-name java:jboss/datasources/ExampleDS ;
 
 adminfaces-setup ;
 
