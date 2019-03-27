@@ -236,7 +236,7 @@ public class AdminSetupCommand extends AbstractProjectCommand {
             getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/images/login-bg-mobile.jpeg"));
         createOrOverwrite(web.getWebResource("/resources/css/app.css"),
             getClass().getResourceAsStream(SCAFFOLD_RESOURCES + "/css/app.css"));
-        addDockerfile(project, result);
+        setupDocker(project, result);
         return result;
     }
 
@@ -410,7 +410,7 @@ public class AdminSetupCommand extends AbstractProjectCommand {
         return context;
     }
 
-    private void addDockerfile(Project project, List<Resource<?>> result) {
+    private void setupDocker(Project project, List<Resource<?>> result) {
         DirectoryResource root = project.getRoot().reify(DirectoryResource.class);
         if (!root.getChild("Dockerfile").exists()) {
             MavenFacet maven = project.getFacet(MavenFacet.class);
@@ -437,7 +437,7 @@ public class AdminSetupCommand extends AbstractProjectCommand {
             DirectoryResource dockerFolder = root.getOrCreateChildDirectory("docker");
             try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("/scaffold/docker/build.sh")) {
                 String dockerBuildContent = IOUtils.toString(is, "UTF-8");
-                dockerBuildContent = dockerBuildContent.replaceAll("ARTIFACTID", artifactId);
+                dockerBuildContent = dockerBuildContent.replaceAll("ARTIFACTID", artifactId.toLowerCase());
                 IOUtils.copy(new ByteArrayInputStream(dockerBuildContent.getBytes("UTF-8")),
                     new FileOutputStream(new File(dockerFolder.getFullyQualifiedName() + "/build.sh")));
                 result.add(dockerFolder.getChild("build.sh"));
@@ -447,7 +447,7 @@ public class AdminSetupCommand extends AbstractProjectCommand {
             
             try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("/scaffold/docker/run.sh")) {
                 String dockerRunContent = IOUtils.toString(is, "UTF-8");
-                dockerRunContent = dockerRunContent.replaceAll("ARTIFACTID", artifactId);
+                dockerRunContent = dockerRunContent.replaceAll("ARTIFACTID", artifactId.toLowerCase());
                 IOUtils.copy(new ByteArrayInputStream(dockerRunContent.getBytes("UTF-8")),
                     new FileOutputStream(new File(dockerFolder.getFullyQualifiedName() + "/run.sh")));
                  result.add(dockerFolder.getChild("run.sh"));

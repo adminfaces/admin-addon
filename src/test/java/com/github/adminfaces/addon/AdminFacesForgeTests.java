@@ -191,10 +191,10 @@ public class AdminFacesForgeTests {
         assertThat(dockerDir.exists()).isTrue();
 
         File dockerRunFile = new File(dockerDir.getFullyQualifiedName() + "/run.sh");
-        assertThat(contentOf(dockerRunFile)).contains("docker run -it --rm --name AdminFaces -p 8080:8080 admin/AdminFaces");
+        assertThat(contentOf(dockerRunFile)).contains("docker run -it --rm --name adminfaces -p 8080:8080 admin/adminfaces");
 
         File dockerBuildFile = new File(dockerDir.getFullyQualifiedName() + "/build.sh");
-        assertThat(contentOf(dockerBuildFile)).contains("docker build -t admin/AdminFaces ../");
+        assertThat(contentOf(dockerBuildFile)).contains("docker build -t admin/adminfaces ../");
     }
 
     @Test
