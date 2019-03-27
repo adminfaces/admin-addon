@@ -117,21 +117,13 @@ clear;
 
 project-new --named admin-app --top-level-package com.github.adminfaces.app --type war --final-name admin-app --version 1.0 ;
 
-jpa-setup --persistence-unit-name adminPU --jpaVersion 2.1 --provider Hibernate --container JBOSS_EAP7 --db-type H2 --data-source-name java:jboss/datasources/ExampleDS ;
-
-cdi-setup --cdiVersion 1.1 ;
-
-ejb-setup --ejbVersion 3.2 ;
-
-faces-setup --facesVersion 2.2 ;
-
-servlet-setup --servletVersion 3.1 ;
-
 javaee-setup --java-ee-version 7 ;
+
+jpa-setup --persistence-unit-name adminPU --jpaVersion 2.1 --provider Hibernate --container WILDFLY --db-type H2 --data-source-name java:jboss/datasources/ExampleDS ;
+
 
 adminfaces-setup ;
 
-# entities #
 
 jpa-new-entity --named Talk ;
 
