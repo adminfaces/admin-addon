@@ -180,7 +180,7 @@ public class AdminFacesForgeTests {
         DirectoryResource root = project.getRoot().reify(DirectoryResource.class);
         assertThat(root.getChild("Dockerfile").exists());
         File dockerfile = new File(root.getChild("Dockerfile").getFullyQualifiedName());
-        assertThat(contentOf(dockerfile)).contains("FROM rmpestano/wildfly:16.0.0")
+        assertThat(contentOf(dockerfile)).contains("FROM rmpestano/wildfly:13.0.0")
             .contains("COPY ./target/AdminFaces.war ${DEPLOYMENT_DIR}");
 
         File buildAndRunFile = new File(root.getChild("build-and-run.sh").getFullyQualifiedName());
