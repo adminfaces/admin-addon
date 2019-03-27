@@ -185,7 +185,7 @@ public class AdminFacesForgeTests {
 
         File buildAndRunFile = new File(root.getChild("build-and-run.sh").getFullyQualifiedName());
         assertThat(buildAndRunFile).exists();
-        assertThat(contentOf(buildAndRunFile)).contains("mvn clean package && cd docker && ./build.sh && ./run.sh");
+        assertThat(contentOf(buildAndRunFile)).contains("mvn clean package && cd docker && bash build.sh && bash run.sh");
         
         DirectoryResource dockerDir = root.getChildDirectory("docker");
         assertThat(dockerDir.exists()).isTrue();

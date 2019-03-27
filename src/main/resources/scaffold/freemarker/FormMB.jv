@@ -50,7 +50,7 @@ public class ${entity.getName()}FormMB extends CrudMB<${entity.getName()}> imple
             Faces.redirect("${ccEntity}/${ccEntity}-list.xhtml");
             clear(); 
             sessionFilter.clear(${entity.getName()}FormMB.class.getName());//removes filter saved in session for this bean.
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.log(Level.WARNING, "",e);
         }
     }

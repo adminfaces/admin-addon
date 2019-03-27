@@ -260,6 +260,14 @@ public class AdminTestSetupCommand extends AbstractProjectCommand {
             dependencyUtil.installDependency(dependencyFacet, servletApi);
         }
         
+        DependencyBuilder jsfApi = DependencyBuilder.create()
+                .setScopeType("test")
+                .setArtifactId("jsf-api")
+                .setGroupId("com.sun.faces");
+            if (!dependencyFacet.hasDirectDependency(jsfApi)) {
+                servletApi.setVersion("2.1.13");
+                dependencyUtil.installDependency(dependencyFacet, jsfApi);
+            }
     }
 
     @Override

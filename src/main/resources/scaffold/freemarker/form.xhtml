@@ -78,8 +78,7 @@
         <h:form id="form" prependId="false">
             <p:focus context="@form"/>
 
-            <div class="box box-primary">
-                <div class="box-header with-border">
+            <p:panel styleClass="box-primary card">
                     <div id="main-buttons" class="hidden-sm hidden-xs">
                         <p:commandButton value="${r"#{"}msg['label.save']}" action="${r"#{"}${mb}.save}" update="@form"
                                          icon="fa fa-check" styleClass="btn-primary"/>
@@ -120,7 +119,7 @@
                                     icon="fa fa-reply"/>
                     </p:splitButton>
 
-                    <p:separator/>
+                    <hr/>
 
                     <div class="ui-g ui-fluid">
 <#list fields as field>
@@ -205,9 +204,27 @@
   </#list>
 </p:panel>
 </#list> 
-                    </div>
-                </div>
-            </div>
+                <h:panelGroup id="footer" layout="block" styleClass="hidden-sm hidden-md hidden-lg">
+                    <hr/>
+                    <p:splitButton value="${r"#{"}msg['label.save']}" action="${r"#{"}${mb}.save}" update="@form"
+                                   icon="fa fa-check"
+                                   styleClass="hidden-md hidden-lg btn-primary">
+                        <p:menuitem value="${r"#{"}msg['label.clear']}" action="${r"#{"}${mb}.clear}"
+                                    process="@this" update="@form" rendered="${r"#{"}${mb}.isNew()}"
+                                    resetValues="true" icon="fa fa-refresh"/>
+                        <p:menuitem value="${r"#{"}msg['label.delete']}" action="${r"#{"}${mb}.remove}" process="@this"
+                                    rendered="${r"#{"}not ${mb}.isNew()}" icon="fa fa-trash">
+                            <f:setPropertyActionListener value="true"
+                                                         target="${r"#{"}facesContext.externalContext.flash.keepMessages}"/>
+                            <p:confirm header="Confirmation" message="Are you sure?" icon="ui-icon-danger"/>
+                        </p:menuitem>
+                        <p:separator/>
+                        <p:menuitem value="${r"#{"}msg['label.back']}" action="/${ccEntity}/${ccEntity}-list?faces-redirect=true"
+                                    process="@this" immediate="true"
+                                    icon="fa fa-reply"/>
+                    </p:splitButton>
+                </h:panelGroup>
+            </p:panel>
 
             <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" styleClass="box-danger box-solid">
                 <p:commandButton value="${r"#{"}msg['label.yes']}" type="button" styleClass="btn-material btn-primary ui-confirmdialog-yes"
