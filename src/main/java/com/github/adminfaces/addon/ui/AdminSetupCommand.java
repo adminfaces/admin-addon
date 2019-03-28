@@ -128,6 +128,8 @@ public class AdminSetupCommand extends AbstractProjectCommand {
 
         updatePom(project);
         
+        
+        
         addAdminFacesResources(project).forEach(r -> results.add(Results
             .success("Added " + r.getFullyQualifiedName().replace(project.getRoot().getFullyQualifiedName(), ""))));
         setupWebXML(project);

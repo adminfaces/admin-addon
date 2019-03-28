@@ -1,7 +1,9 @@
 package com.github.adminfaces.addon.util;
 
+import static com.github.adminfaces.addon.util.AdminScaffoldUtils.LOG;
 import static com.github.adminfaces.addon.util.DependencyUtil.ADMIN_PERSISTENCE_COORDINATE;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -251,7 +253,20 @@ public class AdminScaffoldUtils extends ScaffoldUtil {
             }
         }
         WebResourcesFacet webResources = project.getFacet(WebResourcesFacet.class);
-        FileResource<?> beansXml = webResources.getWebRootDirectory().getChildDirectory("WEB-INF").getChild("beans.xml").reify(FileResource.class);
+        DirectoryResource webInfDir = webResources.getWebRootDirectory().getChildDirectory("WEB-INF");
+        if(!webInfDir.getChild("beans.xml").exists()) {
+        	try (InputStream is = new ByteArrayInputStream(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                    + "<beans xmlns=\"http://java.sun.com/xml/ns/javaee\"\n"
+                    + "       xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                    + "       xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd\">\n"
+                    + "</beans>").getBytes())) {
+                    IOUtils.copy(is, new FileOutputStream(
+                        new File(webInfDir.getFullyQualifiedName() + "/beans.xml")));
+                } catch (Exception e) {
+                    LOG.log(Level.SEVERE, "Could not add 'beans.xml'.", e);
+                }
+        }
+        FileResource<?> beansXml = webInfDir.getChild("beans.xml").reify(FileResource.class);
         Node node = XMLParser.parse(beansXml.getResourceInputStream());
         Node alternativesNode = node.getOrCreate("alternatives");
         Optional<Node> deltaspikeTransactionStrategy = alternativesNode.getChildren().stream()
