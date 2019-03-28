@@ -106,6 +106,10 @@ TIP: Use https://github.com/database-rider/dbunit-addon[dbunit-addon] to `genera
 
 == Demo video
 
+image::http://i3.ytimg.com/vi/_uZXXnvJp_E/hqdefault.jpg[Demo, link=https://www.youtube.com/watch?v=_uZXXnvJp_E, window="_blank", height="350", width="600"]
+
+ 
+
 == Generated application
 
 You can find the generated application by AdminFaces scaffold here: https://github.com/adminfaces/generated-scaffold-app/ 
