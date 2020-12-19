@@ -5,12 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.adminfaces.addon</groupId>
     <artifactId>admin-addon</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 
     <properties>
         <jacoco.version>0.8.3</jacoco.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <version.forge>3.9.1.Final</version.forge>
+        <version.forge>3.9.8.Final</version.forge>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
